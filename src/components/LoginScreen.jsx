@@ -1,73 +1,59 @@
 import React, { useState } from 'react';
 import { 
-  Phone, 
-  Store, 
   User, 
   ShieldCheck, 
-  ArrowRight, 
-  KeyRound, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  Crown, 
+  AlertCircle, 
   CheckCircle2, 
-  AlertCircle,
-  Crown,
-  Briefcase,
   Sparkles,
-  Zap
+  ArrowRight
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 
 export function LoginScreen({ lang, setLang, onLoginSuccess }) {
-  const t = translations[lang];
-  const [authMode, setAuthMode] = useState('LOGIN'); // 'LOGIN' | 'REGISTER'
+  const t = translations[lang] || translations.ta;
 
-  // Login Form State (Pre-filled with valid credentials)
-  const [phone, setPhone] = useState('9842154321');
-  const [pin, setPin] = useState('1234');
-  const [role, setRole] = useState('OWNER'); // 'OWNER' | 'STAFF'
-
-  // Register Form State
-  const [shopName, setShopName] = useState('EAGLE SILVERS WHOLESALE');
-  const [ownerName, setOwnerName] = useState('செந்தில் குமார்');
-  const [regPhone, setRegPhone] = useState('9842154321');
-  const [regPin, setRegPin] = useState('1234');
-  const [city, setCity] = useState('மதுரை (Madurai)');
-
+  // Single Owner Authentication Credentials
+  const [loginId, setLoginId] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const executeLogin = (userObj) => {
-    setLoading(true);
-    setTimeout(() => {
-      onLoginSuccess(userObj);
-    }, 150);
-  };
 
   const handleLogin = (e) => {
     if (e) e.preventDefault();
+    setErrorMsg('');
 
-    const user = {
-      phone: phone || '9842154321',
-      name: role === 'OWNER' ? 'செந்தில் குமார் (உரிமையாளர்)' : 'கார்த்திக் (பணியாளர்)',
-      shopName: 'EAGLE SILVERS WHOLESALE',
-      role: role,
-      city: 'மதுரை',
-      loggedInAt: new Date().toISOString()
-    };
+    const cleanId = (loginId || '').trim().toLowerCase();
+    const cleanPass = (password || '').trim();
 
-    executeLogin(user);
-  };
+    // Check credentials: ID: eaglebooks.com, Password: eaglebooks@123
+    if ((cleanId === 'eaglebooks.com' || cleanId === 'eaglebooks' || cleanId === 'admin@eaglebooks.com') && cleanPass === 'eaglebooks@123') {
+      setLoading(true);
 
-  const handleRegister = (e) => {
-    if (e) e.preventDefault();
+      const ownerUser = {
+        id: 'eaglebooks.com',
+        phone: '9842154321',
+        name: 'செந்தில் குமார்',
+        shopName: 'EAGLE SILVERS WHOLESALE',
+        role: 'OWNER',
+        city: 'மதுரை (Madurai)',
+        loggedInAt: new Date().toISOString()
+      };
 
-    const newUser = {
-      phone: regPhone || '9842154321',
-      name: `${ownerName || 'செந்தில் குமார்'} (உரிமையாளர்)`,
-      shopName: shopName || 'EAGLE SILVERS WHOLESALE',
-      role: 'OWNER',
-      city: city || 'மதுரை',
-      loggedInAt: new Date().toISOString()
-    };
-
-    executeLogin(newUser);
+      setTimeout(() => {
+        onLoginSuccess(ownerUser);
+      }, 200);
+    } else {
+      setErrorMsg(
+        lang === 'ta'
+          ? 'தவறான பயனர் ஐடி அல்லது கடவுச்சொல்! (ID: eaglebooks.com | Password: eaglebooks@123)'
+          : 'Invalid Login ID or Password! (ID: eaglebooks.com | Password: eaglebooks@123)'
+      );
+    }
   };
 
   return (
@@ -75,16 +61,16 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
       width: '100%',
       maxWidth: '480px',
       minHeight: '100dvh',
-      background: 'linear-gradient(180deg, #090f24 0%, #0f172a 38%, #ffffff 38%, #ffffff 100%)',
+      background: 'linear-gradient(180deg, #090f24 0%, #0f172a 35%, #f8fafc 35%, #f8fafc 100%)',
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
       margin: '0 auto',
-      boxShadow: '0 0 35px rgba(0, 0, 0, 0.1)',
+      boxShadow: '0 0 35px rgba(0, 0, 0, 0.12)',
       overflowY: 'auto'
     }}>
       
-      {/* Top Bar with Language Switcher */}
+      {/* 1. Top Bar */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -94,7 +80,7 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: '#10b981', fontWeight: '800' }}>
           <ShieldCheck size={16} />
-          <span>256-bit SSL Secure</span>
+          <span>256-bit Encrypted</span>
         </div>
 
         <button
@@ -114,7 +100,7 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
         </button>
       </div>
 
-      {/* Brand & Logo Header */}
+      {/* 2. Official Brand Header with Real Logo */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
@@ -123,13 +109,14 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
         padding: '0.4rem 1.5rem 1.75rem 1.5rem',
         color: '#ffffff'
       }}>
+        {/* Official Medallion Emblem Logo */}
         <div style={{
-          width: '76px',
-          height: '76px',
+          width: '78px',
+          height: '78px',
           borderRadius: '50%',
           border: '3px solid #f59e0b',
           background: '#090f24',
-          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4)',
+          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(245, 158, 11, 0.3)',
           overflow: 'hidden',
           display: 'flex',
           alignItems: 'center',
@@ -146,344 +133,166 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
         <h1 style={{ fontSize: '1.45rem', fontWeight: '900', margin: 0, letterSpacing: '-0.01em', color: '#ffffff' }}>
           EAGLE BOOKS
         </h1>
-        <p style={{ fontSize: '0.78rem', color: '#fcd34d', margin: '0.15rem 0 0 0', fontWeight: '800' }}>
-          {lang === 'ta' ? 'ஈகிள் புக்ஸ் • சில்வர் கட்டாபுக் & கணக்கு ஏடு' : 'Eagle Books • Silver Khatabook & Ledger'}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.2rem' }}>
+          <Crown size={14} color="#fcd34d" />
+          <span style={{ fontSize: '0.78rem', color: '#fcd34d', fontWeight: '800' }}>
+            {lang === 'ta' ? 'உரிமையாளர் உள்நுழைவு (Owner Portal)' : 'Owner Portal Only'}
+          </span>
+        </div>
       </div>
 
-      {/* Main Form White Card */}
+      {/* 3. Login Card Container */}
       <div style={{
-        flex: 1,
+        margin: '0 1rem 1.5rem 1rem',
         background: '#ffffff',
-        borderRadius: '24px 24px 0 0',
-        padding: '1.5rem 1.25rem 2rem 1.25rem',
-        boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.15)',
-        display: 'flex',
-        flexDirection: 'column'
+        borderRadius: '20px',
+        padding: '1.5rem',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
+        border: '1.5px solid #e2e8f0'
       }}>
         
-        {/* Toggle Mode: Login vs Register */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          background: '#f1f5f9',
-          padding: '0.25rem',
-          borderRadius: '12px',
-          gap: '0.35rem',
-          marginBottom: '1.25rem',
-          border: '1px solid #e2e8f0'
-        }}>
-          <button
-            type="button"
-            onClick={() => setAuthMode('LOGIN')}
-            style={{
-              background: authMode === 'LOGIN' ? '#ea580c' : 'transparent',
-              color: authMode === 'LOGIN' ? '#ffffff' : '#475569',
-              border: 'none',
-              borderRadius: '10px',
-              padding: '0.55rem',
-              fontSize: '0.85rem',
-              fontWeight: '900',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            {lang === 'ta' ? 'உள்நுழைக (Login)' : 'Sign In'}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setAuthMode('REGISTER')}
-            style={{
-              background: authMode === 'REGISTER' ? '#ea580c' : 'transparent',
-              color: authMode === 'REGISTER' ? '#ffffff' : '#475569',
-              border: 'none',
-              borderRadius: '10px',
-              padding: '0.55rem',
-              fontSize: '0.85rem',
-              fontWeight: '900',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            {lang === 'ta' ? 'புதிய கடை பதிவு' : 'Register Shop'}
-          </button>
+        <div style={{ marginBottom: '1.25rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: '900', color: '#090f24', margin: 0 }}>
+            {lang === 'ta' ? 'உரிமையாளர் உள்நுழைவு' : 'Owner Login'}
+          </h2>
+          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.25rem 0 0 0', fontWeight: '600' }}>
+            {lang === 'ta' ? 'சில்வர் கட்டாபுக் கணக்குகளை அணுகவும்' : 'Enter your registered credentials to access the ledger'}
+          </p>
         </div>
 
-        {/* =========================================================================
-            1. SIGN IN FORM
-            ========================================================================= */}
-        {authMode === 'LOGIN' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            
-            {/* Role Switcher */}
-            <div>
-              <label className="input-label" style={{ fontSize: '0.78rem' }}>
-                {lang === 'ta' ? 'உள்நுழையும் பதவி (Login Role):' : 'Select Role:'}
-              </label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setRole('OWNER')}
-                  style={{
-                    background: role === 'OWNER' ? '#fffbeb' : '#f8fafc',
-                    border: role === 'OWNER' ? '2px solid #f59e0b' : '1.5px solid #cbd5e1',
-                    borderRadius: '10px',
-                    padding: '0.55rem 0.5rem',
-                    color: role === 'OWNER' ? '#b45309' : '#475569',
-                    fontWeight: '900',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.35rem'
-                  }}
-                >
-                  <Crown size={15} color={role === 'OWNER' ? '#d97706' : '#64748b'} />
-                  <span>{lang === 'ta' ? 'உரிமையாளர் (Owner)' : 'Owner / Admin'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setRole('STAFF')}
-                  style={{
-                    background: role === 'STAFF' ? '#f0f9ff' : '#f8fafc',
-                    border: role === 'STAFF' ? '2px solid #0284c7' : '1.5px solid #cbd5e1',
-                    borderRadius: '10px',
-                    padding: '0.55rem 0.5rem',
-                    color: role === 'STAFF' ? '#0369a1' : '#475569',
-                    fontWeight: '900',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.35rem'
-                  }}
-                >
-                  <Briefcase size={15} color={role === 'STAFF' ? '#0284c7' : '#64748b'} />
-                  <span>{lang === 'ta' ? 'பணியாளர் (Staff)' : 'Billing Staff'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Mobile Number */}
-            <div>
-              <label className="input-label">
-                {lang === 'ta' ? 'மொபைல் எண் (Mobile Number)' : 'Phone Number'}
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Phone size={16} color="#64748b" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="9842154321"
-                  className="input-field"
-                  style={{ paddingLeft: '2.5rem', fontSize: '1rem', fontWeight: '800' }}
-                />
-              </div>
-            </div>
-
-            {/* 4-Digit PIN */}
-            <div>
-              <label className="input-label">
-                {lang === 'ta' ? '4-இலக்க பாதுகாப்பு பின் (Security PIN)' : '4-Digit PIN'}
-              </label>
-              <div style={{ position: 'relative' }}>
-                <KeyRound size={16} color="#64748b" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input
-                  type="password"
-                  maxLength={6}
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  placeholder="1234"
-                  className="input-field"
-                  style={{ paddingLeft: '2.5rem', fontSize: '1.25rem', letterSpacing: '0.2em', fontWeight: '900' }}
-                />
-              </div>
-            </div>
-
-            {/* Direct Login Button */}
-            <button
-              type="button"
-              onClick={handleLogin}
-              disabled={loading}
-              className="btn-mobile"
-              style={{
-                background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-                color: '#ffffff',
-                padding: '0.9rem',
-                fontSize: '1rem',
-                borderRadius: '12px',
-                marginTop: '0.45rem',
-                cursor: 'pointer',
-                boxShadow: '0 4px 15px rgba(234, 88, 12, 0.35)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              <Zap size={18} fill="#ffffff" />
-              <span>{loading ? 'உள்நுழைகிறது...' : (lang === 'ta' ? 'உள்நுழைக (Sign In)' : 'Sign In Now')}</span>
-              <ArrowRight size={18} />
-            </button>
-
+        {/* Error Notification */}
+        {errorMsg && (
+          <div style={{
+            background: '#fef2f2',
+            border: '1.5px solid #fca5a5',
+            borderRadius: '10px',
+            padding: '0.65rem 0.85rem',
+            color: '#b91c1c',
+            fontSize: '0.78rem',
+            fontWeight: '800',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            marginBottom: '1rem'
+          }}>
+            <AlertCircle size={16} color="#dc2626" style={{ flexShrink: 0 }} />
+            <span>{errorMsg}</span>
           </div>
         )}
 
-        {/* =========================================================================
-            2. REGISTER NEW SHOP FORM
-            ========================================================================= */}
-        {authMode === 'REGISTER' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            
-            <div>
-              <label className="input-label">{lang === 'ta' ? 'கடையின் பெயர் (Shop / Firm Name)' : 'Shop Name'}</label>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          
+          {/* User ID Input */}
+          <div>
+            <label className="input-label" style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0f172a' }}>
+              {lang === 'ta' ? 'பயனர் ஐடி (User ID)' : 'Login ID'} *
+            </label>
+            <div style={{ position: 'relative' }}>
+              <User 
+                size={18} 
+                color="#64748b" 
+                style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} 
+              />
               <input
                 type="text"
-                value={shopName}
-                onChange={(e) => setShopName(e.target.value)}
-                placeholder="EAGLE SILVERS WHOLESALE"
+                value={loginId}
+                onChange={(e) => setLoginId(e.target.value)}
+                placeholder="eaglebooks.com"
                 className="input-field"
+                style={{ paddingLeft: '2.5rem', fontWeight: '800', fontSize: '0.95rem' }}
+                required
+                autoFocus
               />
             </div>
+          </div>
 
-            <div>
-              <label className="input-label">{lang === 'ta' ? 'உரிமையாளர் பெயர் (Owner Name)' : 'Owner Name'}</label>
+          {/* Password Input */}
+          <div>
+            <label className="input-label" style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0f172a' }}>
+              {lang === 'ta' ? 'கடவுச்சொல் (Password)' : 'Password'} *
+            </label>
+            <div style={{ position: 'relative' }}>
+              <Lock 
+                size={18} 
+                color="#64748b" 
+                style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} 
+              />
               <input
-                type="text"
-                value={ownerName}
-                onChange={(e) => setOwnerName(e.target.value)}
-                placeholder="செந்தில் குமார்"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="eaglebooks@123"
                 className="input-field"
+                style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem', fontWeight: '800', fontSize: '0.95rem' }}
+                required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#64748b',
+                  cursor: 'pointer',
+                  padding: '0.2rem',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.65rem' }}>
-              <div>
-                <label className="input-label">{lang === 'ta' ? 'மொபைல் எண்' : 'Phone'}</label>
-                <input
-                  type="tel"
-                  value={regPhone}
-                  onChange={(e) => setRegPhone(e.target.value)}
-                  placeholder="9842154321"
-                  className="input-field"
-                />
-              </div>
-
-              <div>
-                <label className="input-label">{lang === 'ta' ? 'பாதுகாப்பு PIN' : '4-Digit PIN'}</label>
-                <input
-                  type="password"
-                  maxLength={6}
-                  value={regPin}
-                  onChange={(e) => setRegPin(e.target.value)}
-                  placeholder="1234"
-                  className="input-field"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="input-label">{lang === 'ta' ? 'ஊர் / நகரம் (City / Town)' : 'City'}</label>
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="மதுரை (Madurai)"
-                className="input-field"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleRegister}
-              disabled={loading}
-              className="btn-mobile"
-              style={{
-                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                color: '#ffffff',
-                padding: '0.9rem',
-                fontSize: '1rem',
-                borderRadius: '12px',
-                marginTop: '0.35rem',
-                cursor: 'pointer',
-                boxShadow: '0 4px 15px rgba(5, 150, 105, 0.35)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              <CheckCircle2 size={18} />
-              <span>{loading ? 'உருவாக்குகிறது...' : (lang === 'ta' ? 'புதிய கணக்கை உருவாக்க (Register)' : 'Create Account')}</span>
-            </button>
-
-          </div>
-        )}
-
-        {/* 1-Tap Quick Demo Login Strip */}
-        <div style={{ marginTop: '1.5rem', borderTop: '1px dashed #e2e8f0', paddingTop: '1rem' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b', textAlign: 'center', marginBottom: '0.65rem' }}>
-            ⚡ {lang === 'ta' ? 'விரைவு மாதிரி உள்நுழைவு (1-Tap Quick Login):' : '1-Tap Quick Login:'}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={() => executeLogin({
-                phone: '9842154321',
-                name: 'செந்தில் குமார்',
-                shopName: 'EAGLE SILVERS WHOLESALE',
-                role: 'OWNER',
-                city: 'மதுரை',
-                loggedInAt: new Date().toISOString()
-              })}
-              style={{
-                background: '#fffbeb',
-                border: '1.5px solid #fcd34d',
-                borderRadius: '10px',
-                padding: '0.55rem 0.5rem',
-                color: '#b45309',
-                fontSize: '0.78rem',
-                fontWeight: '900',
-                cursor: 'pointer',
-                textAlign: 'center',
-                boxShadow: '0 2px 6px rgba(245, 158, 11, 0.15)'
-              }}
-            >
-              👑 {lang === 'ta' ? 'உரிமையாளர் (Owner)' : 'Owner Demo'}
-            </button>
+          {/* Submit Login Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '0.85rem',
+              fontSize: '1rem',
+              fontWeight: '900',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 6px 20px rgba(234, 88, 12, 0.4)',
+              marginTop: '0.5rem',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Crown size={18} />
+            <span>{loading ? 'உள்நுழைகிறது...' : (lang === 'ta' ? 'உரிமையாளராக உள்நுழைக' : 'Login as Owner')}</span>
+            <ArrowRight size={18} />
+          </button>
 
-            <button
-              type="button"
-              onClick={() => executeLogin({
-                phone: '9443123456',
-                name: 'கார்த்திக் (பணியாளர்)',
-                shopName: 'EAGLE SILVERS WHOLESALE',
-                role: 'STAFF',
-                city: 'மதுரை',
-                loggedInAt: new Date().toISOString()
-              })}
-              style={{
-                background: '#f0f9ff',
-                border: '1.5px solid #bae6fd',
-                borderRadius: '10px',
-                padding: '0.55rem 0.5rem',
-                color: '#0369a1',
-                fontSize: '0.78rem',
-                fontWeight: '900',
-                cursor: 'pointer',
-                textAlign: 'center',
-                boxShadow: '0 2px 6px rgba(2, 132, 199, 0.15)'
-              }}
-            >
-              💼 {lang === 'ta' ? 'பணியாளர் (Staff)' : 'Staff Demo'}
-            </button>
-          </div>
+        </form>
+
+        {/* Security badge at bottom */}
+        <div style={{
+          marginTop: '1.25rem',
+          paddingTop: '1rem',
+          borderTop: '1px solid #f1f5f9',
+          textAlign: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.35rem',
+          color: '#64748b',
+          fontSize: '0.72rem',
+          fontWeight: '700'
+        }}>
+          <CheckCircle2 size={14} color="#059669" />
+          <span>EAGLE SILVERS WHOLESALE • தனிப்பட்ட உரிமையாளர் பாதுகாப்பு</span>
         </div>
 
       </div>
