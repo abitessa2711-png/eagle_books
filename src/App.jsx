@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import confetti from 'canvas-confetti';
+import { UserPlus } from 'lucide-react';
 import { EagleHeader } from './components/EagleHeader';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { KhatabookCustomerList } from './components/KhatabookCustomerList';
@@ -350,6 +351,20 @@ export function App() {
         )}
 
       </main>
+
+      {/* Floating Action Button (FAB) for Customer List */}
+      {activeTab === 'customers' && !selectedCustomerId && (
+        <div className="fab-customer-container">
+          <button
+            onClick={() => setIsCustomerModalOpen(true)}
+            className="fab-customer-btn"
+            title={lang === 'ta' ? 'புதிய வாடிக்கையாளர் சேர்க்க' : 'Add New Customer'}
+          >
+            <UserPlus size={18} strokeWidth={2.5} />
+            <span>{lang === 'ta' ? '+ புதிய வாடிக்கையாளர்' : '+ Add Customer'}</span>
+          </button>
+        </div>
+      )}
 
       {/* 3. Bottom Navigation Bar */}
       <MobileBottomNav

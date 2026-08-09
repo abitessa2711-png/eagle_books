@@ -217,36 +217,6 @@ export function KhatabookCustomerList({
         )}
       </div>
 
-      {/* =========================================================================
-          5. CIRCULAR FLOATING ACTION BUTTON (FAB) FOR ADDING CUSTOMER
-          ========================================================================= */}
-      <div className="fab-customer-container">
-        <button
-          onClick={onOpenNewCustomerModal}
-          style={{
-            width: '58px',
-            height: '58px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-            color: '#ffffff',
-            border: '3px solid #ffffff',
-            boxShadow: '0 8px 25px rgba(234, 88, 12, 0.45), 0 2px 10px rgba(0, 0, 0, 0.15)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            gap: '1px'
-          }}
-          title={lang === 'ta' ? 'புதிய வாடிக்கையாளர் சேர்க்க' : 'Add New Customer'}
-        >
-          <UserPlus size={22} strokeWidth={2.5} />
-          <span style={{ fontSize: '0.62rem', fontWeight: '900', letterSpacing: '-0.01em' }}>
-            {lang === 'ta' ? '+ புதியவர்' : '+ Add'}
-          </span>
-        </button>
-      </div>
-
     </div>
   );
 }
