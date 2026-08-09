@@ -4,7 +4,8 @@ import {
   UserPlus, 
   ChevronRight, 
   Trash2,
-  Users 
+  Users,
+  Plus
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 import { formatGrams, formatCurrency } from '../utils/calculations';
@@ -58,7 +59,7 @@ export function KhatabookCustomerList({
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '70px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '85px', position: 'relative' }}>
       
       {/* 1. KHATABOOK HERO BALANCE CARD */}
       <div className="hero-balance-container">
@@ -109,48 +110,32 @@ export function KhatabookCustomerList({
         </div>
       </div>
 
-      {/* 3. FILTER TABS & NEW CUSTOMER BUTTON */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem 0.65rem 1rem' }}>
-        <div style={{ display: 'flex', gap: '0.4rem' }}>
-          <button
-            onClick={() => setFilterType('ALL')}
-            className={`filter-tab-pill ${filterType === 'ALL' ? 'active' : ''}`}
-          >
-            {t.filterAll} ({customers.length})
-          </button>
-          <button
-            onClick={() => setFilterType('DUE')}
-            className={`filter-tab-pill ${filterType === 'DUE' ? 'active' : ''}`}
-          >
-            {t.filterDue}
-          </button>
-          <button
-            onClick={() => setFilterType('ADVANCE')}
-            className={`filter-tab-pill ${filterType === 'ADVANCE' ? 'active' : ''}`}
-          >
-            {t.filterAdvance}
-          </button>
-        </div>
-
+      {/* 3. CLEAN FULL-WIDTH FILTER TABS (No cramped buttons!) */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        padding: '0.2rem 1rem 0.65rem 1rem',
+        overflowX: 'auto',
+        scrollbarWidth: 'none'
+      }}>
         <button
-          onClick={onOpenNewCustomerModal}
-          style={{
-            background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '9999px',
-            padding: '0.35rem 0.75rem',
-            fontSize: '0.78rem',
-            fontWeight: '800',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.3rem',
-            boxShadow: '0 2px 8px rgba(234, 88, 12, 0.3)'
-          }}
+          onClick={() => setFilterType('ALL')}
+          className={`filter-tab-pill ${filterType === 'ALL' ? 'active' : ''}`}
         >
-          <UserPlus size={14} />
-          <span>{lang === 'ta' ? '+ புதியவர்' : '+ Add'}</span>
+          {t.filterAll} ({customers.length})
+        </button>
+        <button
+          onClick={() => setFilterType('DUE')}
+          className={`filter-tab-pill ${filterType === 'DUE' ? 'active' : ''}`}
+        >
+          🔴 {t.filterDue}
+        </button>
+        <button
+          onClick={() => setFilterType('ADVANCE')}
+          className={`filter-tab-pill ${filterType === 'ADVANCE' ? 'active' : ''}`}
+        >
+          🟢 {t.filterAdvance}
         </button>
       </div>
 
@@ -216,11 +201,13 @@ export function KhatabookCustomerList({
                     color: '#94a3b8',
                     cursor: 'pointer',
                     padding: '0.4rem',
-                    marginLeft: '0.2rem'
+                    marginLeft: '0.2rem',
+                    display: 'flex',
+                    alignItems: 'center'
                   }}
                   title={t.delete}
                 >
-                  <Trash2 size={16} color="#cbd5e1" onMouseEnter={(e) => e.target.style.color = '#ef4444'} onMouseLeave={(e) => e.target.style.color = '#cbd5e1'} />
+                  <Trash2 size={16} color="#94a3b8" />
                 </button>
 
                 <ChevronRight size={18} color="#cbd5e1" />
@@ -228,6 +215,44 @@ export function KhatabookCustomerList({
             );
           })
         )}
+      </div>
+
+      {/* =========================================================================
+          5. UNIQUE FLOATING ACTION BUTTON (FAB) - CIRCULAR '+' FOR ADDING CUSTOMER
+          ========================================================================= */}
+      <div 
+        style={{
+          position: 'fixed',
+          bottom: '75px',
+          right: 'calc(50% - 225px)',
+          zIndex: 48
+        }}
+        className="fab-customer-container"
+      >
+        <button
+          onClick={onOpenNewCustomerModal}
+          style={{
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+            color: '#ffffff',
+            border: '3px solid #ffffff',
+            boxShadow: '0 8px 25px rgba(234, 88, 12, 0.45), 0 2px 10px rgba(0, 0, 0, 0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            gap: '1px'
+          }}
+          title={lang === 'ta' ? 'புதிய வாடிக்கையாளர் சேர்க்க' : 'Add New Customer'}
+        >
+          <UserPlus size={22} strokeWidth={2.5} />
+          <span style={{ fontSize: '0.62rem', fontWeight: '900', letterSpacing: '-0.01em' }}>
+            {lang === 'ta' ? '+ புதியவர்' : '+ Add'}
+          </span>
+        </button>
       </div>
 
     </div>
