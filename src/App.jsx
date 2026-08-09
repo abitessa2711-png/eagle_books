@@ -7,6 +7,7 @@ import { KhatabookCustomerLedger } from './components/KhatabookCustomerLedger';
 import { HandwrittenNotebook } from './components/HandwrittenNotebook';
 import { MobileQuickCalculator } from './components/MobileQuickCalculator';
 import { DashboardSummary } from './components/DashboardSummary';
+import { LoginScreen } from './components/LoginScreen';
 import { TransactionDrawer } from './components/TransactionDrawer';
 import { CustomerModal } from './components/CustomerModal';
 import { RateManagerModal } from './components/RateManagerModal';
@@ -20,7 +21,8 @@ import {
   saveCustomers, 
   saveTransactions, 
   saveRates, 
-  saveLang 
+  saveLang,
+  saveAuthUser
 } from './utils/storage';
 import { computeCustomerTransactions } from './utils/calculations';
 import { translations } from './utils/translations';
@@ -28,6 +30,7 @@ import { translations } from './utils/translations';
 export function App() {
   const initialData = useMemo(() => loadStoredData(), []);
 
+  const [authUser, setAuthUser] = useState(initialData.authUser);
   const [customers, setCustomers] = useState(initialData.customers);
   const [transactions, setTransactions] = useState(initialData.transactions);
   const [rates, setRates] = useState(initialData.rates);
@@ -69,6 +72,29 @@ export function App() {
     saveLang(lang);
   }, [lang]);
 
+  // Auth Handlers
+  const handleLoginSuccess = (user) => {
+    setAuthUser(user);
+    saveAuthUser(user);
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.8 },
+        colors: ['#ea580c', '#059669', '#f59e0b']
+      });
+    } catch (e) {}
+  };
+
+  const handleLogout = () => {
+    const confirmLogout = window.confirm(lang === 'ta' ? 'நிச்சயமாக கணக்கிலிருந்து வெளியேற வேண்டுமா?' : 'Are you sure you want to log out?');
+    if (confirmLogout) {
+      setAuthUser(null);
+      saveAuthUser(null);
+      setSelectedCustomerId(null);
+    }
+  };
+
   // Compute all customer balances
   const customerSummaries = useMemo(() => {
     const map = {};
@@ -85,7 +111,7 @@ export function App() {
   const activeCustomer = customers.find((c) => c.id === selectedCustomerId) || customers[0] || null;
   const activeSummary = activeCustomer ? customerSummaries[activeCustomer.id] || { transactions: [], netBalanceGrams: 0 } : null;
 
-  // Handlers
+  // Navigation Handlers
   const handleSelectCustomer = (id) => {
     setSelectedCustomerId(id);
     setActiveTab('customers');
@@ -126,21 +152,6 @@ export function App() {
         };
         setTransactions((prev) => [...prev, openingTx]);
       }
-    }
-  };
-
-  const handleSaveTransaction = (newTx) => {
-    setTransactions((prev) => [...prev, newTx]);
-
-    if (newTx.type === 'CASH_PAYMENT' || newTx.type === 'OLD_SILVER') {
-      try {
-        confetti({
-          particleCount: 40,
-          spread: 60,
-          origin: { y: 0.85 },
-          colors: ['#ea580c', '#059669', '#f59e0b']
-        });
-      } catch (e) {}
     }
   };
 
@@ -186,6 +197,17 @@ export function App() {
     }
   };
 
+  // IF NOT AUTHENTICATED -> SHOW LOGIN SCREEN
+  if (!authUser) {
+    return (
+      <LoginScreen
+        lang={lang}
+        setLang={setLang}
+        onLoginSuccess={handleLoginSuccess}
+      />
+    );
+  }
+
   return (
     <div className="app-container">
       
@@ -194,8 +216,9 @@ export function App() {
         lang={lang}
         setLang={setLang}
         rates={rates}
+        currentUser={authUser}
+        onLogout={handleLogout}
         onOpenRateModal={() => setIsRateModalOpen(true)}
-        onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
         onOpenConverterModal={() => setIsConverterModalOpen(true)}
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
       />

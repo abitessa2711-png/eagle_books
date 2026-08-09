@@ -4,6 +4,7 @@ const CUSTOMERS_KEY = 'eagle_book_customers_v1';
 const TRANSACTIONS_KEY = 'eagle_book_transactions_v1';
 const RATES_KEY = 'eagle_book_rates_v1';
 const LANG_KEY = 'eagle_book_lang_v1';
+const AUTH_USER_KEY = 'eagle_book_auth_user_v1';
 
 export function loadStoredData() {
   try {
@@ -11,12 +12,14 @@ export function loadStoredData() {
     const rawTx = localStorage.getItem(TRANSACTIONS_KEY);
     const rawRates = localStorage.getItem(RATES_KEY);
     const rawLang = localStorage.getItem(LANG_KEY);
+    const rawAuth = localStorage.getItem(AUTH_USER_KEY);
 
     return {
       customers: rawCust ? JSON.parse(rawCust) : initialCustomers,
       transactions: rawTx ? JSON.parse(rawTx) : initialTransactions,
       rates: rawRates ? JSON.parse(rawRates) : initialSilverRates,
-      lang: rawLang || 'ta'
+      lang: rawLang || 'ta',
+      authUser: rawAuth ? JSON.parse(rawAuth) : null
     };
   } catch (err) {
     console.error('Failed to load from localStorage, using fallback demo data:', err);
@@ -24,7 +27,8 @@ export function loadStoredData() {
       customers: initialCustomers,
       transactions: initialTransactions,
       rates: initialSilverRates,
-      lang: 'ta'
+      lang: 'ta',
+      authUser: null
     };
   }
 }
@@ -58,6 +62,18 @@ export function saveLang(lang) {
     localStorage.setItem(LANG_KEY, lang);
   } catch (err) {
     console.error('Error saving lang:', err);
+  }
+}
+
+export function saveAuthUser(user) {
+  try {
+    if (user) {
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(AUTH_USER_KEY);
+    }
+  } catch (err) {
+    console.error('Error saving auth user:', err);
   }
 }
 

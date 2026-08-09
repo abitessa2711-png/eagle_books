@@ -3,9 +3,10 @@ import {
   TrendingUp, 
   Calculator, 
   Languages, 
-  Plus, 
   Database,
-  Share2
+  LogOut,
+  Crown,
+  User
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 import { formatCurrency } from '../utils/calculations';
@@ -14,8 +15,9 @@ export function EagleHeader({
   lang,
   setLang,
   rates,
+  currentUser,
+  onLogout,
   onOpenRateModal,
-  onOpenCustomerModal,
   onOpenConverterModal,
   onOpenBackupModal
 }) {
@@ -32,11 +34,26 @@ export function EagleHeader({
           className="brand-logo-img"
         />
         <div className="brand-titles">
-          <h1 className="brand-main-title">
-            {lang === 'ta' ? 'ஈகிள் புக்ஸ்' : 'Eagle Books'}
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <h1 className="brand-main-title">
+              {lang === 'ta' ? 'ஈகிள் புக்ஸ்' : 'Eagle Books'}
+            </h1>
+            {currentUser && (
+              <span style={{
+                fontSize: '0.62rem',
+                fontWeight: '900',
+                background: currentUser.role === 'OWNER' ? '#fef3c7' : '#e0f2fe',
+                color: currentUser.role === 'OWNER' ? '#b45309' : '#0369a1',
+                padding: '0.1rem 0.35rem',
+                borderRadius: '4px',
+                border: currentUser.role === 'OWNER' ? '1px solid #fcd34d' : '1px solid #7dd3fc'
+              }}>
+                {currentUser.role === 'OWNER' ? '👑 Owner' : '💼 Staff'}
+              </span>
+            )}
+          </div>
           <span className="brand-sub-title">
-            {lang === 'ta' ? 'சில்வர் கட்டாபுக் & கணக்கு ஏடு' : 'Silver Khatabook & Jeweller Ledger'}
+            {currentUser ? currentUser.name : (lang === 'ta' ? 'சில்வர் கட்டாபுக் & கணக்கு ஏடு' : 'Silver Khatabook & Ledger')}
           </span>
         </div>
       </div>
@@ -73,14 +90,28 @@ export function EagleHeader({
           {lang === 'ta' ? 'EN' : 'தமிழ்'}
         </button>
 
-        {/* Backup */}
-        <button
-          onClick={onOpenBackupModal}
-          className="header-btn"
-          title={t.backupRestore}
-        >
-          <Database size={15} />
-        </button>
+        {/* Backup (Only for Owner) */}
+        {(!currentUser || currentUser.role === 'OWNER') && (
+          <button
+            onClick={onOpenBackupModal}
+            className="header-btn"
+            title={t.backupRestore}
+          >
+            <Database size={15} />
+          </button>
+        )}
+
+        {/* Logout Button */}
+        {currentUser && (
+          <button
+            onClick={onLogout}
+            className="header-btn"
+            style={{ background: 'rgba(239, 68, 68, 0.25)', border: '1px solid rgba(239, 68, 68, 0.5)' }}
+            title={lang === 'ta' ? 'வெளியேறு (Logout)' : 'Logout'}
+          >
+            <LogOut size={15} />
+          </button>
+        )}
 
       </div>
     </header>
