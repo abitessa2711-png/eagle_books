@@ -20,7 +20,10 @@ export function TransactionDrawer({
   rates,
   onSaveTransaction
 }) {
-  const t = translations[lang];
+  const t = translations[lang] || translations.ta;
+
+  // Touch % Presets
+  const touchPresets = ['70', '75', '78', '80', '84', '90', '92.5', '100'];
 
   // Sub-mode when in 'GET': 'CASH' | 'OLD_SILVER'
   const [getSubType, setGetSubType] = useState('CASH');
@@ -32,13 +35,13 @@ export function TransactionDrawer({
   
   // Weights
   const [grossWeight, setGrossWeight] = useState('');
-  const [touchPercent, setTouchPercent] = useState(initialMode === 'GIVE' ? '78' : '100');
+  const [touchPercent, setTouchPercent] = useState('80');
 
   // Cash
   const [cashAmount, setCashAmount] = useState('');
-  const [ratePerGram, setRatePerGram] = useState(String(rates.ratePerGram || 95));
+  const [ratePerGram, setRatePerGram] = useState(String(rates?.ratePerGram || 95));
   const [isTouchAdjusted, setIsTouchAdjusted] = useState(false);
-  const [cashTouchPercent, setCashTouchPercent] = useState('78');
+  const [cashTouchPercent, setCashTouchPercent] = useState('80');
 
   const [notes, setNotes] = useState('');
 
@@ -97,21 +100,24 @@ export function TransactionDrawer({
       newTx.type = 'NEW_SALE';
       newTx.weight = Number(grossWeight) || 0;
       newTx.touchPercent = Number(touchPercent) || 100;
-      newTx.ratePerGram = Number(ratePerGram) || rates.ratePerGram;
+      newTx.ratePerGram = Number(ratePerGram) || rates?.ratePerGram || 95;
+      newTx.debitGrams = calculatedPureGrams;
+      newTx.creditGrams = 0;
     } else {
       if (getSubType === 'CASH') {
         newTx.type = 'CASH_PAYMENT';
         newTx.cashAmount = Number(cashAmount) || 0;
-        newTx.ratePerGram = Number(ratePerGram) || rates.ratePerGram;
-        newTx.touchPercent = Number(cashTouchPercent) || 100;
-        newTx.isTouchAdjusted = isTouchAdjusted;
-        newTx.convertedGrams = calculatedCashGrams;
-        newTx.itemName = `ரொக்கம் ${formatCurrency(cashAmount)}`;
+        newTx.ratePerGram = Number(ratePerGram) || rates?.ratePerGram || 95;
+        newTx.touchPercent = isTouchAdjusted ? Number(cashTouchPercent) : 100;
+        newTx.creditGrams = calculatedCashGrams;
+        newTx.debitGrams = 0;
       } else {
         newTx.type = 'OLD_SILVER';
         newTx.weight = Number(grossWeight) || 0;
         newTx.touchPercent = Number(touchPercent) || 100;
-        newTx.itemName = finalItem || 'பழைய வெள்ளி வரவு';
+        newTx.ratePerGram = Number(ratePerGram) || rates?.ratePerGram || 95;
+        newTx.creditGrams = calculatedPureGrams;
+        newTx.debitGrams = 0;
       }
     }
 
@@ -120,89 +126,71 @@ export function TransactionDrawer({
   };
 
   return (
-    <div 
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(9, 15, 36, 0.65)',
-        backdropFilter: 'blur(4px)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem'
-      }} 
-      onClick={onClose}
-    >
+    <div className="modal-overlay" onClick={onClose}>
       <div 
+        className="modal-content" 
+        onClick={(e) => e.stopPropagation()}
         style={{
+          maxWidth: '520px',
+          borderRadius: '16px',
           background: '#ffffff',
           color: '#000000',
-          width: '100%',
-          maxWidth: '480px',
-          maxHeight: '92vh',
-          borderRadius: '20px',
-          padding: '1.25rem 1.4rem',
-          overflowY: 'auto',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.25)',
-          border: '1.5px solid #cbd5e1'
+          border: initialMode === 'GIVE' ? '2.5px solid #dc2626' : '2.5px solid #059669',
+          overflow: 'hidden'
         }}
-        onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Drawer Header */}
+        {/* Header */}
         <div style={{
+          background: initialMode === 'GIVE' 
+            ? 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)' 
+            : 'linear-gradient(135deg, #059669 0%, #064e3b 100%)',
+          color: '#ffffff',
+          padding: '1rem 1.25rem',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: '1.5px solid #e2e8f0',
-          paddingBottom: '0.75rem',
-          marginBottom: '1rem'
+          justifyContent: 'space-between'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <div style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '10px',
-              background: initialMode === 'GIVE' ? '#fef2f2' : '#ecfdf5',
-              color: initialMode === 'GIVE' ? '#dc2626' : '#059669',
-              border: initialMode === 'GIVE' ? '1.5px solid #fca5a5' : '1.5px solid #6ee7b7',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.2)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              {initialMode === 'GIVE' ? <ArrowUpRight size={22} /> : <ArrowDownLeft size={22} />}
+              {initialMode === 'GIVE' ? <ArrowUpRight size={20} /> : <ArrowDownLeft size={20} />}
             </div>
-
             <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '900', margin: 0, color: '#000000' }}>
-                {initialMode === 'GIVE' 
-                  ? (lang === 'ta' ? '🔴 நீங்கள் கொடுத்தது (புதிய நகை)' : 'You Gave (New Silver)') 
-                  : (lang === 'ta' ? '🟢 நீங்கள் பெற்றது (வரவு)' : 'You Got (Payment / Return)')}
+              <h3 style={{ fontSize: '1.1rem', fontWeight: '900', margin: 0 }}>
+                {initialMode === 'GIVE' ? (lang === 'ta' ? 'நீங்கள் கொடுத்தது (YOU GAVE)' : 'NEW SILVER ISSUE (YOU GAVE)') : (lang === 'ta' ? 'நீங்கள் பெற்றது (YOU GOT)' : 'PAYMENT / OLD SILVER (YOU GOT)')}
               </h3>
-              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0, fontWeight: '700' }}>
-                {initialMode === 'GIVE' 
-                  ? (lang === 'ta' ? 'வாடிக்கையாளர் பற்று வைக்கப்படும் எடை (+g)' : 'Debited to customer balance (+g)')
-                  : (lang === 'ta' ? 'வாடிக்கையாளருக்கு கழிக்கப்படும் வரவு (-g)' : 'Credited to customer balance (-g)')}
-              </p>
+              <span style={{ fontSize: '0.72rem', opacity: 0.95, fontWeight: '700' }}>
+                {initialMode === 'GIVE' ? '+ பற்று (New Silver Debited)' : '- வரவு (Cash or Old Silver Credited)'}
+              </span>
             </div>
           </div>
 
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', padding: '0.2rem' }}>
-            <X size={22} />
+          <button
+            onClick={onClose}
+            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', cursor: 'pointer' }}
+          >
+            <X size={18} />
           </button>
         </div>
 
-        {/* If Mode is 'GET', toggle between Cash and Old Silver */}
+        {/* Sub-type switcher when in 'GET' */}
         {initialMode === 'GET' && (
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
             background: '#f1f5f9',
             padding: '0.25rem',
+            margin: '1rem 1.25rem 0 1.25rem',
             borderRadius: '10px',
             gap: '0.35rem',
-            marginBottom: '1rem',
             border: '1px solid #cbd5e1'
           }}>
             <button
@@ -252,7 +240,7 @@ export function TransactionDrawer({
         )}
 
         {/* Drawer Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '1.25rem' }}>
           
           {/* Date */}
           <div>
@@ -272,16 +260,16 @@ export function TransactionDrawer({
               {/* Presets */}
               <div>
                 <label className="input-label">{t.itemName}</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.45rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.45rem' }}>
                   {presets.map((p) => (
                     <button
                       key={p.key}
                       type="button"
                       onClick={() => handleSelectPreset(p)}
                       style={{
-                        padding: '0.3rem 0.6rem',
+                        padding: '0.25rem 0.55rem',
                         borderRadius: '8px',
-                        fontSize: '0.75rem',
+                        fontSize: '0.72rem',
                         fontWeight: '800',
                         background: itemName === p.key ? '#dc2626' : '#f1f5f9',
                         color: itemName === p.key ? '#ffffff' : '#1e293b',
@@ -299,7 +287,7 @@ export function TransactionDrawer({
                     type="text"
                     value={customItem}
                     onChange={(e) => setCustomItem(e.target.value)}
-                    placeholder={lang === 'ta' ? 'பொருளின் பெயர் (எ.கா. கொலுசு ஜோடி...)' : 'Item name...'}
+                    placeholder={lang === 'ta' ? 'பொருளின் பெயர்...' : 'Item name...'}
                     className="input-field"
                   />
                 )}
@@ -338,8 +326,33 @@ export function TransactionDrawer({
                     value={touchPercent}
                     onChange={(e) => setTouchPercent(e.target.value)}
                     className="input-field"
+                    style={{ fontWeight: '900', color: '#dc2626' }}
                   />
                 </div>
+              </div>
+
+              {/* Quick Touch % Pills */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#64748b', alignSelf: 'center' }}>விரைவு டச் %:</span>
+                {touchPresets.map(tVal => (
+                  <button
+                    key={tVal}
+                    type="button"
+                    onClick={() => setTouchPercent(tVal)}
+                    style={{
+                      background: touchPercent === tVal ? '#dc2626' : '#f8fafc',
+                      color: touchPercent === tVal ? '#ffffff' : '#1e293b',
+                      border: touchPercent === tVal ? '1px solid #dc2626' : '1px solid #cbd5e1',
+                      borderRadius: '6px',
+                      padding: '0.15rem 0.4rem',
+                      fontSize: '0.72rem',
+                      fontWeight: '800',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {tVal}%
+                  </button>
+                ))}
               </div>
 
               {/* Pure Silver Preview */}
@@ -353,7 +366,7 @@ export function TransactionDrawer({
                 justifyContent: 'space-between'
               }}>
                 <span style={{ fontSize: '0.82rem', color: '#991b1b', fontWeight: '800' }}>
-                  {lang === 'ta' ? 'வாடிக்கையாளர் பற்று வைக்கப்படும் எடை:' : 'Net Debit Pure Weight:'}
+                  {lang === 'ta' ? 'பற்று வைக்கப்படும் நய எடை:' : 'Net Debit Pure Weight:'}
                 </span>
                 <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#dc2626' }}>
                   +{formatGrams(calculatedPureGrams)} g
@@ -375,7 +388,7 @@ export function TransactionDrawer({
                       min="1"
                       value={cashAmount}
                       onChange={(e) => setCashAmount(e.target.value)}
-                      placeholder="23000"
+                      placeholder="25000"
                       className="input-field"
                       style={{ fontSize: '1.2rem', fontWeight: '900', color: '#047857' }}
                       required
@@ -405,24 +418,68 @@ export function TransactionDrawer({
                 </div>
               </div>
 
-              {/* Touch Adjusted Mode checkbox */}
-              <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                fontSize: '0.82rem',
-                color: '#334155',
-                fontWeight: '700',
-                cursor: 'pointer'
-              }}>
-                <input
-                  type="checkbox"
-                  checked={isTouchAdjusted}
-                  onChange={(e) => setIsTouchAdjusted(e.target.checked)}
-                  style={{ width: '16px', height: '16px', accentColor: '#059669' }}
-                />
-                <span>{lang === 'ta' ? 'நோட்புக் மாற்று முறை ((பணம் ÷ ரேட்) × 78%)' : 'Touch Adjusted RSP Formula'}</span>
-              </label>
+              {/* Dynamic Touch Adjusted Mode */}
+              <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '0.65rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', color: '#0f172a', fontWeight: '800', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={isTouchAdjusted}
+                      onChange={(e) => setIsTouchAdjusted(e.target.checked)}
+                      style={{ width: '16px', height: '16px', accentColor: '#059669' }}
+                    />
+                    <span>{lang === 'ta' ? 'டச் % மாற்று முறை' : 'Apply Touch % Formula'}</span>
+                  </label>
+
+                  {isTouchAdjusted && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={cashTouchPercent}
+                        onChange={(e) => setCashTouchPercent(e.target.value)}
+                        style={{
+                          width: '54px',
+                          background: '#ffffff',
+                          border: '1.5px solid #059669',
+                          borderRadius: '6px',
+                          padding: '0.15rem 0.3rem',
+                          fontSize: '0.85rem',
+                          fontWeight: '900',
+                          textAlign: 'center',
+                          color: '#059669'
+                        }}
+                      />
+                      <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>%</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Touch % Pills for Cash Payment */}
+                {isTouchAdjusted && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.2rem' }}>
+                    {touchPresets.map(tVal => (
+                      <button
+                        key={tVal}
+                        type="button"
+                        onClick={() => setCashTouchPercent(tVal)}
+                        style={{
+                          background: cashTouchPercent === tVal ? '#059669' : '#ffffff',
+                          color: cashTouchPercent === tVal ? '#ffffff' : '#1e293b',
+                          border: cashTouchPercent === tVal ? '1px solid #059669' : '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          padding: '0.15rem 0.4rem',
+                          fontSize: '0.72rem',
+                          fontWeight: '800',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {tVal}%
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Auto Grams Deducted Banner */}
               <div style={{
@@ -433,7 +490,7 @@ export function TransactionDrawer({
                 textAlign: 'center'
               }}>
                 <div style={{ fontSize: '0.78rem', color: '#047857', fontWeight: '800', textTransform: 'uppercase' }}>
-                  ⚡ {lang === 'ta' ? 'தானியங்கி கிராம் கழிவு (Auto Grams Off)' : 'Grams Deducted from Customer Balance'}
+                  ⚡ {lang === 'ta' ? 'வாடிக்கையாளருக்கு கழிக்கப்படும் வெள்ளி' : 'Grams Deducted from Balance'}
                 </div>
 
                 <div style={{ fontSize: '1.85rem', fontWeight: '900', color: '#059669', margin: '0.15rem 0' }}>
@@ -441,7 +498,11 @@ export function TransactionDrawer({
                 </div>
 
                 <div style={{ fontSize: '0.78rem', color: '#475569', fontWeight: '700' }}>
-                  {formatCurrency(cashAmount || 0)} ÷ ₹{ratePerGram}/g = {formatGrams(calculatedCashGrams)} கிராம் கழிவு!
+                  {isTouchAdjusted ? (
+                    <span>({formatCurrency(cashAmount || 0)} ÷ ₹{ratePerGram}/g) × {cashTouchPercent}% = {formatGrams(calculatedCashGrams)} g கழிவு!</span>
+                  ) : (
+                    <span>{formatCurrency(cashAmount || 0)} ÷ ₹{ratePerGram}/g = {formatGrams(calculatedCashGrams)} g கழிவு!</span>
+                  )}
                 </div>
               </div>
             </>
@@ -451,12 +512,12 @@ export function TransactionDrawer({
           {initialMode === 'GET' && getSubType === 'OLD_SILVER' && (
             <>
               <div>
-                <label className="input-label">{t.details}</label>
+                <label className="input-label">{lang === 'ta' ? 'பழைய வெள்ளி விவரம்' : 'Old Silver Item'}</label>
                 <input
                   type="text"
                   value={itemName}
                   onChange={(e) => setItemName(e.target.value)}
-                  placeholder={lang === 'ta' ? 'பழைய கொலுசு, உருகிய வெள்ளி கட்டி...' : 'Old jewelry item...'}
+                  placeholder="பழைய கொலுசு / உருப்படி"
                   className="input-field"
                 />
               </div>
@@ -464,18 +525,23 @@ export function TransactionDrawer({
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.75rem' }}>
                 <div>
                   <label className="input-label">{t.grossWeight} *</label>
-                  <input
-                    type="number"
-                    step="0.001"
-                    min="0"
-                    value={grossWeight}
-                    onChange={(e) => setGrossWeight(e.target.value)}
-                    placeholder="0.000"
-                    className="input-field"
-                    style={{ fontSize: '1.15rem', fontWeight: '900' }}
-                    required
-                    autoFocus
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      value={grossWeight}
+                      onChange={(e) => setGrossWeight(e.target.value)}
+                      placeholder="0.000"
+                      className="input-field"
+                      style={{ fontSize: '1.15rem', fontWeight: '900' }}
+                      required
+                      autoFocus
+                    />
+                    <span style={{ position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b', fontWeight: '800' }}>
+                      g
+                    </span>
+                  </div>
                 </div>
 
                 <div>
@@ -488,21 +554,46 @@ export function TransactionDrawer({
                     value={touchPercent}
                     onChange={(e) => setTouchPercent(e.target.value)}
                     className="input-field"
+                    style={{ fontWeight: '900', color: '#059669' }}
                   />
                 </div>
               </div>
 
+              {/* Quick Touch % Pills */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#64748b', alignSelf: 'center' }}>டச் %:</span>
+                {touchPresets.map(tVal => (
+                  <button
+                    key={tVal}
+                    type="button"
+                    onClick={() => setTouchPercent(tVal)}
+                    style={{
+                      background: touchPercent === tVal ? '#059669' : '#f8fafc',
+                      color: touchPercent === tVal ? '#ffffff' : '#1e293b',
+                      border: touchPercent === tVal ? '1px solid #059669' : '1px solid #cbd5e1',
+                      borderRadius: '6px',
+                      padding: '0.15rem 0.4rem',
+                      fontSize: '0.72rem',
+                      fontWeight: '800',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {tVal}%
+                  </button>
+                ))}
+              </div>
+
               <div style={{
-                background: '#ecfdf5',
-                border: '1.5px solid #6ee7b7',
+                background: '#f0fdf4',
+                border: '1.5px solid #86efac',
                 padding: '0.75rem 1rem',
                 borderRadius: '10px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between'
               }}>
-                <span style={{ fontSize: '0.82rem', color: '#047857', fontWeight: '800' }}>
-                  {lang === 'ta' ? 'வாடிக்கையாளருக்கு கழிக்கப்படும் பழைய எடை:' : 'Net Old Silver Credited:'}
+                <span style={{ fontSize: '0.82rem', color: '#166534', fontWeight: '800' }}>
+                  {lang === 'ta' ? 'வரவு வைக்கப்படும் நய எடை:' : 'Net Credit Pure Weight:'}
                 </span>
                 <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#059669' }}>
                   -{formatGrams(calculatedPureGrams)} g
@@ -513,12 +604,12 @@ export function TransactionDrawer({
 
           {/* Notes */}
           <div>
-            <label className="input-label">{t.notes}</label>
+            <label className="input-label">{t.notes} ({lang === 'ta' ? 'விருப்பப்பட்டால்' : 'Optional'})</label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder={lang === 'ta' ? 'ரசீது எண், குறிப்பு...' : 'Remarks, voucher #...'}
+              placeholder="குறிப்புகள்..."
               className="input-field"
             />
           </div>
@@ -536,11 +627,13 @@ export function TransactionDrawer({
               fontSize: '1rem',
               borderRadius: '12px',
               marginTop: '0.5rem',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)'
+              boxShadow: initialMode === 'GIVE' 
+                ? '0 4px 15px rgba(220, 38, 38, 0.3)' 
+                : '0 4px 15px rgba(5, 150, 105, 0.3)'
             }}
           >
             <Check size={18} />
-            <span>{lang === 'ta' ? 'பதிவை சேமிக்க (Save Entry)' : 'Save Transaction'}</span>
+            <span>{t.save}</span>
           </button>
 
         </form>

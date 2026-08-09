@@ -125,8 +125,8 @@ html, body {
 /* Circular Floating Action Button (FAB) */
 .fab-customer-container {
   position: absolute;
-  bottom: 75px;
-  right: 18px;
+  bottom: 68px;
+  right: 16px;
   z-index: 48;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }

@@ -17,15 +17,15 @@ import { translations } from '../utils/translations';
 import { convertCashToGrams, calculateNetSilver, formatGrams, formatCurrency } from '../utils/calculations';
 
 export function MobileQuickCalculator({ lang, rates }) {
-  const t = translations[lang];
+  const t = translations[lang] || translations.ta;
   const [calcMode, setCalcMode] = useState('CASH_TO_GRAMS'); // 'CASH_TO_GRAMS' | 'GRAMS_TO_CASH' | 'PURITY'
 
-  const [currentRate, setCurrentRate] = useState(Number(rates.ratePerGram) || 95);
+  const [currentRate, setCurrentRate] = useState(Number(rates?.ratePerGram) || 95);
   
   // Active Input Value
   const [cashAmount, setCashAmount] = useState('25000');
   const [silverGrams, setSilverGrams] = useState('263.790');
-  const [touchPercent, setTouchPercent] = useState('78');
+  const [touchPercent, setTouchPercent] = useState('80');
   const [isTouchFormula, setIsTouchFormula] = useState(true);
 
   const [copied, setCopied] = useState(false);
@@ -33,10 +33,14 @@ export function MobileQuickCalculator({ lang, rates }) {
   // Quick Presets
   const cashPresets = [5000, 10000, 15000, 16000, 20000, 25000, 50000];
   const touchPresets = [
+    { label: '70%', val: '70' },
+    { label: '75%', val: '75' },
     { label: '78% கொலுசு', val: '78' },
+    { label: '80%', val: '80' },
     { label: '84% உருப்படி', val: '84' },
-    { label: '92.5% ஸ்டெர்லிங்', val: '92.5' },
-    { label: '100% நய வெள்ளி', val: '100' }
+    { label: '90%', val: '90' },
+    { label: '92.5%', val: '92.5' },
+    { label: '100%', val: '100' }
   ];
 
   // Calculation Results
@@ -77,7 +81,7 @@ export function MobileQuickCalculator({ lang, rates }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: '#f8fafc' }}>
       
-      {/* 1. TOP MODE SWITCHER TABS (Vibrant Mobile Header) */}
+      {/* 1. TOP MODE SWITCHER TABS (Vibrant Header) */}
       <div style={{
         background: 'linear-gradient(135deg, #090f24 0%, #1e293b 100%)',
         color: '#ffffff',
@@ -209,7 +213,7 @@ export function MobileQuickCalculator({ lang, rates }) {
               `${silverGrams} g × ₹${currentRate}/g = ${formatCurrency(calculatedRupees)}`
             )}
             {calcMode === 'PURITY' && (
-              `${silverGrams} g × ${touchPercent}% Touch = ${formatGrams(calculatedPureGrams)} g P`
+              `${silverGrams} g × ${touchPercent}% Touch = ${formatGrams(calculatedPureGrams)} g Pure`
             )}
           </div>
 
@@ -240,7 +244,7 @@ export function MobileQuickCalculator({ lang, rates }) {
           </button>
         </div>
 
-        {/* INPUT BOX & QUICK PRESETS */}
+        {/* INPUT BOX & TOUCH % PRESETS */}
         <div style={{ background: '#ffffff', border: '1.5px solid #cbd5e1', borderRadius: '14px', padding: '0.75rem 0.9rem' }}>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
@@ -248,17 +252,28 @@ export function MobileQuickCalculator({ lang, rates }) {
               {calcMode === 'CASH_TO_GRAMS' ? 'செலுத்திய ரொக்கம் (₹ Amount):' : 'வெள்ளி எடை (Silver Grams):'}
             </label>
 
-            {calcMode === 'CASH_TO_GRAMS' && (
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', fontWeight: '800', color: '#047857', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={isTouchFormula}
-                  onChange={(e) => setIsTouchFormula(e.target.checked)}
-                  style={{ accentColor: '#059669' }}
-                />
-                <span>78% டச் சூத்திரம்</span>
-              </label>
-            )}
+            {/* Editable Touch % input */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>டச் %:</span>
+              <input
+                type="number"
+                step="0.1"
+                value={touchPercent}
+                onChange={(e) => setTouchPercent(e.target.value)}
+                style={{
+                  width: '54px',
+                  background: '#fff7ed',
+                  border: '1.5px solid #f97316',
+                  borderRadius: '6px',
+                  padding: '0.15rem 0.3rem',
+                  fontSize: '0.85rem',
+                  fontWeight: '900',
+                  textAlign: 'center',
+                  color: '#ea580c'
+                }}
+              />
+              <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#64748b' }}>%</span>
+            </div>
           </div>
 
           {/* Active Input Value Display */}
@@ -266,7 +281,7 @@ export function MobileQuickCalculator({ lang, rates }) {
             background: '#f8fafc',
             border: '2px solid #94a3b8',
             borderRadius: '10px',
-            padding: '0.65rem 0.85rem',
+            padding: '0.6rem 0.85rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -283,8 +298,8 @@ export function MobileQuickCalculator({ lang, rates }) {
             </button>
           </div>
 
-          {/* Preset Buttons */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.55rem' }}>
+          {/* Quick Cash Presets (for Cash to Grams) or Quick Touch Presets (70, 75, 78, 80, 84, 90, 92.5, 100) */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.55rem' }}>
             {calcMode === 'CASH_TO_GRAMS' ? (
               cashPresets.map(amt => (
                 <button
@@ -295,8 +310,8 @@ export function MobileQuickCalculator({ lang, rates }) {
                     color: cashAmount === String(amt) ? '#ffffff' : '#0f172a',
                     border: '1.5px solid #cbd5e1',
                     borderRadius: '8px',
-                    padding: '0.25rem 0.55rem',
-                    fontSize: '0.75rem',
+                    padding: '0.22rem 0.5rem',
+                    fontSize: '0.74rem',
                     fontWeight: '800',
                     cursor: 'pointer'
                   }}
@@ -314,8 +329,8 @@ export function MobileQuickCalculator({ lang, rates }) {
                     color: touchPercent === t.val ? '#ffffff' : '#0f172a',
                     border: '1.5px solid #cbd5e1',
                     borderRadius: '8px',
-                    padding: '0.25rem 0.55rem',
-                    fontSize: '0.75rem',
+                    padding: '0.22rem 0.45rem',
+                    fontSize: '0.74rem',
                     fontWeight: '800',
                     cursor: 'pointer'
                   }}
@@ -325,9 +340,35 @@ export function MobileQuickCalculator({ lang, rates }) {
               ))
             )}
           </div>
+
+          {/* Extra Row of Touch % Pills in Cash to Grams mode as well! */}
+          {calcMode === 'CASH_TO_GRAMS' && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.45rem', borderTop: '1px dashed #e2e8f0', paddingTop: '0.45rem' }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#64748b', alignSelf: 'center' }}>டச் %:</span>
+              {touchPresets.map(t => (
+                <button
+                  key={t.val}
+                  onClick={() => setTouchPercent(t.val)}
+                  style={{
+                    background: touchPercent === t.val ? '#ea580c' : '#f8fafc',
+                    color: touchPercent === t.val ? '#ffffff' : '#1e293b',
+                    border: touchPercent === t.val ? '1px solid #ea580c' : '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    padding: '0.15rem 0.4rem',
+                    fontSize: '0.72rem',
+                    fontWeight: '800',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {t.val}%
+                </button>
+              ))}
+            </div>
+          )}
+
         </div>
 
-        {/* 3. MOBILE-FRIENDLY NUMPAD (1, 2, 3, 4, 5, 6, 7, 8, 9, ., 0, C) */}
+        {/* 3. MOBILE-FRIENDLY NUMPAD */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
