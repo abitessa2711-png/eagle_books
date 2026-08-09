@@ -4,8 +4,7 @@ import {
   UserPlus, 
   ChevronRight, 
   Trash2,
-  Users,
-  Plus
+  Users
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 import { formatGrams, formatCurrency } from '../utils/calculations';
@@ -20,17 +19,17 @@ export function KhatabookCustomerList({
   onOpenWhatsAppModal,
   rates
 }) {
-  const t = translations[lang];
+  const t = translations[lang] || translations.ta;
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('ALL');
 
-  const currentRate = Number(rates.ratePerGram) || 95;
+  const currentRate = Number(rates?.ratePerGram) || 95;
 
   // Calculate Aggregates
   let totalDueGrams = 0;
   let totalAdvanceGrams = 0;
 
-  Object.values(customerSummaries).forEach((summary) => {
+  Object.values(customerSummaries || {}).forEach((summary) => {
     if (summary.netBalanceGrams > 0.001) {
       totalDueGrams += summary.netBalanceGrams;
     } else if (summary.netBalanceGrams < -0.001) {
@@ -42,8 +41,8 @@ export function KhatabookCustomerList({
   const approxAdvanceRupees = totalAdvanceGrams * currentRate;
 
   // Filter customers
-  const filteredCustomers = customers.filter((cust) => {
-    const summary = customerSummaries[cust.id] || { netBalanceGrams: 0 };
+  const filteredCustomers = (customers || []).filter((cust) => {
+    const summary = (customerSummaries && customerSummaries[cust.id]) || { netBalanceGrams: 0 };
     const term = searchTerm.toLowerCase().trim();
 
     const matchesSearch = 
@@ -59,7 +58,7 @@ export function KhatabookCustomerList({
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '85px', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '90px' }}>
       
       {/* 1. KHATABOOK HERO BALANCE CARD */}
       <div className="hero-balance-container">
@@ -78,7 +77,7 @@ export function KhatabookCustomerList({
         </div>
 
         {/* You'll Give (நீங்கள் தர வேண்டியது) */}
-        <div className="hero-balance-col" style={{ paddingLeft: '0.45rem' }}>
+        <div className="hero-balance-col" style={{ paddingLeft: '0.5rem' }}>
           <span className="hero-balance-label" style={{ color: '#047857' }}>
             {lang === 'ta' ? 'நீங்கள் தர வேண்டியது' : "You'll Give (Advance)"}
           </span>
@@ -110,20 +109,21 @@ export function KhatabookCustomerList({
         </div>
       </div>
 
-      {/* 3. CLEAN FULL-WIDTH FILTER TABS (No cramped buttons!) */}
+      {/* 3. CLEAN FULL-WIDTH FILTER TABS */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '0.5rem',
+        gap: '0.45rem',
         padding: '0.2rem 1rem 0.65rem 1rem',
         overflowX: 'auto',
-        scrollbarWidth: 'none'
+        scrollbarWidth: 'none',
+        flexShrink: 0
       }}>
         <button
           onClick={() => setFilterType('ALL')}
           className={`filter-tab-pill ${filterType === 'ALL' ? 'active' : ''}`}
         >
-          {t.filterAll} ({customers.length})
+          {t.filterAll} ({(customers || []).length})
         </button>
         <button
           onClick={() => setFilterType('DUE')}
@@ -148,12 +148,12 @@ export function KhatabookCustomerList({
           </div>
         ) : (
           filteredCustomers.map((cust) => {
-            const summary = customerSummaries[cust.id] || { netBalanceGrams: 0 };
+            const summary = (customerSummaries && customerSummaries[cust.id]) || { netBalanceGrams: 0 };
             const isDue = summary.netBalanceGrams > 0.001;
             const isAdvance = summary.netBalanceGrams < -0.001;
             const approxRupees = Math.abs(summary.netBalanceGrams) * currentRate;
 
-            const initial = cust.name.trim().charAt(0);
+            const initial = cust.name ? cust.name.trim().charAt(0) : 'C';
 
             return (
               <div
@@ -201,7 +201,7 @@ export function KhatabookCustomerList({
                     color: '#94a3b8',
                     cursor: 'pointer',
                     padding: '0.4rem',
-                    marginLeft: '0.2rem',
+                    marginLeft: '0.25rem',
                     display: 'flex',
                     alignItems: 'center'
                   }}
@@ -218,22 +218,14 @@ export function KhatabookCustomerList({
       </div>
 
       {/* =========================================================================
-          5. UNIQUE FLOATING ACTION BUTTON (FAB) - CIRCULAR '+' FOR ADDING CUSTOMER
+          5. CIRCULAR FLOATING ACTION BUTTON (FAB) FOR ADDING CUSTOMER
           ========================================================================= */}
-      <div 
-        style={{
-          position: 'fixed',
-          bottom: '75px',
-          right: 'calc(50% - 225px)',
-          zIndex: 48
-        }}
-        className="fab-customer-container"
-      >
+      <div className="fab-customer-container">
         <button
           onClick={onOpenNewCustomerModal}
           style={{
-            width: '60px',
-            height: '60px',
+            width: '58px',
+            height: '58px',
             borderRadius: '50%',
             background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
             color: '#ffffff',
