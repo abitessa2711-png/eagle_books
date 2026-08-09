@@ -57,8 +57,10 @@
 }
 
 html, body {
-  min-height: 100vh;
+  height: 100%;
+  max-height: 100%;
   width: 100%;
+  overflow: hidden;
   background-color: var(--bg-app);
   font-family: var(--font-ui);
   color: var(--text-main);
@@ -67,20 +69,26 @@ html, body {
 }
 
 #root {
-  min-height: 100vh;
+  height: 100%;
+  max-height: 100%;
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
+  overflow: hidden;
   background-color: var(--bg-app);
 }
 
 /* =========================================================================
-   APP SHELL CONTAINER
+   APP SHELL CONTAINER (Locked Height - Native App Feel - Bottom Nav Fixed!)
    ========================================================================= */
 .app-container {
   width: 100%;
   max-width: 480px;
-  min-height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  height: 100vh;
+  max-height: 100vh;
   background-color: var(--bg-surface);
   display: flex;
   flex-direction: column;
@@ -89,6 +97,7 @@ html, body {
   box-shadow: 0 0 35px rgba(0, 0, 0, 0.08);
   border-left: 1px solid var(--border-light);
   border-right: 1px solid var(--border-light);
+  overflow: hidden;
 }
 
 @media (max-width: 480px) {
@@ -100,35 +109,37 @@ html, body {
   }
 }
 
-.fab-customer-container {
-  position: fixed;
-  bottom: 75px;
-  right: calc(50% - 225px);
-  z-index: 48;
-  transition: all 0.2s ease;
-}
-
-@media (max-width: 480px) {
-  .fab-customer-container {
-    right: 18px !important;
-    bottom: 75px !important;
-  }
-}
-
-/* Scrollable Content Container */
+/* Scrollable Content Container (ONLY this element scrolls up and down!) */
 .app-scroll-main {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   position: relative;
 }
 
+/* Circular Floating Action Button (FAB) */
+.fab-customer-container {
+  position: absolute;
+  bottom: 75px;
+  right: 18px;
+  z-index: 48;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fab-customer-container:hover {
+  transform: scale(1.06);
+}
+
 /* =========================================================================
-   1. TOP APP BAR (EAGLE BOOKS BRANDING)
+   1. TOP APP BAR (EAGLE BOOKS BRANDING - FIXED)
    ========================================================================= */
 .app-header {
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
   z-index: 50;
   background: var(--color-primary-gradient);
   color: #ffffff;
@@ -382,6 +393,7 @@ html, body {
   align-items: center;
   justify-content: space-between;
   font-size: 0.8rem;
+  flex-shrink: 0;
 }
 
 .breadcrumb-back-btn {
@@ -403,6 +415,7 @@ html, body {
   background: #ffffff;
   border-bottom: 1.5px solid var(--border-medium);
   box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
 }
 
 .customer-profile-actions {
@@ -459,8 +472,7 @@ html, body {
 
 /* Sticky Bottom Action Buttons (YOU GAVE / YOU GOT) */
 .sticky-bottom-actions {
-  position: sticky;
-  bottom: 60px;
+  flex-shrink: 0;
   background: #ffffff;
   border-top: 1.5px solid var(--border-medium);
   padding: 0.65rem 1rem;
@@ -504,11 +516,10 @@ html, body {
 }
 
 /* =========================================================================
-   5. BOTTOM TAB NAVIGATION
+   5. BOTTOM TAB NAVIGATION (ALWAYS PINNED TO SCREEN BOTTOM)
    ========================================================================= */
 .bottom-tab-bar {
-  position: sticky;
-  bottom: 0;
+  flex-shrink: 0;
   height: 60px;
   background: #ffffff;
   border-top: 1.5px solid var(--border-medium);
