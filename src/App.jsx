@@ -185,7 +185,7 @@ export function App() {
       />
 
       {/* 2. Main Content Screens */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <main className="app-scroll-main">
         
         {/* TAB 1: CUSTOMERS DIRECTORY OR SINGLE CUSTOMER LEDGER */}
         {activeTab === 'customers' && (

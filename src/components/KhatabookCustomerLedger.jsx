@@ -1,19 +1,17 @@
 import React from 'react';
 import { 
   ArrowLeft, 
-  ChevronLeft,
-  ChevronRight,
+  ChevronLeft, 
+  ChevronRight, 
   Phone, 
   MessageSquare, 
   BookOpen, 
   Printer, 
   Trash2, 
-  Calendar,
-  Share2,
-  FileText,
-  ArrowUpRight,
-  ArrowDownLeft,
-  Banknote
+  Calendar, 
+  FileText, 
+  ArrowUpRight, 
+  ArrowDownLeft 
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 import { formatGrams, formatCurrency, formatDate } from '../utils/calculations';
@@ -50,7 +48,7 @@ export function KhatabookCustomerLedger({
   const nextCustomer = currentIndex < allCustomers.length - 1 ? allCustomers[currentIndex + 1] : null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '140px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: '100%' }}>
       
       {/* 1. TOP BREADCRUMB STRIP */}
       <div className="ledger-top-breadcrumb">
@@ -121,23 +119,23 @@ export function KhatabookCustomerLedger({
       <div className="customer-profile-card">
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#000000' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#000000' }}>
               {customer.name}
             </div>
-            <div style={{ fontSize: '0.82rem', color: '#475569', marginTop: '0.15rem', fontWeight: '700' }}>
+            <div style={{ fontSize: '0.8rem', color: '#475569', marginTop: '0.15rem', fontWeight: '700' }}>
               📍 {customer.address || '-'} • 📞 {customer.phone || '-'}
             </div>
           </div>
 
           <div style={{ textAlign: 'right' }}>
             <div style={{
-              fontSize: '1.65rem',
+              fontSize: '1.5rem',
               fontWeight: '900',
               color: isDue ? '#dc2626' : isAdvance ? '#059669' : '#000000'
             }}>
-              {formatGrams(Math.abs(netBalanceGrams))} <span style={{ fontSize: '0.9rem' }}>g</span>
+              {formatGrams(Math.abs(netBalanceGrams))} <span style={{ fontSize: '0.85rem' }}>g</span>
             </div>
-            <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#b45309' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#b45309' }}>
               ≈ {formatCurrency(approxRupees)}
             </div>
           </div>
@@ -169,8 +167,8 @@ export function KhatabookCustomerLedger({
         </div>
       </div>
 
-      {/* 3. TRANSACTION HISTORY TIMELINE */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', padding: '0.5rem 0' }}>
+      {/* 3. TRANSACTION HISTORY TIMELINE (Scrollable Content Area) */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.45rem', padding: '0.5rem 0 1rem 0' }}>
         {transactions.length === 0 ? (
           <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center', color: '#475569' }}>
             <FileText size={36} color="#cbd5e1" style={{ margin: '0 auto 0.75rem auto' }} />
@@ -254,7 +252,7 @@ export function KhatabookCustomerLedger({
         )}
       </div>
 
-      {/* 4. STICKY BOTTOM BUTTONS (YOU GAVE / YOU GOT) */}
+      {/* 4. BOTTOM ACTION BUTTONS (YOU GAVE / YOU GOT) */}
       <div className="sticky-bottom-actions no-print">
         <button
           onClick={onOpenGiveModal}
