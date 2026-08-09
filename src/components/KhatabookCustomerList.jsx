@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import { 
   Search, 
   UserPlus, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
   ChevronRight, 
-  Share2, 
-  TrendingDown, 
+  Trash2,
   Users 
 } from 'lucide-react';
 import { translations } from '../utils/translations';
@@ -18,12 +15,13 @@ export function KhatabookCustomerList({
   customerSummaries,
   onSelectCustomer,
   onOpenNewCustomerModal,
+  onDeleteCustomer,
   onOpenWhatsAppModal,
   rates
 }) {
   const t = translations[lang];
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('ALL'); // 'ALL' | 'DUE' | 'ADVANCE'
+  const [filterType, setFilterType] = useState('ALL');
 
   const currentRate = Number(rates.ratePerGram) || 95;
 
@@ -170,7 +168,6 @@ export function KhatabookCustomerList({
             const isAdvance = summary.netBalanceGrams < -0.001;
             const approxRupees = Math.abs(summary.netBalanceGrams) * currentRate;
 
-            // Initial letter
             const initial = cust.name.trim().charAt(0);
 
             return (
@@ -207,7 +204,26 @@ export function KhatabookCustomerList({
                   </div>
                 </div>
 
-                <ChevronRight size={18} color="#cbd5e1" style={{ marginLeft: '0.45rem' }} />
+                {/* Delete Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteCustomer(cust.id);
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    padding: '0.4rem',
+                    marginLeft: '0.2rem'
+                  }}
+                  title={t.delete}
+                >
+                  <Trash2 size={16} color="#cbd5e1" onMouseEnter={(e) => e.target.style.color = '#ef4444'} onMouseLeave={(e) => e.target.style.color = '#cbd5e1'} />
+                </button>
+
+                <ChevronRight size={18} color="#cbd5e1" />
               </div>
             );
           })

@@ -144,6 +144,22 @@ export function App() {
     }
   };
 
+  const handleDeleteCustomer = (id) => {
+    const customerToDelete = customers.find((c) => c.id === id);
+    const custName = customerToDelete ? customerToDelete.name : '';
+    const confirmMsg = lang === 'ta' 
+      ? `"${custName}" இந்த வாடிக்கையாளர் மற்றும் அனைத்து பரிவர்த்தனைகளையும் நிச்சயமாக நீக்க வேண்டுமா?`
+      : `Are you sure you want to delete "${custName}" and all their records?`;
+
+    if (window.confirm(confirmMsg)) {
+      setCustomers((prev) => prev.filter((c) => c.id !== id));
+      setTransactions((prev) => prev.filter((tx) => tx.customerId !== id));
+      if (selectedCustomerId === id) {
+        setSelectedCustomerId(null);
+      }
+    }
+  };
+
   const handleDeleteTransaction = (txId) => {
     const t = translations[lang];
     if (window.confirm(t.confirmDelete)) {
@@ -204,6 +220,7 @@ export function App() {
               onOpenReceiptModal={handleOpenReceipt}
               onOpenWhatsAppModal={handleOpenWhatsApp}
               onDeleteTransaction={handleDeleteTransaction}
+              onDeleteCustomer={handleDeleteCustomer}
             />
           ) : (
             <KhatabookCustomerList
@@ -212,6 +229,7 @@ export function App() {
               customerSummaries={customerSummaries}
               onSelectCustomer={handleSelectCustomer}
               onOpenNewCustomerModal={() => setIsCustomerModalOpen(true)}
+              onDeleteCustomer={handleDeleteCustomer}
               onOpenWhatsAppModal={handleOpenWhatsApp}
               rates={rates}
             />

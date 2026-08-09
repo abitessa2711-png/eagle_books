@@ -11,7 +11,8 @@ import {
   Calendar, 
   FileText, 
   ArrowUpRight, 
-  ArrowDownLeft 
+  ArrowDownLeft,
+  UserX
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 import { formatGrams, formatCurrency, formatDate } from '../utils/calculations';
@@ -29,7 +30,8 @@ export function KhatabookCustomerLedger({
   onOpenNotebookView,
   onOpenReceiptModal,
   onOpenWhatsAppModal,
-  onDeleteTransaction
+  onDeleteTransaction,
+  onDeleteCustomer
 }) {
   const t = translations[lang];
 
@@ -164,10 +166,21 @@ export function KhatabookCustomerLedger({
               <span>Call</span>
             </a>
           )}
+
+          {/* Delete Customer Button */}
+          <button 
+            onClick={() => onDeleteCustomer(customer.id)} 
+            className="profile-action-pill" 
+            style={{ background: '#fef2f2', color: '#dc2626', borderColor: '#fca5a5' }}
+            title={lang === 'ta' ? 'வாடிக்கையாளரை நீக்கு' : 'Delete Customer'}
+          >
+            <UserX size={14} />
+            <span>{lang === 'ta' ? 'நீக்கு' : 'Delete'}</span>
+          </button>
         </div>
       </div>
 
-      {/* 3. TRANSACTION HISTORY TIMELINE (Scrollable Content Area) */}
+      {/* 3. TRANSACTION HISTORY TIMELINE */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.45rem', padding: '0.5rem 0 1rem 0' }}>
         {transactions.length === 0 ? (
           <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center', color: '#475569' }}>
