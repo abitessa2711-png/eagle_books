@@ -26,8 +26,8 @@ export function EagleHeader({
       {/* Brand & Logo */}
       <div className="brand-wrapper">
         <img 
-          src="/eagle-logo.svg" 
-          alt="Eagle Books Logo" 
+          src="/eagle-logo.png" 
+          alt="Eagle Silvers Whole Sale Logo" 
           className="brand-logo-img"
         />
         <div className="brand-titles">

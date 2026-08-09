@@ -43,7 +43,7 @@ export function MobileNavbar({
           flexShrink: 0
         }}>
           <img 
-            src="/eagle-logo.svg" 
+            src="/eagle-logo.png" 
             alt="Eagle Silvers Wholesale Logo" 
             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />

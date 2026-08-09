@@ -59,7 +59,7 @@ export function DashboardGridScreen({
       <div className="admin-profile-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <img 
-            src="/eagle-logo.svg" 
+            src="/eagle-logo.png" 
             alt="Eagle Silvers Admin Profile"
             className="profile-avatar-circle"
           />

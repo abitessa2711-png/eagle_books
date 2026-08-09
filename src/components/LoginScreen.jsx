@@ -137,8 +137,8 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
           marginBottom: '0.55rem'
         }}>
           <img 
-            src="/eagle-logo.svg" 
-            alt="Eagle Silvers Logo" 
+            src="/eagle-logo.png" 
+            alt="Eagle Silvers Whole Sale Logo" 
             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />
         </div>

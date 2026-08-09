@@ -66,7 +66,7 @@ export function ReceiptModal({
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
               <img 
-                src="/eagle-logo.svg" 
+                src="/eagle-logo.png" 
                 alt="Eagle Silvers Wholesale Logo" 
                 style={{ width: '64px', height: '64px', objectFit: 'contain' }}
               />
