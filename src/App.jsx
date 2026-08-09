@@ -27,13 +27,34 @@ import {
 import { computeCustomerTransactions } from './utils/calculations';
 import { translations } from './utils/translations';
 
-export function App() {
-  const initialData = useMemo(() => loadStoredData(), []);
+const DEFAULT_OWNER_USER = {
+  phone: '9842154321',
+  name: 'செந்தில் குமார்',
+  shopName: 'EAGLE SILVERS WHOLESALE',
+  role: 'OWNER',
+  city: 'மதுரை'
+};
 
-  const [authUser, setAuthUser] = useState(initialData.authUser);
-  const [customers, setCustomers] = useState(initialData.customers);
-  const [transactions, setTransactions] = useState(initialData.transactions);
-  const [rates, setRates] = useState(initialData.rates);
+export function App() {
+  const initialData = useMemo(() => {
+    try {
+      return loadStoredData();
+    } catch (e) {
+      console.error('Error loading data:', e);
+      return {
+        customers: [],
+        transactions: [],
+        rates: { ratePerGram: 95 },
+        lang: 'ta',
+        authUser: DEFAULT_OWNER_USER
+      };
+    }
+  }, []);
+
+  const [authUser, setAuthUser] = useState(initialData.authUser || DEFAULT_OWNER_USER);
+  const [customers, setCustomers] = useState(initialData.customers || []);
+  const [transactions, setTransactions] = useState(initialData.transactions || []);
+  const [rates, setRates] = useState(initialData.rates || { ratePerGram: 95 });
   const [lang, setLang] = useState(initialData.lang || 'ta');
 
   // Active Bottom Tab: 'customers' | 'notebook' | 'converter' | 'reports'
@@ -74,8 +95,9 @@ export function App() {
 
   // Auth Handlers
   const handleLoginSuccess = (user) => {
-    setAuthUser(user);
-    saveAuthUser(user);
+    const finalUser = user || DEFAULT_OWNER_USER;
+    setAuthUser(finalUser);
+    saveAuthUser(finalUser);
     try {
       confetti({
         particleCount: 50,
@@ -100,15 +122,15 @@ export function App() {
     const map = {};
     const rate = Number(rates.ratePerGram) || 95;
 
-    customers.forEach((cust) => {
-      const custTxs = transactions.filter((tx) => tx.customerId === cust.id);
+    (customers || []).forEach((cust) => {
+      const custTxs = (transactions || []).filter((tx) => tx.customerId === cust.id);
       map[cust.id] = computeCustomerTransactions(custTxs, rate);
     });
 
     return map;
   }, [customers, transactions, rates]);
 
-  const activeCustomer = customers.find((c) => c.id === selectedCustomerId) || customers[0] || null;
+  const activeCustomer = (customers || []).find((c) => c.id === selectedCustomerId) || (customers || [])[0] || null;
   const activeSummary = activeCustomer ? customerSummaries[activeCustomer.id] || { transactions: [], netBalanceGrams: 0 } : null;
 
   // Navigation Handlers
@@ -129,6 +151,21 @@ export function App() {
   const handleOpenGetDrawer = () => {
     setDrawerMode('GET');
     setIsDrawerOpen(true);
+  };
+
+  const handleSaveTransaction = (newTx) => {
+    setTransactions((prev) => [...prev, newTx]);
+
+    if (newTx.type === 'CASH_PAYMENT' || newTx.type === 'OLD_SILVER') {
+      try {
+        confetti({
+          particleCount: 40,
+          spread: 60,
+          origin: { y: 0.85 },
+          colors: ['#ea580c', '#059669', '#f59e0b']
+        });
+      } catch (e) {}
+    }
   };
 
   const handleSaveCustomer = (custData, openingBalanceGrams) => {
@@ -172,7 +209,7 @@ export function App() {
   };
 
   const handleDeleteTransaction = (txId) => {
-    const t = translations[lang];
+    const t = translations[lang] || translations.ta;
     if (window.confirm(t.confirmDelete)) {
       setTransactions(transactions.filter((tx) => tx.id !== txId));
     }
@@ -298,7 +335,7 @@ export function App() {
                 className="btn-mobile"
                 style={{ background: '#fffbeb', color: '#92400e', border: '1.5px solid #fcd34d', padding: '0.85rem' }}
               >
-                ⚡ {translations[lang].todayRate} ({translations[lang].updateRate})
+                ⚡ {(translations[lang] || translations.ta).todayRate} ({(translations[lang] || translations.ta).updateRate})
               </button>
 
               <button
@@ -306,7 +343,7 @@ export function App() {
                 className="btn-mobile"
                 style={{ background: '#f0f9ff', color: '#0369a1', border: '1.5px solid #7dd3fc', padding: '0.85rem' }}
               >
-                💾 {translations[lang].backupRestore}
+                💾 {(translations[lang] || translations.ta).backupRestore}
               </button>
             </div>
           </div>
