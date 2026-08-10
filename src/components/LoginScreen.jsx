@@ -9,17 +9,16 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Sparkles,
-  ArrowRight,
-  KeyRound
+  ArrowRight
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 
 export function LoginScreen({ lang, setLang, onLoginSuccess }) {
   const t = translations[lang] || translations.ta;
 
-  // Pre-filled or empty state
-  const [loginId, setLoginId] = useState('eaglebooks.com');
-  const [password, setPassword] = useState('eaglebooks@123');
+  // Start with empty inputs
+  const [loginId, setLoginId] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
@@ -64,16 +63,10 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
     } else {
       setErrorMsg(
         lang === 'ta'
-          ? 'தவறான பயனர் ஐடி அல்லது கடவுச்சொல்! (ID: eaglebooks.com | Password: eaglebooks@123)'
-          : 'Invalid Login ID or Password! (ID: eaglebooks.com | Password: eaglebooks@123)'
+          ? 'தவறான பயனர் ஐடி அல்லது கடவுச்சொல்!'
+          : 'Invalid Login ID or Password!'
       );
     }
-  };
-
-  const handleAutoFill = () => {
-    setLoginId('eaglebooks.com');
-    setPassword('eaglebooks@123');
-    setErrorMsg('');
   };
 
   return (
@@ -227,8 +220,9 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
                   type="text"
                   value={loginId}
                   onChange={(e) => setLoginId(e.target.value)}
-                  placeholder="eaglebooks.com"
+                  placeholder={lang === 'ta' ? 'பயனர் ஐடி (எ.கா: eaglebooks.com)' : 'Enter Login ID (e.g. eaglebooks.com)'}
                   className="input-field"
+                  autoComplete="username"
                   style={{
                     paddingLeft: '2.5rem',
                     fontWeight: '800',
@@ -256,8 +250,9 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="eaglebooks@123"
+                  placeholder="••••••••••••"
                   className="input-field"
+                  autoComplete="current-password"
                   style={{
                     paddingLeft: '2.5rem',
                     paddingRight: '2.5rem',
@@ -318,30 +313,6 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
             </button>
 
           </form>
-
-          {/* Quick Auto-fill Helper */}
-          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-            <button
-              type="button"
-              onClick={handleAutoFill}
-              style={{
-                background: '#fffbeb',
-                border: '1px dashed #f59e0b',
-                borderRadius: '8px',
-                padding: '0.4rem 0.75rem',
-                color: '#92400e',
-                fontSize: '0.72rem',
-                fontWeight: '800',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem'
-              }}
-            >
-              <KeyRound size={13} color="#ea580c" />
-              <span>{lang === 'ta' ? 'விவரங்களை நிரப்பு (eaglebooks.com / eaglebooks@123)' : 'Auto-fill Login Details'}</span>
-            </button>
-          </div>
 
           {/* Security badge at bottom */}
           <div style={{
