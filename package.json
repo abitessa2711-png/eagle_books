@@ -6,10 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:app": "vite build && npx cap sync android",
+    "open:android": "npx cap open android",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
     "canvas-confetti": "^1.9.4",
     "lucide-react": "^1.30.0",
     "react": "^19.2.8",
