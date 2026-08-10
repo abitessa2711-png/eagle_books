@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { X, Printer, FileText, CheckCircle2, ShieldCheck, Share2 } from 'lucide-react';
 import { translations } from '../utils/translations';
-import { formatGrams, formatCurrency, formatDate } from '../utils/calculations';
+import { formatGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
+import { MessageSquare } from 'lucide-react';
 
 export function ReceiptModal({
   lang,
@@ -22,6 +23,14 @@ export function ReceiptModal({
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleWhatsAppShare = () => {
+    const msg = generateWhatsAppMessage(customer, customerSummary, currentRate, lang);
+    const cleanPhone = customer.phone ? customer.phone.replace(/[^0-9]/g, '') : '';
+    const formattedPhone = cleanPhone.startsWith('91') ? cleanPhone : `91${cleanPhone}`;
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -45,6 +54,15 @@ export function ReceiptModal({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button 
+              onClick={handleWhatsAppShare} 
+              className="btn-mobile" 
+              style={{ background: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 0.85rem', fontWeight: '800', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              <MessageSquare size={16} />
+              <span>{lang === 'ta' ? 'வாட்ஸ்அப்பில் அனுப்புக' : 'Send WhatsApp'}</span>
+            </button>
+
             <button onClick={handlePrint} className="btn-mobile" style={{ background: '#ea580c', color: '#ffffff' }}>
               <Printer size={15} />
               <span>{lang === 'ta' ? 'அச்சிடு (Print)' : 'Print Now'}</span>

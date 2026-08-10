@@ -169,45 +169,140 @@ export function computeCustomerTransactions(transactions = [], currentSilverRate
 }
 
 /**
- * Generate standard WhatsApp text message in Tamil / English
+ * Generate complete itemized WhatsApp Bill / Ledger Statement in Tamil / English
  */
 export function generateWhatsAppMessage(customer, summary, currentRate, lang = 'ta') {
-  const name = customer.name || 'வணக்கம்';
+  const name = customer.name || 'வாடிக்கையாளர்';
+  const phone = customer.phone || '-';
+  const address = customer.address || '-';
   const gramsStr = formatGrams(Math.abs(summary.netBalanceGrams));
   const rupeeStr = formatCurrency(Math.abs(summary.approxRupeesDue));
   const rateStr = formatCurrency(currentRate);
+  const dateStr = formatDate(new Date().toISOString());
+
+  const txList = summary.transactions || [];
 
   if (lang === 'ta') {
-    let msg = `வணக்கம் ${name},\n\n`;
-    msg += `*Eagle Book - வெள்ளி நகை கணக்கு நிலுவை அறிக்கை*\n`;
-    msg += `----------------------------------------\n`;
+    let msg = `✦ *Praise The Lord* ✦\n`;
+    msg += `🦅 *EAGLE SILVERS WHOLESALE*\n`;
+    msg += `📍 தெற்கு மாசி வீதி, மதுரை | 📞 +91 98421 54321\n`;
+    msg += `================================\n`;
+    msg += `🧾 *முழு கணக்கு ரசீது (Full Statement Bill)*\n`;
+    msg += `👤 *பெயர்:* ${name}\n`;
+    if (phone !== '-') msg += `📞 *எண்:* ${phone}\n`;
+    if (address !== '-') msg += `📍 *ஊர்:* ${address}\n`;
+    msg += `📅 *தேதி:* ${dateStr}\n`;
+    msg += `💰 *அன்றைய வெள்ளி விலை:* ${rateStr}/g\n`;
+    msg += `================================\n\n`;
+
+    msg += `📋 *பரிவர்த்தனை விவரங்கள் (Item Details):*\n`;
+
+    if (txList.length === 0) {
+      msg += `(பரிவர்த்தனைகள் எதுவும் இல்லை)\n\n`;
+    } else {
+      txList.forEach((tx, idx) => {
+        const itemDate = formatDate(tx.date);
+        const itemTitle = tx.itemName || 'வெள்ளி பரிவர்த்தனை';
+        
+        msg += `${idx + 1}. *${itemTitle}* (${itemDate})\n`;
+
+        if (tx.touchPercent && tx.touchPercent < 100 && tx.type === 'NEW_SALE') {
+          msg += `   • எடை: ${formatGrams(tx.weight)}g @ ${tx.touchPercent}% Touch\n`;
+        }
+
+        if (tx.cashAmount) {
+          msg += `   • ரொக்கம்: ${formatCurrency(tx.cashAmount)} ÷ ${formatCurrency(tx.ratePerGram || currentRate)}/g\n`;
+        }
+
+        if (tx.debitGrams > 0) {
+          msg += `   ➕ *பற்று (+):* +${formatGrams(tx.debitGrams)} g\n`;
+        }
+        if (tx.creditGrams > 0) {
+          msg += `   ➖ *வரவு (-):* -${formatGrams(tx.creditGrams)} g\n`;
+        }
+        msg += `   👉 *இருப்பு:* ${formatGrams(Math.abs(tx.balanceAfterGrams))} g\n\n`;
+      });
+    }
+
+    msg += `================================\n`;
+    msg += `📊 *கணக்கு சுருக்கம் (Summary):*\n`;
+    msg += `• மொத்த பற்று (Total Out): ${formatGrams(summary.totalDebit)} g\n`;
+    msg += `• மொத்த வரவு (Total In): ${formatGrams(summary.totalCredit)} g\n`;
+    msg += `--------------------------------\n`;
+
     if (summary.status === 'DUE') {
-      msg += `🔴 *உங்கள் நிலுவை இருப்பு:* ${gramsStr} கிராம்\n`;
-      msg += `💵 *மதிப்பிடப்பட்ட தொகை:* ${rupeeStr} (அன்றைய வெள்ளி விலை ${rateStr}/g படி)\n\n`;
+      msg += `🔴 *இறுதி நிலுவை (Net Due):* *${gramsStr} g*\n`;
+      msg += `💵 *மதிப்பிடப்பட்ட தொகை:* *${rupeeStr}*\n\n`;
       msg += `தயவுசெய்து உங்கள் வசதிக்கேற்ப பணமாகவோ அல்லது பழைய வெள்ளியாகவோ கணக்கை நேர் செய்யவும்.\n`;
     } else if (summary.status === 'ADVANCE') {
-      msg += `🟢 *உங்களுடைய முன்வரவு இருப்பு:* ${gramsStr} கிராம் (${rupeeStr})\n\n`;
+      msg += `🟢 *முன்வரவு இருப்பு (Advance):* *${gramsStr} g (${rupeeStr})*\n\n`;
     } else {
-      msg += `⚪ *உங்கள் கணக்கு முழுமையாக முடிவடைந்தது (நிலுவை இல்லை).* நன்றி!\n\n`;
+      msg += `⚪ *கணக்கு முழுமையாக முடிவடைந்தது (Nil Balance).* நன்றி!\n\n`;
     }
-    msg += `----------------------------------------\n`;
-    msg += `ஈகிள் புக் (Eagle Book) மூலம் உருவாக்கப்பட்டது.`;
+
+    msg += `================================\n`;
+    msg += `✨ *நன்றி! மீண்டும் வருக! - EAGLE SILVERS*`;
     return msg;
   } else {
-    let msg = `Hello ${name},\n\n`;
-    msg += `*Eagle Book - Silver Jewelry Account Statement*\n`;
-    msg += `----------------------------------------\n`;
-    if (summary.status === 'DUE') {
-      msg += `🔴 *Current Balance Due:* ${gramsStr} grams\n`;
-      msg += `💵 *Estimated Value:* ${rupeeStr} (@ ${rateStr}/g)\n\n`;
-      msg += `Kindly settle the balance at your convenience via cash or old silver.\n`;
-    } else if (summary.status === 'ADVANCE') {
-      msg += `🟢 *Advance Balance with us:* ${gramsStr} grams (${rupeeStr})\n\n`;
+    let msg = `✦ *Praise The Lord* ✦\n`;
+    msg += `🦅 *EAGLE SILVERS WHOLESALE*\n`;
+    msg += `📍 South Masi Street, Madurai | 📞 +91 98421 54321\n`;
+    msg += `================================\n`;
+    msg += `🧾 *COMPLETE ACCOUNT BILL STATEMENT*\n`;
+    msg += `👤 *Customer:* ${name}\n`;
+    if (phone !== '-') msg += `📞 *Phone:* ${phone}\n`;
+    if (address !== '-') msg += `📍 *City:* ${address}\n`;
+    msg += `📅 *Date:* ${dateStr}\n`;
+    msg += `💰 *Silver Rate:* ${rateStr}/g\n`;
+    msg += `================================\n\n`;
+
+    msg += `📋 *Transaction Breakdown:*\n`;
+
+    if (txList.length === 0) {
+      msg += `(No transactions recorded)\n\n`;
     } else {
-      msg += `⚪ *Your account is fully settled.* Thank you!\n\n`;
+      txList.forEach((tx, idx) => {
+        const itemDate = formatDate(tx.date);
+        const itemTitle = tx.itemName || 'Silver Item';
+        
+        msg += `${idx + 1}. *${itemTitle}* (${itemDate})\n`;
+
+        if (tx.touchPercent && tx.touchPercent < 100 && tx.type === 'NEW_SALE') {
+          msg += `   • Wt: ${formatGrams(tx.weight)}g @ ${tx.touchPercent}% Touch\n`;
+        }
+
+        if (tx.cashAmount) {
+          msg += `   • Cash: ${formatCurrency(tx.cashAmount)} ÷ ${formatCurrency(tx.ratePerGram || currentRate)}/g\n`;
+        }
+
+        if (tx.debitGrams > 0) {
+          msg += `   ➕ *Debit (+):* +${formatGrams(tx.debitGrams)} g\n`;
+        }
+        if (tx.creditGrams > 0) {
+          msg += `   ➖ *Credit (-):* -${formatGrams(tx.creditGrams)} g\n`;
+        }
+        msg += `   👉 *Balance:* ${formatGrams(Math.abs(tx.balanceAfterGrams))} g\n\n`;
+      });
     }
-    msg += `----------------------------------------\n`;
-    msg += `Generated via Eagle Book Ledger.`;
+
+    msg += `================================\n`;
+    msg += `📊 *Summary:*\n`;
+    msg += `• Total Debit: ${formatGrams(summary.totalDebit)} g\n`;
+    msg += `• Total Credit: ${formatGrams(summary.totalCredit)} g\n`;
+    msg += `--------------------------------\n`;
+
+    if (summary.status === 'DUE') {
+      msg += `🔴 *Net Balance Due:* *${gramsStr} g*\n`;
+      msg += `💵 *Approx Amount:* *${rupeeStr}*\n\n`;
+      msg += `Kindly settle the balance at your earliest convenience.\n`;
+    } else if (summary.status === 'ADVANCE') {
+      msg += `🟢 *Advance Balance:* *${gramsStr} g (${rupeeStr})*\n\n`;
+    } else {
+      msg += `⚪ *Account Fully Settled (Nil Balance).* Thank you!\n\n`;
+    }
+
+    msg += `================================\n`;
+    msg += `✨ *Thank you! EAGLE SILVERS WHOLESALE*`;
     return msg;
   }
 }
