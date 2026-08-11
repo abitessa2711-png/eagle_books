@@ -3,7 +3,8 @@ import {
   TrendingUp, 
   Calculator, 
   Database,
-  LogOut
+  LogOut,
+  Cloud
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 import { formatCurrency } from '../utils/calculations';
@@ -13,6 +14,7 @@ export function EagleHeader({
   setLang,
   rates,
   currentUser,
+  cloudSynced,
   onLogout,
   onOpenRateModal,
   onOpenConverterModal,
@@ -49,6 +51,20 @@ export function EagleHeader({
                 {currentUser.role === 'OWNER' ? '👑 Owner' : '💼 Staff'}
               </span>
             )}
+            <span style={{
+              fontSize: '0.6rem',
+              fontWeight: '800',
+              color: cloudSynced ? '#34d399' : '#94a3b8',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.2rem',
+              background: 'rgba(255, 255, 255, 0.08)',
+              padding: '0.1rem 0.35rem',
+              borderRadius: '4px'
+            }} title={cloudSynced ? "Supabase Cloud Realtime Connected" : "Local Storage Mode"}>
+              <Cloud size={11} color={cloudSynced ? '#34d399' : '#94a3b8'} />
+              <span>{cloudSynced ? 'Cloud' : 'Offline'}</span>
+            </span>
           </div>
           <span className="brand-sub-title">
             {currentUser ? currentUser.name : (lang === 'ta' ? 'சில்வர் கட்டாபுக் & கணக்கு ஏடு' : 'Silver Khatabook & Ledger')}

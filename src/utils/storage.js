@@ -1,4 +1,5 @@
 import { initialCustomers, initialTransactions, initialSilverRates } from './demoData';
+import { supabase } from './supabaseClient';
 
 const CUSTOMERS_KEY = 'eagle_book_customers_v1';
 const TRANSACTIONS_KEY = 'eagle_book_transactions_v1';
@@ -37,7 +38,7 @@ export function saveCustomers(customers) {
   try {
     localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
   } catch (err) {
-    console.error('Error saving customers:', err);
+    console.error('Error saving customers to local storage:', err);
   }
 }
 
@@ -45,7 +46,7 @@ export function saveTransactions(transactions) {
   try {
     localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
   } catch (err) {
-    console.error('Error saving transactions:', err);
+    console.error('Error saving transactions to local storage:', err);
   }
 }
 
@@ -53,7 +54,7 @@ export function saveRates(rates) {
   try {
     localStorage.setItem(RATES_KEY, JSON.stringify(rates));
   } catch (err) {
-    console.error('Error saving rates:', err);
+    console.error('Error saving rates to local storage:', err);
   }
 }
 
@@ -75,6 +76,246 @@ export function saveAuthUser(user) {
   } catch (err) {
     console.error('Error saving auth user:', err);
   }
+}
+
+// ============================================================================
+// SUPABASE CLOUD SYNC METHODS
+// ============================================================================
+
+/**
+ * Fetch all data from Supabase cloud database
+ */
+export async function fetchCloudData() {
+  try {
+    const [custRes, txRes, ratesRes] = await Promise.all([
+      supabase.from('customers').select('*').order('created_at', { ascending: true }),
+      supabase.from('transactions').select('*').order('date', { ascending: true }),
+      supabase.from('silver_rates').select('*').eq('id', 'current_rate').single()
+    ]);
+
+    const result = {
+      hasCloudData: false,
+      customers: null,
+      transactions: null,
+      rates: null
+    };
+
+    if (custRes.data && Array.isArray(custRes.data)) {
+      result.customers = custRes.data.map(c => ({
+        id: c.id,
+        name: c.name,
+        phone: c.phone || '',
+        address: c.address || '',
+        type: c.type || 'karigar',
+        createdAt: c.created_at
+      }));
+      result.hasCloudData = true;
+    }
+
+    if (txRes.data && Array.isArray(txRes.data)) {
+      result.transactions = txRes.data.map(t => ({
+        id: t.id,
+        customerId: t.customer_id,
+        date: t.date,
+        type: t.type,
+        itemName: t.item_name,
+        weight: Number(t.weight) || 0,
+        touchPercent: Number(t.touch_percent) || 100,
+        wastagePercent: Number(t.wastage_percent) || 0,
+        cashAmount: t.cash_amount ? Number(t.cash_amount) : null,
+        ratePerGram: t.rate_per_gram ? Number(t.rate_per_gram) : null,
+        convertedGrams: t.converted_grams ? Number(t.converted_grams) : null,
+        isTouchAdjusted: Boolean(t.is_touch_adjusted),
+        direction: t.direction,
+        notes: t.notes
+      }));
+      result.hasCloudData = true;
+    }
+
+    if (ratesRes.data) {
+      result.rates = {
+        ratePerGram: Number(ratesRes.data.rate_per_gram) || 95,
+        ratePerKg: Number(ratesRes.data.rate_per_kg) || 95000,
+        lastUpdated: ratesRes.data.last_updated
+      };
+      result.hasCloudData = true;
+    }
+
+    return result;
+  } catch (err) {
+    console.warn('Supabase cloud fetch failed (using local storage):', err);
+    return { hasCloudData: false, error: err };
+  }
+}
+
+/**
+ * Upload local data to cloud (Initial migration helper)
+ */
+export async function uploadLocalDataToCloud(customers, transactions, rates) {
+  try {
+    if (customers && customers.length > 0) {
+      const dbCust = customers.map(c => ({
+        id: c.id,
+        name: c.name,
+        phone: c.phone || '',
+        address: c.address || '',
+        type: c.type || 'karigar'
+      }));
+      await supabase.from('customers').upsert(dbCust, { onConflict: 'id' });
+    }
+
+    if (transactions && transactions.length > 0) {
+      const dbTx = transactions.map(t => ({
+        id: t.id,
+        customer_id: t.customerId,
+        date: t.date,
+        type: t.type,
+        item_name: t.itemName,
+        weight: t.weight || 0,
+        touch_percent: t.touchPercent || 100,
+        wastage_percent: t.wastagePercent || 0,
+        cash_amount: t.cashAmount,
+        rate_per_gram: t.ratePerGram,
+        converted_grams: t.convertedGrams,
+        is_touch_adjusted: t.isTouchAdjusted || false,
+        direction: t.direction,
+        notes: t.notes
+      }));
+      await supabase.from('transactions').upsert(dbTx, { onConflict: 'id' });
+    }
+
+    if (rates) {
+      await supabase.from('silver_rates').upsert({
+        id: 'current_rate',
+        rate_per_gram: Number(rates.ratePerGram) || 95,
+        rate_per_kg: (Number(rates.ratePerGram) || 95) * 1000,
+        last_updated: new Date().toISOString()
+      }, { onConflict: 'id' });
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('Error uploading local data to cloud:', err);
+    return { success: false, error: err };
+  }
+}
+
+/**
+ * Sync single customer to Supabase
+ */
+export async function syncCustomerToCloud(customer) {
+  try {
+    const payload = {
+      id: customer.id,
+      name: customer.name,
+      phone: customer.phone || '',
+      address: customer.address || '',
+      type: customer.type || 'karigar',
+      updated_at: new Date().toISOString()
+    };
+    await supabase.from('customers').upsert(payload, { onConflict: 'id' });
+  } catch (err) {
+    console.warn('Error syncing customer to cloud:', err);
+  }
+}
+
+/**
+ * Delete customer from Supabase
+ */
+export async function deleteCustomerFromCloud(customerId) {
+  try {
+    await supabase.from('customers').delete().eq('id', customerId);
+  } catch (err) {
+    console.warn('Error deleting customer from cloud:', err);
+  }
+}
+
+/**
+ * Sync single transaction to Supabase
+ */
+export async function syncTransactionToCloud(tx) {
+  try {
+    const payload = {
+      id: tx.id,
+      customer_id: tx.customerId,
+      date: tx.date,
+      type: tx.type,
+      item_name: tx.itemName,
+      weight: Number(tx.weight) || 0,
+      touch_percent: Number(tx.touchPercent) || 100,
+      wastage_percent: Number(tx.wastagePercent) || 0,
+      cash_amount: tx.cashAmount ? Number(tx.cashAmount) : null,
+      rate_per_gram: tx.ratePerGram ? Number(tx.ratePerGram) : null,
+      converted_grams: tx.convertedGrams ? Number(tx.convertedGrams) : null,
+      is_touch_adjusted: Boolean(tx.isTouchAdjusted),
+      direction: tx.direction || null,
+      notes: tx.notes || null
+    };
+    await supabase.from('transactions').upsert(payload, { onConflict: 'id' });
+  } catch (err) {
+    console.warn('Error syncing transaction to cloud:', err);
+  }
+}
+
+/**
+ * Delete transaction from Supabase
+ */
+export async function deleteTransactionFromCloud(txId) {
+  try {
+    await supabase.from('transactions').delete().eq('id', txId);
+  } catch (err) {
+    console.warn('Error deleting transaction from cloud:', err);
+  }
+}
+
+/**
+ * Sync silver rates to Supabase
+ */
+export async function syncRatesToCloud(rates) {
+  try {
+    const payload = {
+      id: 'current_rate',
+      rate_per_gram: Number(rates.ratePerGram) || 95,
+      rate_per_kg: (Number(rates.ratePerGram) || 95) * 1000,
+      last_updated: new Date().toISOString()
+    };
+    await supabase.from('silver_rates').upsert(payload, { onConflict: 'id' });
+  } catch (err) {
+    console.warn('Error syncing rates to cloud:', err);
+  }
+}
+
+/**
+ * Subscribe to realtime PostgreSQL changes
+ */
+export function subscribeToRealtime({ onCustomerEvent, onTransactionEvent, onRateEvent }) {
+  const channel = supabase.channel('eagle-books-realtime')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'customers' },
+      (payload) => {
+        if (onCustomerEvent) onCustomerEvent(payload);
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'transactions' },
+      (payload) => {
+        if (onTransactionEvent) onTransactionEvent(payload);
+      }
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'silver_rates' },
+      (payload) => {
+        if (onRateEvent) onRateEvent(payload);
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }
 
 export function exportBackupJSON(customers, transactions, rates) {

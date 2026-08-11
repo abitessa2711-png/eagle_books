@@ -23,7 +23,15 @@ import {
   saveTransactions, 
   saveRates, 
   saveLang,
-  saveAuthUser
+  saveAuthUser,
+  fetchCloudData,
+  uploadLocalDataToCloud,
+  syncCustomerToCloud,
+  deleteCustomerFromCloud,
+  syncTransactionToCloud,
+  deleteTransactionFromCloud,
+  syncRatesToCloud,
+  subscribeToRealtime
 } from './utils/storage';
 import { computeCustomerTransactions } from './utils/calculations';
 import { translations } from './utils/translations';
@@ -57,6 +65,7 @@ export function App() {
   const [transactions, setTransactions] = useState(initialData.transactions || []);
   const [rates, setRates] = useState(initialData.rates || { ratePerGram: 95 });
   const [lang, setLang] = useState(initialData.lang || 'ta');
+  const [cloudSynced, setCloudSynced] = useState(false);
 
   // Active Bottom Tab: 'customers' | 'notebook' | 'converter' | 'reports'
   const [activeTab, setActiveTab] = useState('customers');
@@ -77,7 +86,66 @@ export function App() {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isConverterModalOpen, setIsConverterModalOpen] = useState(false);
 
-  // Persistence
+  // 1. Initial Cloud Sync on Mount
+  useEffect(() => {
+    let isMounted = true;
+    async function initCloudSync() {
+      const cloudRes = await fetchCloudData();
+      if (!isMounted) return;
+
+      if (cloudRes.hasCloudData) {
+        if (cloudRes.customers && cloudRes.customers.length > 0) {
+          setCustomers(cloudRes.customers);
+        }
+        if (cloudRes.transactions) {
+          setTransactions(cloudRes.transactions);
+        }
+        if (cloudRes.rates) {
+          setRates(cloudRes.rates);
+        }
+        setCloudSynced(true);
+      } else {
+        // If cloud is empty or tables just created, upload initial local data to cloud
+        uploadLocalDataToCloud(customers, transactions, rates).then(res => {
+          if (res.success && isMounted) {
+            setCloudSynced(true);
+          }
+        });
+      }
+    }
+
+    initCloudSync();
+
+    // 2. Realtime listener for cross-device sync
+    const unsubscribe = subscribeToRealtime({
+      onCustomerEvent: () => {
+        fetchCloudData().then(data => {
+          if (data.customers && isMounted) setCustomers(data.customers);
+        });
+      },
+      onTransactionEvent: () => {
+        fetchCloudData().then(data => {
+          if (data.transactions && isMounted) setTransactions(data.transactions);
+        });
+      },
+      onRateEvent: (payload) => {
+        if (payload.new && isMounted) {
+          setRates({
+            ratePerGram: Number(payload.new.rate_per_gram) || 95,
+            ratePerKg: Number(payload.new.rate_per_kg) || 95000,
+            lastUpdated: payload.new.last_updated
+          });
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  // Persistence to local storage (Offline Cache)
   useEffect(() => {
     saveCustomers(customers);
   }, [customers]);
@@ -156,6 +224,7 @@ export function App() {
 
   const handleSaveTransaction = (newTx) => {
     setTransactions((prev) => [...prev, newTx]);
+    syncTransactionToCloud(newTx);
 
     if (newTx.type === 'CASH_PAYMENT' || newTx.type === 'OLD_SILVER') {
       try {
@@ -189,8 +258,10 @@ export function App() {
           notes: 'தொடக்க இருப்பு பதிவு'
         };
         setTransactions((prev) => [...prev, openingTx]);
+        syncTransactionToCloud(openingTx);
       }
     }
+    syncCustomerToCloud(custData);
   };
 
   const handleDeleteCustomer = (id) => {
@@ -203,6 +274,7 @@ export function App() {
     if (window.confirm(confirmMsg)) {
       setCustomers((prev) => prev.filter((c) => c.id !== id));
       setTransactions((prev) => prev.filter((tx) => tx.customerId !== id));
+      deleteCustomerFromCloud(id);
       if (selectedCustomerId === id) {
         setSelectedCustomerId(null);
       }
@@ -213,7 +285,13 @@ export function App() {
     const t = translations[lang] || translations.ta;
     if (window.confirm(t.confirmDelete)) {
       setTransactions(transactions.filter((tx) => tx.id !== txId));
+      deleteTransactionFromCloud(txId);
     }
+  };
+
+  const handleSaveRates = (updatedRates) => {
+    setRates(updatedRates);
+    syncRatesToCloud(updatedRates);
   };
 
   const handleOpenReceipt = (custId) => {
@@ -230,6 +308,7 @@ export function App() {
     setCustomers(newCust);
     setTransactions(newTx);
     setRates(newRates);
+    uploadLocalDataToCloud(newCust, newTx, newRates);
     if (newCust.length > 0) {
       setSelectedCustomerId(newCust[0].id);
     }
@@ -255,6 +334,7 @@ export function App() {
         setLang={setLang}
         rates={rates}
         currentUser={authUser}
+        cloudSynced={cloudSynced}
         onLogout={handleLogout}
         onOpenRateModal={() => setIsRateModalOpen(true)}
         onOpenConverterModal={() => setIsConverterModalOpen(true)}
@@ -398,7 +478,7 @@ export function App() {
         isOpen={isRateModalOpen}
         onClose={() => setIsRateModalOpen(false)}
         rates={rates}
-        onSaveRates={(updated) => setRates(updated)}
+        onSaveRates={handleSaveRates}
       />
 
       <ReceiptModal
