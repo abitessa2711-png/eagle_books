@@ -38,7 +38,7 @@ import { translations } from './utils/translations';
 
 const DEFAULT_OWNER_USER = {
   phone: '9842154321',
-  name: 'செந்தில் குமார்',
+  name: 'Eagle Books Owner',
   shopName: 'EAGLE SILVERS WHOLESALE',
   role: 'OWNER',
   city: 'மதுரை'
@@ -53,14 +53,14 @@ export function App() {
       return {
         customers: [],
         transactions: [],
-        rates: { ratePerGram: 95 },
+        rates: { ratePerGram: 95, ratePerKg: 95000 },
         lang: 'ta',
-        authUser: DEFAULT_OWNER_USER
+        authUser: null
       };
     }
   }, []);
 
-  const [authUser, setAuthUser] = useState(initialData.authUser || DEFAULT_OWNER_USER);
+  const [authUser, setAuthUser] = useState(initialData.authUser || null);
   const [customers, setCustomers] = useState(initialData.customers || []);
   const [transactions, setTransactions] = useState(initialData.transactions || []);
   const [rates, setRates] = useState(initialData.rates || { ratePerGram: 95 });
@@ -337,8 +337,6 @@ export function App() {
         cloudSynced={cloudSynced}
         onLogout={handleLogout}
         onOpenRateModal={() => setIsRateModalOpen(true)}
-        onOpenConverterModal={() => setIsConverterModalOpen(true)}
-        onOpenBackupModal={() => setIsBackupModalOpen(true)}
       />
 
       {/* 2. Main Content Screens */}

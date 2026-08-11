@@ -142,9 +142,44 @@ export function KhatabookCustomerList({
       {/* 4. CUSTOMER LIST ROWS */}
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {filteredCustomers.length === 0 ? (
-          <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center', color: '#64748b' }}>
-            <Users size={36} color="#cbd5e1" style={{ margin: '0 auto 0.75rem auto' }} />
-            <p style={{ fontSize: '0.92rem', fontWeight: '800', color: '#000000' }}>{t.noCustomers}</p>
+          <div style={{ 
+            padding: '3.5rem 1.5rem', 
+            textAlign: 'center', 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.75rem'
+          }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              background: '#fff7ed',
+              border: '2px dashed #f97316',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ea580c'
+            }}>
+              <Users size={28} />
+            </div>
+            <div>
+              <p style={{ fontSize: '1rem', fontWeight: '800', color: '#1e293b', margin: 0 }}>
+                {lang === 'ta' ? 'வாடிக்கையாளர் கணக்குகள் இல்லை' : 'No Customer Accounts Yet'}
+              </p>
+              <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0.25rem 0 0 0' }}>
+                {lang === 'ta' ? 'முதல் வாடிக்கையாளரைச் சேர்க்க கீழே உள்ள பொத்தானை அழுத்தவும்' : 'Tap the button below to add your first customer'}
+              </p>
+            </div>
+            <button
+              onClick={onOpenNewCustomerModal}
+              className="btn btn-primary"
+              style={{ marginTop: '0.5rem', padding: '0.6rem 1.25rem', fontSize: '0.85rem' }}
+            >
+              <UserPlus size={16} />
+              <span>{lang === 'ta' ? '+ புதிய வாடிக்கையாளர் சேர்க்க' : '+ Add New Customer'}</span>
+            </button>
           </div>
         ) : (
           filteredCustomers.map((cust) => {

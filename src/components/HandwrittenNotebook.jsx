@@ -22,8 +22,37 @@ export function HandwrittenNotebook({
 
   if (!customer) {
     return (
-      <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center', color: '#475569' }}>
-        <p style={{ fontWeight: '800', fontSize: '1rem', color: '#000000' }}>{t.selectCustomerPrompt}</p>
+      <div style={{ 
+        padding: '4rem 1.5rem', 
+        textAlign: 'center', 
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '0.75rem'
+      }}>
+        <div style={{
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          background: '#fff7ed',
+          border: '2px dashed #f97316',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#ea580c'
+        }}>
+          <Phone size={26} />
+        </div>
+        <p style={{ fontWeight: '800', fontSize: '1rem', color: '#1e293b', margin: 0 }}>
+          {lang === 'ta' ? 'வாடிக்கையாளரைத் தேர்வு செய்யவும்' : 'Select a Customer'}
+        </p>
+        <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
+          {lang === 'ta' ? 'நோட்புக் கணக்கு ஏட்டைப் பார்க்க வாடிக்கையாளர் பட்டியலிலிருந்து ஒருவரைத் தேர்வு செய்யவும்' : 'Please select a customer from the list to view their ledger notebook'}
+        </p>
+        <button onClick={onBack} className="btn btn-primary" style={{ marginTop: '0.5rem', padding: '0.55rem 1.2rem', fontSize: '0.82rem' }}>
+          <span>{lang === 'ta' ? 'வாடிக்கையாளர் பட்டியல்' : 'Go to Customers List'}</span>
+        </button>
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import { initialCustomers, initialTransactions, initialSilverRates } from './demoData';
+import { initialSilverRates } from './demoData';
 import { supabase } from './supabaseClient';
 
 const CUSTOMERS_KEY = 'eagle_book_customers_v1';
@@ -16,17 +16,17 @@ export function loadStoredData() {
     const rawAuth = localStorage.getItem(AUTH_USER_KEY);
 
     return {
-      customers: rawCust ? JSON.parse(rawCust) : initialCustomers,
-      transactions: rawTx ? JSON.parse(rawTx) : initialTransactions,
+      customers: rawCust ? JSON.parse(rawCust) : [],
+      transactions: rawTx ? JSON.parse(rawTx) : [],
       rates: rawRates ? JSON.parse(rawRates) : initialSilverRates,
       lang: rawLang || 'ta',
       authUser: rawAuth ? JSON.parse(rawAuth) : null
     };
   } catch (err) {
-    console.error('Failed to load from localStorage, using fallback demo data:', err);
+    console.error('Failed to load from localStorage:', err);
     return {
-      customers: initialCustomers,
-      transactions: initialTransactions,
+      customers: [],
+      transactions: [],
       rates: initialSilverRates,
       lang: 'ta',
       authUser: null
@@ -36,7 +36,7 @@ export function loadStoredData() {
 
 export function saveCustomers(customers) {
   try {
-    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
+    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers || []));
   } catch (err) {
     console.error('Error saving customers to local storage:', err);
   }
@@ -44,7 +44,7 @@ export function saveCustomers(customers) {
 
 export function saveTransactions(transactions) {
   try {
-    localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
+    localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions || []));
   } catch (err) {
     console.error('Error saving transactions to local storage:', err);
   }
@@ -100,7 +100,7 @@ export async function fetchCloudData() {
       rates: null
     };
 
-    if (custRes.data && Array.isArray(custRes.data)) {
+    if (custRes.data && Array.isArray(custRes.data) && custRes.data.length > 0) {
       result.customers = custRes.data.map(c => ({
         id: c.id,
         name: c.name,
@@ -112,7 +112,7 @@ export async function fetchCloudData() {
       result.hasCloudData = true;
     }
 
-    if (txRes.data && Array.isArray(txRes.data)) {
+    if (txRes.data && Array.isArray(txRes.data) && txRes.data.length > 0) {
       result.transactions = txRes.data.map(t => ({
         id: t.id,
         customerId: t.customer_id,
@@ -138,7 +138,6 @@ export async function fetchCloudData() {
         ratePerKg: Number(ratesRes.data.rate_per_kg) || 95000,
         lastUpdated: ratesRes.data.last_updated
       };
-      result.hasCloudData = true;
     }
 
     return result;
@@ -149,7 +148,7 @@ export async function fetchCloudData() {
 }
 
 /**
- * Upload local data to cloud (Initial migration helper)
+ * Upload local data to cloud
  */
 export async function uploadLocalDataToCloud(customers, transactions, rates) {
   try {
@@ -320,11 +319,11 @@ export function subscribeToRealtime({ onCustomerEvent, onTransactionEvent, onRat
 
 export function exportBackupJSON(customers, transactions, rates) {
   const data = {
-    appName: 'Eagle Book',
+    appName: 'Eagle Books',
     version: '1.0.0',
     exportedAt: new Date().toISOString(),
-    customers,
-    transactions,
+    customers: customers || [],
+    transactions: transactions || [],
     rates
   };
   const jsonStr = JSON.stringify(data, null, 2);
@@ -332,18 +331,17 @@ export function exportBackupJSON(customers, transactions, rates) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Eagle_Book_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `Eagle_Books_Backup_${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-export function resetToDemoData() {
+export function clearAllRecords() {
   localStorage.removeItem(CUSTOMERS_KEY);
   localStorage.removeItem(TRANSACTIONS_KEY);
-  localStorage.removeItem(RATES_KEY);
   return {
-    customers: initialCustomers,
-    transactions: initialTransactions,
+    customers: [],
+    transactions: [],
     rates: initialSilverRates
   };
 }

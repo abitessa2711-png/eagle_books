@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
-import { X, Download, Upload, RotateCcw, ShieldCheck, Database } from 'lucide-react';
+import { X, Download, Upload, Trash2, Database } from 'lucide-react';
 import { translations } from '../utils/translations';
-import { exportBackupJSON, resetToDemoData } from '../utils/storage';
+import { exportBackupJSON, clearAllRecords } from '../utils/storage';
 
 export function BackupModal({
   lang,
@@ -12,7 +12,7 @@ export function BackupModal({
   rates,
   onRestoreData
 }) {
-  const t = translations[lang];
+  const t = translations[lang] || translations.ta;
   const fileInputRef = useRef(null);
 
   if (!isOpen) return null;
@@ -43,40 +43,45 @@ export function BackupModal({
     reader.readAsText(file);
   };
 
-  const handleResetDemo = () => {
-    if (window.confirm(lang === 'ta' ? 'மாதிரி தரவுகளை மீண்டும் ஏற்ற வேண்டுமா?' : 'Reset to sample demo data?')) {
-      const demo = resetToDemoData();
-      onRestoreData(demo.customers, demo.transactions, demo.rates);
+  const handleClearData = () => {
+    const confirmMsg = lang === 'ta'
+      ? 'அனைத்து வாடிக்கையாளர் மற்றும் பரிவர்த்தனை பதிவுகளையும் முழுமையாக அழிக்க வேண்டுமா? (புதிய தொடக்கத்திற்கு)'
+      : 'Are you sure you want to clear all customer records to start completely fresh?';
+
+    if (window.confirm(confirmMsg)) {
+      const fresh = clearAllRecords();
+      onRestoreData(fresh.customers, fresh.transactions, fresh.rates);
+      alert(lang === 'ta' ? 'அனைத்து பதிவுகளும் அழிக்கப்பட்டு புதிய கணக்கு தயாராக உள்ளது!' : 'All records cleared. Ready for fresh entries!');
       onClose();
     }
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
         
         {/* Header */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '1.25rem 1.5rem',
+          padding: '1.1rem 1.35rem',
           borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <div style={{
-              width: '36px',
-              height: '36px',
+              width: '34px',
+              height: '34px',
               borderRadius: '10px',
-              background: 'rgba(56, 189, 248, 0.2)',
+              background: 'rgba(56, 189, 248, 0.15)',
               color: '#38bdf8',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <Database size={18} />
+              <Database size={17} />
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: 0, color: '#f8fafc' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', margin: 0, color: '#f8fafc' }}>
               {t.backupRestore}
             </h3>
           </div>
@@ -87,47 +92,47 @@ export function BackupModal({
         </div>
 
         {/* Body */}
-        <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
           {/* Card 1: Export */}
           <div style={{
-            background: 'rgba(15, 23, 42, 0.8)',
+            background: 'rgba(15, 23, 42, 0.7)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '12px',
-            padding: '1.25rem',
+            padding: '1.1rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '1rem'
           }}>
             <div>
-              <div style={{ fontWeight: '700', color: '#f1f5f9' }}>{t.exportData}</div>
-              <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-                {lang === 'ta' ? 'அனைத்து வாடிக்கையாளர் மற்றும் கணக்கு பதிவுகளை JSON கோப்பாக பதிவிறக்கவும்.' : 'Download complete database to your computer.'}
+              <div style={{ fontWeight: '700', color: '#f1f5f9', fontSize: '0.9rem' }}>{t.exportData}</div>
+              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.2rem' }}>
+                {lang === 'ta' ? 'அனைத்து கணக்கு பதிவுகளையும் JSON பேக்கப் கோப்பாக பதிவிறக்கவும்.' : 'Download complete database backup to phone/PC.'}
               </div>
             </div>
 
             <button onClick={handleExport} className="btn btn-sm btn-primary">
-              <Download size={15} />
+              <Download size={14} />
               <span>{lang === 'ta' ? 'பதிவிறக்கு' : 'Export'}</span>
             </button>
           </div>
 
           {/* Card 2: Import */}
           <div style={{
-            background: 'rgba(15, 23, 42, 0.8)',
+            background: 'rgba(15, 23, 42, 0.7)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '12px',
-            padding: '1.25rem',
+            padding: '1.1rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '1rem'
           }}>
             <div>
-              <div style={{ fontWeight: '700', color: '#f1f5f9' }}>{t.importData}</div>
-              <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-                {lang === 'ta' ? 'முன்பு சேமித்த காப்புப்பிரதி கோப்பை மீட்டெடுக்கவும்.' : 'Restore previously exported database file.'}
+              <div style={{ fontWeight: '700', color: '#f1f5f9', fontSize: '0.9rem' }}>{t.importData}</div>
+              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.2rem' }}>
+                {lang === 'ta' ? 'முன்பு எடுத்த பேக்கப் கோப்பை மீட்டெடுக்கவும்.' : 'Restore previously saved backup file.'}
               </div>
             </div>
 
@@ -140,32 +145,34 @@ export function BackupModal({
             />
 
             <button onClick={() => fileInputRef.current.click()} className="btn btn-sm btn-outline">
-              <Upload size={15} />
-              <span>{lang === 'ta' ? 'கோப்பை ஏற்று' : 'Import'}</span>
+              <Upload size={14} />
+              <span>{lang === 'ta' ? 'ஏற்று' : 'Import'}</span>
             </button>
           </div>
 
-          {/* Card 3: Reset Demo */}
+          {/* Card 3: Clear All Data */}
           <div style={{
             background: 'rgba(239, 68, 68, 0.08)',
-            border: '1px solid rgba(239, 68, 68, 0.25)',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
             borderRadius: '12px',
-            padding: '1.25rem',
+            padding: '1.1rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '1rem'
           }}>
             <div>
-              <div style={{ fontWeight: '700', color: '#f87171' }}>{t.resetDemo}</div>
-              <div style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-                {lang === 'ta' ? 'நோட்புக் புகைப்படத்தில் உள்ள மாதிரி கணக்குகளை மீண்டும் ஏற்று.' : 'Reload realistic demo accounts matching the notebook.'}
+              <div style={{ fontWeight: '700', color: '#f87171', fontSize: '0.9rem' }}>
+                {lang === 'ta' ? 'புதிய தொடக்கம் (அனைத்தையும் அழிக்க)' : 'Start Fresh (Clear Data)'}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.2rem' }}>
+                {lang === 'ta' ? 'புதிய கடை கணக்குகளைத் துவங்க பழைய பதிவுகளை அழிக்கவும்.' : 'Clear all records to start with 0 customers.'}
               </div>
             </div>
 
-            <button onClick={handleResetDemo} className="btn btn-sm btn-red">
-              <RotateCcw size={15} />
-              <span>{lang === 'ta' ? 'மீட்டமை' : 'Reset'}</span>
+            <button onClick={handleClearData} className="btn btn-sm btn-red">
+              <Trash2 size={14} />
+              <span>{lang === 'ta' ? 'அழி' : 'Clear'}</span>
             </button>
           </div>
 
