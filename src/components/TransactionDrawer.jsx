@@ -40,22 +40,22 @@ export function TransactionDrawer({
   // Cash
   const [cashAmount, setCashAmount] = useState('');
   const [ratePerGram, setRatePerGram] = useState(String(rates?.ratePerGram || 95));
-  const [isTouchAdjusted, setIsTouchAdjusted] = useState(false);
-  const [cashTouchPercent, setCashTouchPercent] = useState('80');
+  const [isTouchAdjusted, setIsTouchAdjusted] = useState(true);
+  const [cashTouchPercent, setCashTouchPercent] = useState('78');
 
   const [notes, setNotes] = useState('');
 
   if (!isOpen) return null;
 
-  // Preset Jewel items
+  // Preset Jewel items matching Sivakasi Eagle Silvers Card
   const presets = [
-    { key: 'கொலுசு (Anklet)', label: t.itemKolusu, touch: 78 },
-    { key: 'கம்மல் (Earrings)', label: t.itemKammal, touch: 100 },
-    { key: 'சங்கிலி / செயின் (Chain)', label: t.itemChain, touch: 100 },
-    { key: 'கிண்ணம் (Bowl)', label: t.itemKinnam, touch: 100 },
-    { key: 'அரைஞாண் கொடி (Waistband)', label: t.itemArainan, touch: 100 },
-    { key: 'மெட்டி (Toe Ring)', label: t.itemMetti, touch: 78 },
-    { key: 'காமாட்சி விளக்கு (Lamp)', label: t.itemVilakku, touch: 100 },
+    { key: 'வெள்ளி கொலுசு (Silver Anklet)', label: 'வெள்ளி கொலுசு', touch: 78 },
+    { key: 'பாம்பே கொலுசு (Bombay Anklet)', label: 'பாம்பே கொலுசு', touch: 78 },
+    { key: 'மெட்டி வகைகள் (Toe Rings)', label: 'மெட்டி வகைகள்', touch: 78 },
+    { key: 'பாம்பே கொடி (Bombay Chain)', label: 'பாம்பே கொடி', touch: 80 },
+    { key: 'முத்தூணாங்கொடி (Muthunaankodi)', label: 'முத்தூணாங்கொடி', touch: 80 },
+    { key: 'தண்ட கொலுசு (Thanda Anklet)', label: 'தண்ட கொலுசு', touch: 78 },
+    { key: 'வெள்ளி கட்டி / பார் (Bar Silver)', label: 'வெள்ளி கட்டி / பார்', touch: 100 },
     { key: 'CUSTOM', label: t.itemCustom, touch: 100 }
   ];
 
@@ -497,9 +497,12 @@ export function TransactionDrawer({
                   -{formatGrams(calculatedCashGrams)} <span style={{ fontSize: '0.95rem' }}>g</span>
                 </div>
 
-                <div style={{ fontSize: '0.78rem', color: '#475569', fontWeight: '700' }}>
+                <div style={{ fontSize: '0.78rem', color: '#334155', fontWeight: '700', lineHeight: 1.4 }}>
                   {isTouchAdjusted ? (
-                    <span>({formatCurrency(cashAmount || 0)} ÷ ₹{ratePerGram}/g) × {cashTouchPercent}% = {formatGrams(calculatedCashGrams)} g கழிவு!</span>
+                    <div>
+                      <div>டச் ரேட்: ₹{ratePerGram} × {cashTouchPercent}% = <strong>₹{(Number(ratePerGram) * (Number(cashTouchPercent) / 100)).toFixed(2)}/g</strong></div>
+                      <div>{formatCurrency(cashAmount || 0)} ÷ ₹{(Number(ratePerGram) * (Number(cashTouchPercent) / 100)).toFixed(2)} = <strong>{formatGrams(calculatedCashGrams)} g கழிவு!</strong></div>
+                    </div>
                   ) : (
                     <span>{formatCurrency(cashAmount || 0)} ÷ ₹{ratePerGram}/g = {formatGrams(calculatedCashGrams)} g கழிவு!</span>
                   )}

@@ -37,11 +37,11 @@ import { computeCustomerTransactions } from './utils/calculations';
 import { translations } from './utils/translations';
 
 const DEFAULT_OWNER_USER = {
-  phone: '9842154321',
-  name: 'Eagle Books Owner',
-  shopName: 'EAGLE SILVERS WHOLESALE',
+  phone: '8148003454',
+  name: 'EagleBooks Admin',
+  shopName: 'EAGLE SILVERS',
   role: 'OWNER',
-  city: 'மதுரை'
+  city: 'சிவகாசி'
 };
 
 export function App() {

@@ -219,9 +219,9 @@ export function QuickConverterModal({
               justifyContent: 'space-between'
             }}>
               <div>
-                <div style={{ fontSize: '0.75rem', color: '#9a3412', fontWeight: '800' }}>
+                <div style={{ fontSize: '0.74rem', color: '#9a3412', fontWeight: '800', lineHeight: 1.3 }}>
                   {useTouchAdjust 
-                    ? `(₹${Number(calcCash || 0).toLocaleString()} ÷ ₹${calcRate}/g) × ${calcTouch}% =` 
+                    ? `டச் ரேட்: ₹${calcRate} × ${calcTouch}% = ₹${(Number(calcRate) * Number(calcTouch) / 100).toFixed(2)}/g ➔ ₹${Number(calcCash || 0).toLocaleString()} ÷ ₹${(Number(calcRate) * Number(calcTouch) / 100).toFixed(2)} =` 
                     : `₹${Number(calcCash || 0).toLocaleString()} ÷ ₹${calcRate}/g =`}
                 </div>
                 <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#dc2626', lineHeight: 1.1, marginTop: '0.2rem' }}>

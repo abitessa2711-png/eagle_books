@@ -84,7 +84,7 @@ export function CustomerModal({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={lang === 'ta' ? 'எ.கா: செந்தில் குமார் / ஸ்ரீ முருகன் ஜூவல்லரி' : 'e.g. Senthil Kumar'}
+              placeholder={lang === 'ta' ? 'எ.கா: சரவணன் / ராஜா ஜூவல்லர்ஸ்' : 'e.g. Saravanan / Raja Jewellers'}
               className="input-field"
               required
               autoFocus
@@ -124,7 +124,7 @@ export function CustomerModal({
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder={lang === 'ta' ? 'ஊர், கடை முகவரி (எ.கா: தெற்கு மாசி வீதி, மதுரை)' : 'City / Area'}
+              placeholder={lang === 'ta' ? 'ஊர், முகவரி (எ.கா: சிவகாசி / விருதுநகர்)' : 'City / Area (e.g. Sivakasi)'}
               className="input-field"
             />
           </div>

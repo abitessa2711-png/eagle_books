@@ -683,17 +683,56 @@ html, body {
 
 /* Print Overrides */
 @media print {
-  body {
+  body, html {
     background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt;
+    margin: 0 !important;
+    padding: 0 !important;
   }
+
   .app-container {
     max-width: 100% !important;
     border: none !important;
     box-shadow: none !important;
     height: auto !important;
     overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
-  .no-print, .app-header, .bottom-tab-bar, .sticky-bottom-actions, .fab-customer-container {
+
+  .no-print, 
+  .app-header, 
+  .bottom-tab-bar, 
+  .sticky-bottom-actions, 
+  .fab-customer-container,
+  .modal-overlay > div:not(.modal-content),
+  button {
     display: none !important;
+  }
+
+  .modal-overlay {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    inset: auto !important;
+    display: block !important;
+  }
+
+  .modal-content {
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  #printable-receipt, #printable-notebook, .printable-receipt-area, .printable-notebook-area {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 }

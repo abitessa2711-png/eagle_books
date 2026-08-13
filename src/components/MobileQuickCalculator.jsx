@@ -203,10 +203,10 @@ export function MobileQuickCalculator({ lang, rates }) {
           </div>
 
           {/* Step Formula Breakdown */}
-          <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#090f24', borderTop: '1px dashed #e2e8f0', paddingTop: '0.45rem', width: '100%' }}>
+          <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#090f24', borderTop: '1px dashed #e2e8f0', paddingTop: '0.45rem', width: '100%', lineHeight: 1.4 }}>
             {calcMode === 'CASH_TO_GRAMS' && (
               isTouchFormula 
-                ? `(₹${Number(cashAmount).toLocaleString()} ÷ ₹${currentRate}/g) × ${touchPercent}% = -${formatGrams(calculatedGramsOff)} g`
+                ? `டச் ரேட்: ₹${currentRate} × ${touchPercent}% = ₹${(currentRate * (Number(touchPercent) / 100)).toFixed(2)}/g ➔ ₹${Number(cashAmount).toLocaleString()} ÷ ₹${(currentRate * (Number(touchPercent) / 100)).toFixed(2)} = -${formatGrams(calculatedGramsOff)} g`
                 : `₹${Number(cashAmount).toLocaleString()} ÷ ₹${currentRate}/g = -${formatGrams(calculatedGramsOff)} g`
             )}
             {calcMode === 'GRAMS_TO_CASH' && (

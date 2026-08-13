@@ -49,11 +49,11 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
 
       const ownerUser = {
         id: 'eaglebooks.com',
-        phone: '9842154321',
-        name: 'செந்தில் குமார்',
-        shopName: 'EAGLE SILVERS WHOLESALE',
+        phone: '8148003454',
+        name: 'EagleBooks Admin',
+        shopName: 'EAGLE SILVERS',
         role: 'OWNER',
-        city: 'மதுரை (Madurai)',
+        city: 'சிவகாசி (Sivakasi)',
         loggedInAt: new Date().toISOString()
       };
 

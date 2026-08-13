@@ -50,18 +50,15 @@ export function TransactionModal({
 
   if (!isOpen) return null;
 
-  // Preset Jewel items in Tamil & English
+  // Preset Jewel items matching Sivakasi Eagle Silvers Card
   const jewelPresets = [
-    { key: 'கொலுசு (Anklet)', label: t.itemKolusu, defaultTouch: 78 },
-    { key: 'கம்மல் (Earrings)', label: t.itemKammal, defaultTouch: 100 },
-    { key: 'சங்கிலி / செயின் (Chain)', label: t.itemChain, defaultTouch: 100 },
-    { key: 'கிண்ணம் (Bowl)', label: t.itemKinnam, defaultTouch: 100 },
-    { key: 'அரைஞாண் கொடி (Waistband)', label: t.itemArainan, defaultTouch: 100 },
-    { key: 'மெட்டி (Toe Ring)', label: t.itemMetti, defaultTouch: 78 },
-    { key: 'காமாட்சி விளக்கு (Lamp)', label: t.itemVilakku, defaultTouch: 100 },
-    { key: 'வெள்ளி கட்டி / பார் (Bar Silver)', label: t.itemPattaraiBar, defaultTouch: 100 },
-    { key: 'வெள்ளி நாணயம் (Coin)', label: t.itemSilverCoin, defaultTouch: 100 },
-    { key: 'வெள்ளி தட்டு (Plate)', label: t.itemPlate, defaultTouch: 100 },
+    { key: 'வெள்ளி கொலுசு (Silver Anklet)', label: 'வெள்ளி கொலுசு', defaultTouch: 78 },
+    { key: 'பாம்பே கொலுசு (Bombay Anklet)', label: 'பாம்பே கொலுசு', defaultTouch: 78 },
+    { key: 'மெட்டி வகைகள் (Toe Rings)', label: 'மெட்டி வகைகள்', defaultTouch: 78 },
+    { key: 'பாம்பே கொடி (Bombay Chain)', label: 'பாம்பே கொடி', defaultTouch: 80 },
+    { key: 'முத்தூணாங்கொடி (Muthunaankodi)', label: 'முத்தூணாங்கொடி', defaultTouch: 80 },
+    { key: 'தண்ட கொலுசு (Thanda Anklet)', label: 'தண்ட கொலுசு', defaultTouch: 78 },
+    { key: 'வெள்ளி கட்டி / பார் (Bar Silver)', label: 'வெள்ளி கட்டி / பார்', defaultTouch: 100 },
     { key: 'CUSTOM', label: t.itemCustom, defaultTouch: 100 }
   ];
 
@@ -549,8 +546,8 @@ export function TransactionModal({
 
                 <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '0.35rem' }}>
                   {isTouchAdjusted 
-                    ? 'சூத்திரம்: (பணம் ÷ ரேட்) × டச் % (எ.கா. நோட்புக்கில் உள்ளது போல: 25,000 ÷ 249 × 78% = 128.730g)'
-                    : 'சூத்திரம்: பணம் ÷ அன்றைய வெள்ளி விலை (எ.கா. ₹23,000 ÷ ₹95/g = 242.105 கிராம் கழிவு)'}
+                    ? 'சூத்திரம்: Pure Rate × Touch % = டச் ரேட் (எ.கா: ₹245 × 78% = ₹191.10/g) ➔ தொகை ÷ டச் ரேட் (₹10,000 ÷ 191.10 = 52.328g கழிவு)'
+                    : 'சூத்திரம்: பணம் ÷ அன்றைய வெள்ளி விலை (எ.கா. ₹10,000 ÷ ₹95/g = 105.263 கிராம் கழிவு)'}
                 </div>
               </div>
 

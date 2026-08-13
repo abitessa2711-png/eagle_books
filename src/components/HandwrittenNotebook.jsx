@@ -4,10 +4,11 @@ import {
   Share2, 
   ArrowLeft, 
   Phone,
-  MapPin
+  MapPin,
+  MessageSquare
 } from 'lucide-react';
 import { translations } from '../utils/translations';
-import { formatGrams, formatCurrency, formatDate } from '../utils/calculations';
+import { formatGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
 
 export function HandwrittenNotebook({
   lang,
@@ -18,7 +19,7 @@ export function HandwrittenNotebook({
   onBack,
   onOpenWhatsAppModal
 }) {
-  const t = translations[lang];
+  const t = translations[lang] || translations.ta;
 
   if (!customer) {
     return (
@@ -57,12 +58,31 @@ export function HandwrittenNotebook({
     );
   }
 
-  const { transactions = [], netBalanceGrams = 0 } = customerSummary;
-  const currentRate = Number(rates.ratePerGram) || 95;
+  const { transactions = [], netBalanceGrams = 0 } = customerSummary || {};
+  const currentRate = Number(rates?.ratePerGram) || 95;
 
   const handlePrint = () => {
-    window.print();
+    try {
+      window.print();
+    } catch (e) {
+      console.error(e);
+    }
   };
+
+  const handleWhatsAppShare = () => {
+    const msg = generateWhatsAppMessage(customer, customerSummary, currentRate, lang);
+    const cleanPhone = customer.phone ? customer.phone.replace(/[^0-9]/g, '') : '';
+    const formattedPhone = cleanPhone.startsWith('91') ? cleanPhone : (cleanPhone ? `91${cleanPhone}` : '');
+    const whatsappUrl = formattedPhone 
+      ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  // Find opening balance if any
+  const openingTx = transactions.find(t => t.type === 'OPENING_BALANCE');
+  const regularTxs = transactions.filter(t => t.type !== 'OPENING_BALANCE');
+  const initialCB = openingTx ? Number(openingTx.weight) || 0 : (transactions[0]?.debitGrams || 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '85px' }}>
@@ -83,63 +103,74 @@ export function HandwrittenNotebook({
           style={{ background: '#090f24', color: '#ffffff', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}
         >
           <ArrowLeft size={15} />
-          <span>{lang === 'ta' ? 'வாடிக்கையாளர் பட்டியல்' : 'Back to Customers'}</span>
+          <span>{lang === 'ta' ? 'பட்டியல்' : 'Back'}</span>
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
           <button
-            onClick={() => onOpenWhatsAppModal(customer.id)}
+            onClick={handleWhatsAppShare}
             className="btn-mobile"
-            style={{ background: '#059669', color: '#ffffff', padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+            style={{ background: '#16a34a', color: '#ffffff', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}
+            title="Share on WhatsApp"
           >
-            <Share2 size={13} />
+            <MessageSquare size={14} />
             <span>WhatsApp</span>
           </button>
 
           <button
             onClick={handlePrint}
             className="btn-mobile"
-            style={{ background: '#ea580c', color: '#ffffff', padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+            style={{ background: '#ea580c', color: '#ffffff', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}
+            title="Print Notebook"
           >
-            <Printer size={13} />
-            <span>{t.printNotebook}</span>
+            <Printer size={14} />
+            <span>{lang === 'ta' ? 'அச்சிடு' : 'Print'}</span>
           </button>
         </div>
       </div>
 
-      {/* =========================================================================
-          AUTHENTIC JEWELLER NOTEBOOK (Clean, Upright, Non-Italic Typography)
-          Upright Tamil Font + Praise The Lord Header + Royal Blue Ink
-          ========================================================================= */}
-      <div 
-        style={{
-          background: '#ffffff',
-          color: '#000000',
-          borderRadius: '12px',
-          margin: '0.85rem 1rem',
-          padding: '1.5rem 1.25rem 2rem 1.25rem',
-          position: 'relative',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px #e2e8f0',
-          fontFamily: "'Noto Sans Tamil', 'Calibri', 'Plus Jakarta Sans', sans-serif",
-          overflow: 'hidden'
-        }}
-      >
-        {/* Top Header: Praise The Lord */}
+      {/* 2. REALISTIC JEWELLER NOTEBOOK PAGE */}
+      <div style={{
+        margin: '0.85rem 1rem',
+        background: '#fbfbf7', /* Natural Pale Ivory Paper */
+        border: '2px solid #090f24',
+        borderRadius: '10px',
+        padding: '1.25rem',
+        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)',
+        position: 'relative',
+        fontFamily: "'Noto Sans Tamil', 'Calibri', 'Plus Jakarta Sans', sans-serif"
+      }} id="printable-notebook" className="printable-notebook-area">
+        
+        {/* Notebook Top Header */}
         <div style={{
           display: 'flex',
-          justifyContent: 'center',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '0.5rem',
-          color: '#0a2569',
-          fontSize: '0.92rem',
-          fontWeight: '900',
-          letterSpacing: '0.04em',
-          marginBottom: '0.75rem'
+          borderBottom: '2.5px solid #0a2569',
+          paddingBottom: '0.65rem',
+          marginBottom: '0.85rem'
         }}>
-          <span>✦ Praise The Lord ✦</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.15rem', fontWeight: '900', color: '#0a2569' }}>
+              ✦ உ
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '0.92rem', fontWeight: '900', color: '#0a2569', letterSpacing: '0.02em' }}>
+                EAGLE SILVERS (சிவகாசி)
+              </span>
+              <span style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: '700' }}>
+                வெள்ளி கணக்கு ஏடு | 📞 81480 03454
+              </span>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'right', fontSize: '0.76rem', color: '#0a2569', fontWeight: '800' }}>
+            <div>வெள்ளி: ₹{currentRate}/g</div>
+            <div>{formatDate(new Date().toISOString())}</div>
+          </div>
         </div>
 
-        {/* Customer Header Title & Carried Balance (CB) Box */}
+        {/* Customer Header Title & CB Box */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -155,27 +186,27 @@ export function HandwrittenNotebook({
               fontWeight: '900',
               color: '#0a2569', /* Royal Blue Ink */
               lineHeight: 1.2,
-              margin: 0,
-              fontStyle: 'normal'
+              margin: 0
             }}>
               {customer.name}
             </h2>
-            <div style={{ fontSize: '0.92rem', color: '#1e3a8a', fontWeight: '800', marginTop: '0.15rem', fontStyle: 'normal' }}>
-              (Senthil Kumar)
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.82rem', color: '#334155', marginTop: '0.35rem', fontWeight: '600' }}>
-              <MapPin size={13} color="#ea580c" />
-              <span>{customer.address || 'தெற்கு மாசி வீதி, மதுரை'} (South Masi St, Madurai)</span>
-            </div>
+            {customer.address && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.82rem', color: '#334155', marginTop: '0.25rem', fontWeight: '600' }}>
+                <MapPin size={13} color="#ea580c" />
+                <span>{customer.address}</span>
+              </div>
+            )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.82rem', color: '#334155', marginTop: '0.15rem', fontWeight: '600' }}>
-              <Phone size={13} color="#059669" />
-              <span>{customer.phone || '9842154321'}</span>
-            </div>
+            {customer.phone && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.82rem', color: '#334155', marginTop: '0.15rem', fontWeight: '600' }}>
+                <Phone size={13} color="#059669" />
+                <span>{customer.phone}</span>
+              </div>
+            )}
           </div>
 
-          {/* Top Right: Carried Balance (CB: 873.190) */}
+          {/* Top Right: Carried Balance (CB) */}
           <div style={{
             border: '2px solid #0a2569',
             borderRadius: '6px',
@@ -185,149 +216,100 @@ export function HandwrittenNotebook({
             boxShadow: '0 2px 6px rgba(10, 37, 105, 0.1)',
             flexShrink: 0
           }}>
+            <div style={{ fontSize: '0.65rem', fontWeight: '800', color: '#64748b' }}>தொடக்க இருப்பு</div>
             <span style={{
               fontSize: '1.05rem',
               fontWeight: '900',
-              color: '#0a2569',
-              fontStyle: 'normal'
+              color: '#0a2569'
             }}>
-              CB : 873.190
+              CB : {formatGrams(initialCB)}
             </span>
           </div>
         </div>
 
         {/* =========================================================================
-            LADDER SUBTRACTION CALCULATIONS (Clean, Upright, Non-Italic)
+            LADDER SUBTRACTION CALCULATIONS (Dynamic running ledger from actual entries)
             ========================================================================= */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
           
-          {/* STEP 1: (RSP) (22/5/026 : 18.000 / 274.050 x 78% = 214.10) : - 70.050 gm => = 803.740 */}
-          <div style={{ borderBottom: '1px dotted #94a3b8', paddingBottom: '0.65rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <div style={{ color: '#047857', fontWeight: '700', fontSize: '0.95rem', maxWidth: '65%', lineHeight: 1.35, fontStyle: 'normal' }}>
-                (RSP) (22/5/026 : 18.000 / 274.050 × 78% = 214.10) :
-              </div>
-              <div style={{ textAlign: 'right', color: '#047857', fontWeight: '800', fontSize: '1.05rem', fontStyle: 'normal' }}>
-                <div>–</div>
-                <div>70.050</div>
-                <div style={{ fontSize: '0.85rem' }}>gm</div>
-              </div>
+          {regularTxs.length === 0 ? (
+            <div style={{ padding: '2rem 1rem', textAlign: 'center', color: '#64748b', fontStyle: 'italic', fontSize: '0.88rem' }}>
+              பரிவர்த்தனைகள் எதுவும் பதிவு செய்யப்படவில்லை.
             </div>
+          ) : (
+            regularTxs.map((tx, idx) => {
+              const isCredit = tx.creditGrams > 0;
+              const isDebit = tx.debitGrams > 0;
+              const txDate = formatDate(tx.date);
+              const txTitle = tx.itemName || (isCredit ? 'வரவு' : 'பற்று');
 
-            <div style={{ textAlign: 'right', marginTop: '0.25rem' }}>
-              <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0a2569', fontStyle: 'normal' }}>
-                = 803.740
-              </span>
-            </div>
-          </div>
+              return (
+                <div key={tx.id || idx} style={{ borderBottom: '1px dotted #94a3b8', paddingBottom: '0.65rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <div style={{ color: isCredit ? '#047857' : '#b91c1c', fontWeight: '700', fontSize: '0.92rem', maxWidth: '70%', lineHeight: 1.35 }}>
+                      <div>
+                        {txDate} : {txTitle}
+                      </div>
+                      {tx.cashAmount ? (
+                        <div style={{ fontSize: '0.78rem', color: '#059669', fontWeight: '800', marginTop: '0.1rem' }}>
+                          ரொக்கம்: {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}% Touch)` : ''}
+                        </div>
+                      ) : null}
+                      {tx.notes && (
+                        <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '0.1rem' }}>
+                          {tx.notes}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div style={{ textAlign: 'right', color: isCredit ? '#047857' : '#b91c1c', fontWeight: '800', fontSize: '1.05rem' }}>
+                      <div>{isCredit ? '–' : '+'}</div>
+                      <div>{formatGrams(isCredit ? tx.creditGrams : tx.debitGrams)}</div>
+                      <div style={{ fontSize: '0.78rem' }}>gm</div>
+                    </div>
+                  </div>
 
-          {/* STEP 2: 25/5/026 : 5000 (2520) : 21.80 - 21.7.60 => - 11.390 => = 792.350 */}
-          <div style={{ borderBottom: '1px dotted #94a3b8', paddingBottom: '0.65rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <div style={{ color: '#047857', fontWeight: '700', fontSize: '0.95rem', maxWidth: '65%', lineHeight: 1.35, fontStyle: 'normal' }}>
-                25/5/026 : 5000 (2520) : 21.80 – 21.7.60
-              </div>
-              <div style={{ textAlign: 'right', color: '#047857', fontWeight: '800', fontSize: '1.05rem', fontStyle: 'normal' }}>
-                <div>–</div>
-                <div>11.390</div>
-              </div>
-            </div>
+                  <div style={{ textAlign: 'right', marginTop: '0.25rem' }}>
+                    <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0a2569' }}>
+                      = {formatGrams(Math.abs(tx.balanceAfterGrams))}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
 
-            <div style={{ textAlign: 'right', marginTop: '0.25rem' }}>
-              <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0a2569', fontStyle: 'normal' }}>
-                = 792.350
-              </span>
-            </div>
-          </div>
-
-          {/* STEP 3: 14/6/026 : 25,000 (249) x 78% = - 19.422 gm கடன் / பண வரவு */}
-          <div style={{ borderBottom: '1px solid #cbd5e1', paddingBottom: '0.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <div style={{ color: '#047857', fontWeight: '700', fontSize: '0.95rem', maxWidth: '70%', lineHeight: 1.35, fontStyle: 'normal' }}>
-                14/6/026 : 25,000 (249) × 78% = – <br />
-                <span style={{ fontSize: '0.92rem' }}>19.422 gm கடன் / <span style={{ textDecoration: 'underline' }}>பண</span> <span style={{ textDecoration: 'underline' }}>வரவு</span></span>
-              </div>
-              <div style={{ textAlign: 'right', color: '#047857', fontWeight: '800', fontSize: '1.15rem', fontStyle: 'normal' }}>
-                19.422
-              </div>
-            </div>
-          </div>
-
-          {/* =========================================================================
-              BOTTOM GOLDEN AMBER SUMMARY BOX (Clean, Upright, Non-Italic)
-              மீதி நிலுவை : 792.350 – 19.422 = 772.928 gm கடன்
-              ========================================================================= */}
+          {/* FINAL GRAND BALANCE / DUE (கடைசி நிகர இருப்பு) */}
           <div style={{
-            background: '#fffdf5',
-            border: '2px solid #fcd34d',
-            borderRadius: '10px',
-            padding: '1rem',
-            boxShadow: '0 4px 12px rgba(245, 158, 11, 0.12)',
-            marginTop: '0.5rem'
+            borderTop: '2.5px solid #0a2569',
+            marginTop: '0.75rem',
+            paddingTop: '0.75rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
           }}>
-            {/* Top row: மீதி நிலுவை : 792.350 - 19.422 */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderBottom: '1px solid #fde68a',
-              paddingBottom: '0.45rem',
-              fontSize: '1.05rem',
-              fontWeight: '800',
-              color: '#0a2569',
-              fontStyle: 'normal'
-            }}>
-              <span>மீதி நிலுவை :</span>
-              <span style={{ letterSpacing: '0.04em' }}>792.350 – 19.422</span>
+            <div>
+              <div style={{ fontSize: '0.88rem', fontWeight: '900', color: '#0a2569' }}>
+                {netBalanceGrams > 0.001 ? 'மீதி நிலுவை (Due Balance):' : 'முன்வைப்பு (Advance):'}
+              </div>
+              <div style={{ fontSize: '0.76rem', color: '#64748b', fontWeight: '700' }}>
+                மதிப்பு: சுமார் {formatCurrency(Math.abs(netBalanceGrams) * currentRate)}
+              </div>
             </div>
 
-            {/* Bottom row: = 772.928 gm கடன் (In Bold Jeweller Red Ink - Non-Italic!) */}
             <div style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'baseline',
-              gap: '0.5rem',
-              paddingTop: '0.65rem'
+              fontSize: '1.45rem',
+              fontWeight: '900',
+              color: netBalanceGrams > 0.001 ? '#dc2626' : '#059669',
+              border: '2px solid #0a2569',
+              borderRadius: '6px',
+              padding: '0.25rem 0.75rem',
+              background: '#ffffff'
             }}>
-              <span style={{ fontSize: '1.45rem', fontWeight: '900', color: '#b91c1c' }}>
-                =
-              </span>
-              <span style={{
-                fontSize: '2.1rem',
-                fontWeight: '900',
-                color: '#b91c1c', /* Jeweller Red Ink */
-                letterSpacing: '0.02em',
-                fontStyle: 'normal'
-              }}>
-                772.928
-              </span>
-              <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#b91c1c', fontStyle: 'normal' }}>
-                gm கடன்
-              </span>
-            </div>
-
-            <div style={{ textAlign: 'right', fontSize: '0.82rem', color: '#92400e', fontWeight: '800', marginTop: '0.15rem', fontStyle: 'normal' }}>
-              ≈ {formatCurrency(772.928 * currentRate)} (@ ₹{currentRate}/g)
+              {formatGrams(Math.abs(netBalanceGrams))} g
             </div>
           </div>
 
-        </div>
-
-        {/* Footer Signature */}
-        <div style={{
-          marginTop: '1.5rem',
-          paddingTop: '0.75rem',
-          borderTop: '1.5px solid #e2e8f0',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          fontSize: '0.78rem',
-          color: '#64748b'
-        }}>
-          <div style={{ fontWeight: '700' }}>EAGLE SILVERS WHOLESALE</div>
-          <div style={{ textAlign: 'right', fontWeight: '800', color: '#0a2569' }}>
-            கையொப்பம் (Signature)
-          </div>
         </div>
 
       </div>
