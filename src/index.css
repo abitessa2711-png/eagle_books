@@ -681,58 +681,56 @@ html, body {
   font-family: inherit;
 }
 
-/* Print Overrides */
+/* Complete Print Isolation Rules */
 @media print {
-  body, html {
+  html, body {
     background: #ffffff !important;
     color: #000000 !important;
-    font-size: 12pt;
+    font-size: 11pt !important;
     margin: 0 !important;
     padding: 0 !important;
-  }
-
-  .app-container {
-    max-width: 100% !important;
-    border: none !important;
-    box-shadow: none !important;
     height: auto !important;
     overflow: visible !important;
-    margin: 0 !important;
-    padding: 0 !important;
   }
 
-  .no-print, 
-  .app-header, 
-  .bottom-tab-bar, 
-  .sticky-bottom-actions, 
+  /* Hide entire page elements by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Reveal only the printable receipt or notebook */
+  #printable-receipt,
+  #printable-receipt *,
+  #printable-notebook,
+  #printable-notebook * {
+    visibility: visible !important;
+  }
+
+  #printable-receipt,
+  #printable-notebook {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    z-index: 999999 !important;
+  }
+
+  /* Explicitly remove UI overlays, headers, and buttons */
+  .no-print,
+  .app-header,
+  .bottom-tab-bar,
+  .sticky-bottom-actions,
   .fab-customer-container,
-  .modal-overlay > div:not(.modal-content),
+  .modal-overlay,
   button {
     display: none !important;
-  }
-
-  .modal-overlay {
-    position: static !important;
-    background: transparent !important;
-    padding: 0 !important;
-    inset: auto !important;
-    display: block !important;
-  }
-
-  .modal-content {
-    border: none !important;
-    box-shadow: none !important;
-    max-width: 100% !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding: 0 !important;
-  }
-
-  #printable-receipt, #printable-notebook, .printable-receipt-area, .printable-notebook-area {
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
+    visibility: hidden !important;
   }
 }

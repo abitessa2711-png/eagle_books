@@ -150,10 +150,7 @@ export function HandwrittenNotebook({
           paddingBottom: '0.65rem',
           marginBottom: '0.85rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <span style={{ fontSize: '1.15rem', fontWeight: '900', color: '#0a2569' }}>
-              ✦ உ
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <img 
               src="/eagle-logo.png" 
               alt="Eagle Logo" 

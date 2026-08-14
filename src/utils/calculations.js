@@ -190,131 +190,71 @@ export function generateWhatsAppMessage(customer, summary, currentRate = 95, lan
 
   const txList = summary.transactions || [];
 
-  if (lang === 'ta') {
-    let msg = `✦ *Praise The Lord* ✦\n`;
-    msg += `🦅 *EAGLE SILVERS*\n`;
-    msg += `_(Wholesale & Retail Shop)_\n`;
-    msg += `📍 8 - வடக்கு ரத வீதி, டவுன் போலீஸ் ஸ்டேஷன் ரோடு, சிவகாசி.\n`;
-    msg += `📞 81480 03454, 73391 60876\n`;
-    msg += `================================\n`;
-    msg += `🧾 *முழு கணக்கு ரசீது (Full Statement Bill)*\n`;
-    msg += `👤 *பெயர்:* ${name}\n`;
-    if (phone !== '-') msg += `📞 *எண்:* ${phone}\n`;
-    if (address !== '-') msg += `📍 *ஊர்:* ${address}\n`;
-    msg += `📅 *தேதி:* ${dateStr}\n`;
-    msg += `💰 *அன்றைய வெள்ளி விலை:* ${rateStr}/g\n`;
-    msg += `================================\n\n`;
+  let msg = `*EAGLE SILVERS (ஈகிள் சில்வர்ஸ் - சிவகாசி)*\n`;
+  msg += `8 - வடக்கு ரத வீதி, டவுன் போலீஸ் ஸ்டேஷன் ரோடு, சிவகாசி.\n`;
+  msg += `தொடர்புக்கு: 81480 03454, 73391 60876\n`;
+  msg += `--------------------------------------------------\n`;
+  msg += `*முழு கணக்கு அறிக்கை (Account Statement)*\n`;
+  msg += `வாடிக்கையாளர்: ${name}\n`;
+  if (phone !== '-') msg += `தொலைபேசி: ${phone}\n`;
+  if (address !== '-') msg += `முகவரி: ${address}\n`;
+  msg += `தேதி: ${dateStr}\n`;
+  msg += `இன்றைய வெள்ளி விலை: ${rateStr}/g\n`;
+  msg += `--------------------------------------------------\n\n`;
 
-    msg += `📋 *பரிவர்த்தனை விவரங்கள் (Item Details):*\n`;
-
-    if (txList.length === 0) {
-      msg += `(பரிவர்த்தனைகள் எதுவும் இல்லை)\n\n`;
-    } else {
-      txList.forEach((tx, idx) => {
-        const itemDate = formatDate(tx.date);
-        const itemTitle = tx.itemName || 'வெள்ளி பரிவர்த்தனை';
-        
-        msg += `${idx + 1}. *${itemTitle}* (${itemDate})\n`;
-
-        if (tx.touchPercent && tx.touchPercent < 100 && tx.type === 'NEW_SALE') {
-          msg += `   • எடை: ${formatGrams(tx.weight)}g @ ${tx.touchPercent}% Touch\n`;
-        }
-
-        if (tx.cashAmount) {
-          const appliedRate = tx.ratePerGram || currentRate;
-          const touch = tx.touchPercent || 100;
-          const effRate = appliedRate * (touch / 100);
-          msg += `   • ரொக்கம்: ${formatCurrency(tx.cashAmount)} ÷ (₹${appliedRate} × ${touch}% = ₹${effRate.toFixed(2)}/g)\n`;
-        }
-
-        if (tx.debitGrams > 0) {
-          msg += `   ➕ *பற்று (+):* +${formatGrams(tx.debitGrams)} g\n`;
-        }
-        if (tx.creditGrams > 0) {
-          msg += `   ➖ *வரவு (-):* -${formatGrams(tx.creditGrams)} g\n`;
-        }
-        msg += `   👉 *இருப்பு:* ${formatGrams(Math.abs(tx.balanceAfterGrams))} g\n\n`;
-      });
-    }
-
-    msg += `================================\n`;
-    msg += `📊 *கணக்கு சுருக்கம் (Summary):*\n`;
-    msg += `• மொத்த பற்று (Total Out): ${formatGrams(summary.totalDebit)} g\n`;
-    msg += `• மொத்த வரவு (Total In): ${formatGrams(summary.totalCredit)} g\n`;
-    msg += `--------------------------------\n`;
-
-    if (summary.isDue) {
-      msg += `🔴 *நீங்கள் தர வேண்டிய மீதி இருப்பு:*\n`;
-      msg += `👉 *${netGrams} கிராம் வெள்ளி*\n`;
-      msg += `_(மதிப்பு: சுமார் ${netRupees})_\n`;
-    } else if (summary.isAdvance) {
-      msg += `🟢 *உங்களிடம் உள்ள முன்வைப்பு (Advance):*\n`;
-      msg += `👉 *${netGrams} கிராம் வெள்ளி*\n`;
-    } else {
-      msg += `✅ *கணக்கு பூர்த்தியடைந்தது (Settled)*\n`;
-    }
-
-    msg += `================================\n`;
-    msg += `_நன்றி! மீண்டும் வருக! - EAGLE SILVERS_\n`;
-
-    return msg;
-  }
-
-  // English fallback
-  let msg = `✦ *Praise The Lord* ✦\n`;
-  msg += `🦅 *EAGLE SILVERS (Wholesale & Retail)*\n`;
-  msg += `📍 8, North Car St, Town Police Station Rd, Sivakasi.\n`;
-  msg += `📞 81480 03454, 73391 60876\n`;
-  msg += `================================\n`;
-  msg += `🧾 *ACCOUNT STATEMENT BILL*\n`;
-  msg += `👤 *Customer:* ${name}\n`;
-  if (phone !== '-') msg += `📞 *Phone:* ${phone}\n`;
-  if (address !== '-') msg += `📍 *City:* ${address}\n`;
-  msg += `📅 *Date:* ${dateStr}\n`;
-  msg += `💰 *Silver Rate:* ${rateStr}/g\n`;
-  msg += `================================\n\n`;
-
-  msg += `📋 *TRANSACTION BREAKDOWN:*\n`;
+  msg += `*பரிவர்த்தனை விவரங்கள் (Item Details):*\n\n`;
 
   if (txList.length === 0) {
-    msg += `(No transactions recorded)\n\n`;
+    msg += `(பரிவர்த்தனைகள் எதுவும் இல்லை)\n\n`;
   } else {
     txList.forEach((tx, idx) => {
       const itemDate = formatDate(tx.date);
-      const itemTitle = tx.itemName || 'Silver Entry';
-      msg += `${idx + 1}. *${itemTitle}* (${itemDate})\n`;
+      const itemTitle = tx.itemName || 'வெள்ளி பரிவர்த்தனை';
+      
+      msg += `${idx + 1}. *${itemTitle}* [${itemDate}]\n`;
+
+      if (tx.touchPercent && tx.touchPercent < 100 && (tx.type === 'NEW_SALE' || tx.type === 'OLD_SILVER')) {
+        msg += `   - மொத்த எடை: ${formatGrams(tx.weight)}g @ ${tx.touchPercent}% டச்\n`;
+      }
 
       if (tx.cashAmount) {
-        msg += `   • Cash: ${formatCurrency(tx.cashAmount)} ÷ Rate ₹${tx.ratePerGram || currentRate}/g\n`;
+        const appliedRate = tx.ratePerGram || currentRate;
+        const touch = tx.touchPercent || 100;
+        const effRate = appliedRate * (touch / 100);
+        msg += `   - ரொக்கம்: ${formatCurrency(tx.cashAmount)} (ரேட்: ₹${appliedRate} @ ${touch}% = ₹${effRate.toFixed(2)}/g)\n`;
       }
+
       if (tx.debitGrams > 0) {
-        msg += `   ➕ *Debit (+):* +${formatGrams(tx.debitGrams)} g\n`;
+        msg += `   - பற்று (+): +${formatGrams(tx.debitGrams)} g நயம்\n`;
       }
       if (tx.creditGrams > 0) {
-        msg += `   ➖ *Credit (-):* -${formatGrams(tx.creditGrams)} g\n`;
+        msg += `   - வரவு (-): -${formatGrams(tx.creditGrams)} g நயம்\n`;
       }
-      msg += `   👉 *Balance:* ${formatGrams(Math.abs(tx.balanceAfterGrams))} g\n\n`;
+      msg += `   - இருப்பு: ${formatGrams(Math.abs(tx.balanceAfterGrams))} g\n\n`;
     });
   }
 
-  msg += `================================\n`;
-  msg += `📊 *SUMMARY:*\n`;
-  msg += `• Total Debit: ${formatGrams(summary.totalDebit)} g\n`;
-  msg += `• Total Credit: ${formatGrams(summary.totalCredit)} g\n`;
-  msg += `--------------------------------\n`;
+  msg += `--------------------------------------------------\n`;
+  msg += `*கணக்கு சுருக்கம் (Summary):*\n`;
+  msg += `* மொத்த பற்று (Total Out): ${formatGrams(summary.totalDebit)} g\n`;
+  msg += `* மொத்த வரவு (Total In): ${formatGrams(summary.totalCredit)} g\n`;
+  msg += `--------------------------------------------------\n`;
 
   if (summary.isDue) {
-    msg += `🔴 *NET BALANCE DUE (Payable):*\n`;
-    msg += `👉 *${netGrams} g Silver* (${netRupees})\n`;
+    msg += `*நீங்கள் தர வேண்டிய மீதி இருப்பு (Net Due):*\n`;
+    msg += `* *${netGrams} கிராம் நய வெள்ளி*\n`;
+    msg += `* (தோராய மதிப்பு: சுமார் ${netRupees})\n`;
   } else if (summary.isAdvance) {
-    msg += `🟢 *ADVANCE BALANCE:*\n`;
-    msg += `👉 *${netGrams} g Silver*\n`;
+    msg += `*உங்களிடம் உள்ள முன்வைப்பு இருப்பு (Advance):*\n`;
+    msg += `* *${netGrams} கிராம் நய வெள்ளி*\n`;
+    msg += `* (தோராய மதிப்பு: சுமார் ${netRupees})\n`;
   } else {
-    msg += `✅ *ACCOUNT FULLY SETTLED*\n`;
+    msg += `*கணக்கு முழுமையாக பூர்த்தியடைந்தது (Settled)*\n`;
   }
 
-  msg += `================================\n`;
-  msg += `_Thank You! Visit Again - EAGLE SILVERS_\n`;
+  msg += `--------------------------------------------------\n`;
+  msg += `நன்றி! மீண்டும் வருக!\n`;
+  msg += `- EAGLE SILVERS, சிவகாசி.\n`;
 
   return msg;
 }

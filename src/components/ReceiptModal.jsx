@@ -97,9 +97,6 @@ export function ReceiptModal({
                 style={{ width: '60px', height: '60px', objectFit: 'contain' }}
               />
               <div>
-                <div style={{ fontSize: '0.82rem', fontWeight: '900', color: '#0a2569', letterSpacing: '0.05em' }}>
-                  ✦ Praise The Lord ✦
-                </div>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: '900', color: '#000000', margin: '0.1rem 0' }}>
                   EAGLE SILVERS
                 </h1>
