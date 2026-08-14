@@ -107,10 +107,12 @@ export function TransactionModal({
       newTx.touchPercent = Number(touchPercent) || 100;
       newTx.wastagePercent = Number(wastagePercent) || 0;
       newTx.ratePerGram = Number(ratePerGram) || rates.ratePerGram;
+      newTx.debitGrams = calculatedPureWeight;
     } else if (activeTab === 'OLD_SILVER') {
       newTx.weight = Number(grossWeight) || 0;
       newTx.touchPercent = Number(touchPercent) || 100;
       newTx.wastagePercent = Number(wastagePercent) || 0;
+      newTx.creditGrams = calculatedPureWeight;
     } else if (activeTab === 'CASH_PAYMENT') {
       newTx.cashAmount = Number(cashAmount) || 0;
       newTx.ratePerGram = Number(ratePerGram) || rates.ratePerGram;

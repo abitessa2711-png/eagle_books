@@ -105,12 +105,20 @@ export function computeCustomerTransactions(transactions = [], currentSilverRate
 
       case 'NEW_SALE':
         // New silver given to customer (+ Debit)
-        debitGrams = rawWeight;
+        if (t.debitGrams !== undefined && t.debitGrams !== null && Number(t.debitGrams) > 0) {
+          debitGrams = Number(t.debitGrams);
+        } else {
+          debitGrams = calculateNetSilver(rawWeight, touch, t.wastagePercent || 0);
+        }
         break;
 
       case 'OLD_SILVER':
         // Old silver received from customer (- Credit)
-        creditGrams = rawWeight;
+        if (t.creditGrams !== undefined && t.creditGrams !== null && Number(t.creditGrams) > 0) {
+          creditGrams = Number(t.creditGrams);
+        } else {
+          creditGrams = calculateNetSilver(rawWeight, touch, t.wastagePercent || 0);
+        }
         break;
 
       case 'CASH_PAYMENT':

@@ -220,7 +220,23 @@ export function KhatabookCustomerLedger({
                       fontWeight: '800',
                       display: 'inline-block'
                     }}>
-                      💵 {formatCurrency(tx.cashAmount)} ÷ ₹{tx.ratePerGram || currentRate}/g = -{formatGrams(tx.creditGrams)}g
+                      💵 {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}%)` : ''} = -{formatGrams(tx.creditGrams)}g
+                    </div>
+                  )}
+
+                  {!isCash && tx.touchPercent && Number(tx.touchPercent) < 100 && Number(tx.weight) > 0 && (
+                    <div style={{
+                      fontSize: '0.74rem',
+                      color: isNew ? '#991b1b' : '#047857',
+                      background: isNew ? '#fef2f2' : '#ecfdf5',
+                      border: isNew ? '1px solid #fca5a5' : '1px solid #6ee7b7',
+                      padding: '0.15rem 0.45rem',
+                      borderRadius: '4px',
+                      marginTop: '0.25rem',
+                      fontWeight: '800',
+                      display: 'inline-block'
+                    }}>
+                      ⭐ மொத்த எடை: {formatGrams(tx.weight)}g @ {tx.touchPercent}% டச் = <strong>{isNew ? '+' : '-'}{formatGrams(isNew ? tx.debitGrams : tx.creditGrams)}g நயம்</strong>
                     </div>
                   )}
 

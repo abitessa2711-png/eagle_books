@@ -254,7 +254,13 @@ export function HandwrittenNotebook({
                         <div style={{ fontSize: '0.78rem', color: '#059669', fontWeight: '800', marginTop: '0.1rem' }}>
                           ரொக்கம்: {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}% Touch)` : ''}
                         </div>
-                      ) : null}
+                      ) : (
+                        tx.touchPercent && Number(tx.touchPercent) < 100 && Number(tx.weight) > 0 ? (
+                          <div style={{ fontSize: '0.76rem', color: isCredit ? '#047857' : '#b91c1c', fontWeight: '800', marginTop: '0.1rem' }}>
+                            எடை: {formatGrams(tx.weight)}g @ {tx.touchPercent}% டச் = {formatGrams(isCredit ? tx.creditGrams : tx.debitGrams)}g நயம்
+                          </div>
+                        ) : null
+                      )}
                       {tx.notes && (
                         <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '0.1rem' }}>
                           {tx.notes}
