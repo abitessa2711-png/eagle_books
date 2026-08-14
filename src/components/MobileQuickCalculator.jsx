@@ -67,11 +67,16 @@ export function MobileQuickCalculator({ lang, rates }) {
 
   // Switch Mode Handler with Seamless Auto-Passing
   const handleSwitchMode = (newMode) => {
-    if (newMode === 'GRAMS_TO_CASH' && calcMode === 'PURITY') {
-      // Auto-pass the calculated pure grams to Grams to Rupees!
-      setSilverGrams(formatGrams(calculatedPureGrams));
-    } else if (newMode === 'PURITY' && calcMode === 'GRAMS_TO_CASH') {
-      // Keep current grams in purity
+    if (newMode === 'GRAMS_TO_CASH') {
+      if (calcMode === 'PURITY') {
+        // Auto-pass the calculated pure grams to Grams to Rupees!
+        setSilverGrams(formatGrams(calculatedPureGrams));
+      } else if (calcMode === 'CASH_TO_GRAMS') {
+        // Auto-pass the calculated grams from cash to Grams to Rupees!
+        setSilverGrams(formatGrams(calculatedGramsOff));
+      }
+    } else if (newMode === 'PURITY' && calcMode === 'CASH_TO_GRAMS') {
+      setSilverGrams(formatGrams(calculatedGramsOff));
     }
     setCalcMode(newMode);
   };
@@ -79,6 +84,12 @@ export function MobileQuickCalculator({ lang, rates }) {
   // Direct action button: Transfer Pure result to Grams to Rupees
   const handleTransferPureToCash = () => {
     setSilverGrams(formatGrams(calculatedPureGrams));
+    setCalcMode('GRAMS_TO_CASH');
+  };
+
+  // Direct action button: Transfer Cash to Grams result to Grams to Rupees
+  const handleTransferCashGramsToCash = () => {
+    setSilverGrams(formatGrams(calculatedGramsOff));
     setCalcMode('GRAMS_TO_CASH');
   };
 
@@ -288,6 +299,29 @@ export function MobileQuickCalculator({ lang, rates }) {
               >
                 <Zap size={14} />
                 <span>{lang === 'ta' ? `👉 கிராம் ➔ பணமாக பார்க்க (${formatCurrency(pureRupeeValue)})` : 'Convert to Rupees'}</span>
+              </button>
+            )}
+
+            {calcMode === 'CASH_TO_GRAMS' && (
+              <button
+                onClick={handleTransferCashGramsToCash}
+                style={{
+                  background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '9999px',
+                  padding: '0.35rem 0.85rem',
+                  fontSize: '0.75rem',
+                  fontWeight: '900',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)'
+                }}
+              >
+                <Zap size={14} />
+                <span>{lang === 'ta' ? `👉 கிராம் ➔ பணமாக பார்க்க (${formatGrams(calculatedGramsOff)}g ➔ ${formatCurrency(calculatedGramsOff * currentRate)})` : 'Convert to Rupees'}</span>
               </button>
             )}
 

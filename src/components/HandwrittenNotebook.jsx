@@ -150,12 +150,24 @@ export function HandwrittenNotebook({
           paddingBottom: '0.65rem',
           marginBottom: '0.85rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <span style={{ fontSize: '1.15rem', fontWeight: '900', color: '#0a2569' }}>
               ✦ உ
             </span>
+            <img 
+              src="/eagle-logo.png" 
+              alt="Eagle Logo" 
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '8px',
+                objectFit: 'contain',
+                border: '1.5px solid #0a2569',
+                background: '#ffffff'
+              }}
+            />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '0.92rem', fontWeight: '900', color: '#0a2569', letterSpacing: '0.02em' }}>
+              <span style={{ fontSize: '0.96rem', fontWeight: '900', color: '#0a2569', letterSpacing: '0.02em' }}>
                 EAGLE SILVERS (சிவகாசி)
               </span>
               <span style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: '700' }}>
