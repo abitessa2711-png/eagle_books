@@ -1,5 +1,5 @@
 -- ==============================================================================
--- EAGLE BOOKS - SUPABASE DATABASE SCHEMA & REALTIME SETUP
+-- EAGLE BOOKS - SUPABASE DATABASE SCHEMA & PERMISSIONS SETUP
 -- Run this in your Supabase SQL Editor (https://supabase.com/dashboard/project/_/sql)
 -- ==============================================================================
 
@@ -41,26 +41,36 @@ CREATE TABLE IF NOT EXISTS public.silver_rates (
     last_updated TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Insert initial silver rate
+-- Insert initial silver rate if not present
 INSERT INTO public.silver_rates (id, rate_per_gram, rate_per_kg, last_updated)
 VALUES ('current_rate', 95, 95000, NOW())
 ON CONFLICT (id) DO NOTHING;
 
--- 4. Enable Row Level Security (RLS) & Allow Full Access for App Client
+-- 4. GRANT EXPLICIT PERMISSIONS TO ANON AND AUTHENTICATED ROLES
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated, service_role;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO anon, authenticated, service_role;
+
+-- 5. Enable Row Level Security (RLS) & Open Public Access Policies
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.silver_rates ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Allow all access to customers" ON public.customers;
-CREATE POLICY "Allow all access to customers" ON public.customers FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public access for customers" ON public.customers;
+CREATE POLICY "Public access for customers" ON public.customers FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Allow all access to transactions" ON public.transactions;
-CREATE POLICY "Allow all access to transactions" ON public.transactions FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public access for transactions" ON public.transactions;
+CREATE POLICY "Public access for transactions" ON public.transactions FOR ALL USING (true) WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Allow all access to silver_rates" ON public.silver_rates;
-CREATE POLICY "Allow all access to silver_rates" ON public.silver_rates FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Public access for silver_rates" ON public.silver_rates;
+CREATE POLICY "Public access for silver_rates" ON public.silver_rates FOR ALL USING (true) WITH CHECK (true);
 
--- 5. Enable Realtime Replication
+-- 6. Enable Realtime Replication
 ALTER PUBLICATION supabase_realtime ADD TABLE public.customers;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.transactions;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.silver_rates;

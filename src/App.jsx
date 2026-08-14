@@ -86,64 +86,72 @@ export function App() {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isConverterModalOpen, setIsConverterModalOpen] = useState(false);
 
-  // 1. Initial Cloud Sync on Mount
-  useEffect(() => {
-    let isMounted = true;
-    async function initCloudSync() {
+  // 1. Initial & Continuous Cloud Sync
+  const syncDataFromCloud = useCallback(async () => {
+    try {
       const cloudRes = await fetchCloudData();
-      if (!isMounted) return;
-
       if (cloudRes.hasCloudData) {
-        if (cloudRes.customers && cloudRes.customers.length > 0) {
+        if (cloudRes.customers && Array.isArray(cloudRes.customers)) {
           setCustomers(cloudRes.customers);
         }
-        if (cloudRes.transactions) {
+        if (cloudRes.transactions && Array.isArray(cloudRes.transactions)) {
           setTransactions(cloudRes.transactions);
         }
         if (cloudRes.rates) {
-          setRates(cloudRes.rates);
+          setRates(prev => ({ ...prev, ...cloudRes.rates }));
         }
         setCloudSynced(true);
-      } else {
-        // If cloud is empty or tables just created, upload initial local data to cloud
-        uploadLocalDataToCloud(customers, transactions, rates).then(res => {
-          if (res.success && isMounted) {
-            setCloudSynced(true);
-          }
-        });
       }
+    } catch (err) {
+      console.warn('Background cloud sync warning:', err);
     }
+  }, []);
 
-    initCloudSync();
+  const handleManualSync = async () => {
+    setCloudSynced(false);
+    await syncDataFromCloud();
+    setTimeout(() => setCloudSynced(true), 500);
+  };
 
-    // 2. Realtime listener for cross-device sync
+  useEffect(() => {
+    let isMounted = true;
+    
+    // Initial sync
+    syncDataFromCloud();
+
+    // Periodic sync every 15 seconds to ensure any device stays in sync
+    const interval = setInterval(() => {
+      if (isMounted) {
+        syncDataFromCloud();
+      }
+    }, 15000);
+
+    // Realtime listener for cross-device sync
     const unsubscribe = subscribeToRealtime({
       onCustomerEvent: () => {
-        fetchCloudData().then(data => {
-          if (data.customers && isMounted) setCustomers(data.customers);
-        });
+        if (isMounted) syncDataFromCloud();
       },
       onTransactionEvent: () => {
-        fetchCloudData().then(data => {
-          if (data.transactions && isMounted) setTransactions(data.transactions);
-        });
+        if (isMounted) syncDataFromCloud();
       },
       onRateEvent: (payload) => {
         if (payload.new && isMounted) {
-          setRates({
+          setRates(prev => ({
+            ...prev,
             ratePerGram: Number(payload.new.rate_per_gram) || 95,
             ratePerKg: Number(payload.new.rate_per_kg) || 95000,
             lastUpdated: payload.new.last_updated
-          });
+          }));
         }
       }
     });
 
     return () => {
       isMounted = false;
+      clearInterval(interval);
       if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [syncDataFromCloud]);
 
   // Persistence to local storage (Offline Cache)
   useEffect(() => {
@@ -167,6 +175,7 @@ export function App() {
     const finalUser = user || DEFAULT_OWNER_USER;
     setAuthUser(finalUser);
     saveAuthUser(finalUser);
+    syncDataFromCloud(); // Immediately fetch latest cloud data upon login!
     try {
       confetti({
         particleCount: 50,
@@ -337,6 +346,7 @@ export function App() {
         cloudSynced={cloudSynced}
         onLogout={handleLogout}
         onOpenRateModal={() => setIsRateModalOpen(true)}
+        onManualSync={handleManualSync}
       />
 
       {/* 2. Main Content Screens */}
