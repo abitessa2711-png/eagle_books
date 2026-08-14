@@ -86,7 +86,7 @@ export function App() {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isConverterModalOpen, setIsConverterModalOpen] = useState(false);
 
-  // 1. Initial & Continuous Cloud Sync
+  // 1. 100% Automatic & Silent Cloud Sync
   const syncDataFromCloud = useCallback(async () => {
     try {
       const cloudRes = await fetchCloudData();
@@ -103,15 +103,9 @@ export function App() {
         setCloudSynced(true);
       }
     } catch (err) {
-      console.warn('Background cloud sync warning:', err);
+      console.warn('Silent cloud sync warning:', err);
     }
   }, []);
-
-  const handleManualSync = async () => {
-    setCloudSynced(false);
-    await syncDataFromCloud();
-    setTimeout(() => setCloudSynced(true), 500);
-  };
 
   useEffect(() => {
     let isMounted = true;
@@ -119,14 +113,21 @@ export function App() {
     // Initial sync
     syncDataFromCloud();
 
-    // Periodic sync every 15 seconds to ensure any device stays in sync
+    // Periodic automatic silent sync every 8 seconds
     const interval = setInterval(() => {
       if (isMounted) {
         syncDataFromCloud();
       }
-    }, 15000);
+    }, 8000);
 
-    // Realtime listener for cross-device sync
+    // Auto-sync when user returns to app/window
+    const handleFocus = () => {
+      if (isMounted) syncDataFromCloud();
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
+    // Realtime listener for instant cross-device updates
     const unsubscribe = subscribeToRealtime({
       onCustomerEvent: () => {
         if (isMounted) syncDataFromCloud();
@@ -149,6 +150,8 @@ export function App() {
     return () => {
       isMounted = false;
       clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
       if (unsubscribe) unsubscribe();
     };
   }, [syncDataFromCloud]);
@@ -343,10 +346,8 @@ export function App() {
         setLang={setLang}
         rates={rates}
         currentUser={authUser}
-        cloudSynced={cloudSynced}
         onLogout={handleLogout}
         onOpenRateModal={() => setIsRateModalOpen(true)}
-        onManualSync={handleManualSync}
       />
 
       {/* 2. Main Content Screens */}

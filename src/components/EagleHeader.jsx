@@ -1,9 +1,7 @@
 import React from 'react';
 import { 
   TrendingUp, 
-  LogOut,
-  Cloud,
-  RefreshCw
+  LogOut
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 
@@ -12,10 +10,8 @@ export function EagleHeader({
   setLang,
   rates,
   currentUser,
-  cloudSynced,
   onLogout,
-  onOpenRateModal,
-  onManualSync
+  onOpenRateModal
 }) {
   const t = translations[lang] || translations.ta;
   const currentRate = Number(rates?.ratePerGram) || 95;
@@ -39,21 +35,9 @@ export function EagleHeader({
         </div>
       </div>
 
-      {/* Header Actions - Clean & Mobile Friendly */}
+      {/* Header Actions - Clean, Elegant & Client Delivery Ready */}
       <div className="header-actions">
         
-        {/* Cloud Sync Button */}
-        {onManualSync && (
-          <button
-            onClick={onManualSync}
-            className="header-action-btn"
-            style={{ color: cloudSynced ? '#16a34a' : '#f59e0b', background: '#f8fafc', padding: '0.35rem 0.5rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-            title={cloudSynced ? 'Cloud Synced (Tap to Refresh)' : 'Syncing with Cloud...'}
-          >
-            <RefreshCw size={13} className={cloudSynced ? '' : 'spin-anim'} />
-          </button>
-        )}
-
         {/* Live Silver Rate Pill */}
         <button
           onClick={onOpenRateModal}
