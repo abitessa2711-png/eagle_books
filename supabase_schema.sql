@@ -7,12 +7,20 @@
 CREATE TABLE IF NOT EXISTS public.customers (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
+    jewellery_shop TEXT,
     phone TEXT,
     address TEXT,
-    type TEXT DEFAULT 'karigar',
+    type TEXT DEFAULT 'typeJewelleryShop',
+    custom_type TEXT,
+    notes TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migrations for existing tables
+ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS jewellery_shop TEXT;
+ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS custom_type TEXT;
+ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS notes TEXT;
 
 -- 2. Create Transactions Table
 CREATE TABLE IF NOT EXISTS public.transactions (

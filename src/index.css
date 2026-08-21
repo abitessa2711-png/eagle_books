@@ -615,17 +615,42 @@ html, body {
   justify-content: center;
 }
 
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+}
+
 /* Modal styles */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(9, 15, 36, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(9, 15, 36, 0.65);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
   padding: 1rem;
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0.4rem;
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    max-height: 94vh;
+    border-radius: 20px 20px 0 0 !important;
+  }
 }
 
 .modal-content {

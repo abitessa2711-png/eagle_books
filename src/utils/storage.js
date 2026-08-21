@@ -104,9 +104,12 @@ export async function fetchCloudData() {
       result.customers = custRes.data.map(c => ({
         id: c.id,
         name: c.name,
+        jewelleryShop: c.jewellery_shop || c.jewelleryShop || '',
         phone: c.phone || '',
         address: c.address || '',
-        type: c.type || 'karigar',
+        type: c.type || 'typeJewelleryShop',
+        customType: c.custom_type || c.customType || '',
+        notes: c.notes || '',
         createdAt: c.created_at
       }));
       result.hasCloudData = true;
@@ -156,9 +159,12 @@ export async function uploadLocalDataToCloud(customers, transactions, rates) {
       const dbCust = customers.map(c => ({
         id: c.id,
         name: c.name,
+        jewellery_shop: c.jewelleryShop || '',
         phone: c.phone || '',
         address: c.address || '',
-        type: c.type || 'karigar'
+        type: c.type || 'typeJewelleryShop',
+        custom_type: c.customType || '',
+        notes: c.notes || ''
       }));
       await supabase.from('customers').upsert(dbCust, { onConflict: 'id' });
     }
@@ -207,9 +213,12 @@ export async function syncCustomerToCloud(customer) {
     const payload = {
       id: customer.id,
       name: customer.name,
+      jewellery_shop: customer.jewelleryShop || '',
       phone: customer.phone || '',
       address: customer.address || '',
-      type: customer.type || 'karigar',
+      type: customer.type || 'typeJewelleryShop',
+      custom_type: customer.customType || '',
+      notes: customer.notes || '',
       updated_at: new Date().toISOString()
     };
     await supabase.from('customers').upsert(payload, { onConflict: 'id' });
