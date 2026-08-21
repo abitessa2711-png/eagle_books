@@ -46,16 +46,30 @@ export function KhatabookCustomerList({
     const term = searchTerm.toLowerCase().trim();
 
     const matchesSearch = 
-      cust.name.toLowerCase().includes(term) ||
+      (cust.name && cust.name.toLowerCase().includes(term)) ||
+      (cust.jewelleryShop && cust.jewelleryShop.toLowerCase().includes(term)) ||
       (cust.phone && cust.phone.includes(term)) ||
-      (cust.address && cust.address.toLowerCase().includes(term));
+      (cust.address && cust.address.toLowerCase().includes(term)) ||
+      (cust.type && cust.type.toLowerCase().includes(term));
 
     if (!matchesSearch) return false;
 
     if (filterType === 'DUE') return summary.netBalanceGrams > 0.001;
     if (filterType === 'ADVANCE') return summary.netBalanceGrams < -0.001;
+    if (filterType === 'JEWELLERY') return cust.type === 'typeJewelleryShop' || Boolean(cust.jewelleryShop);
+    if (filterType === 'KARIGAR') return cust.type === 'typeKarigar';
     return true;
   });
+
+  const getTypeLabel = (cust) => {
+    if (cust.type === 'typeJewelleryShop') return '🏬 நகைக்கடை';
+    if (cust.type === 'typeKarigar') return '🔨 பட்டறை';
+    if (cust.type === 'typeWholesale') return '📦 மொத்த வியாபாரி';
+    if (cust.type === 'typeRetail') return '🛒 சில்லறை';
+    if (cust.customType) return `✨ ${cust.customType}`;
+    if (cust.type && cust.type !== 'typeGeneral') return cust.type;
+    return null;
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '90px' }}>
@@ -93,17 +107,17 @@ export function KhatabookCustomerList({
 
       {/* 2. SEARCH BAR */}
       <div className="search-wrapper">
-        <div style={{ position: 'relative' }}>
+        <div className="search-box-container">
           <Search 
-            size={16} 
-            color="#64748b" 
+            size={18} 
+            color="#94a3b8" 
             style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)' }} 
           />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={t.searchCustomer}
+            placeholder={lang === 'ta' ? 'வாடிக்கையாளர் / நகைக்கடை பெயர் / போன் எண் தேடுக...' : 'Search Name, Shop, Phone...'}
             className="search-input-box"
           />
         </div>
@@ -124,6 +138,18 @@ export function KhatabookCustomerList({
           className={`filter-tab-pill ${filterType === 'ALL' ? 'active' : ''}`}
         >
           {t.filterAll} ({(customers || []).length})
+        </button>
+        <button
+          onClick={() => setFilterType('JEWELLERY')}
+          className={`filter-tab-pill ${filterType === 'JEWELLERY' ? 'active' : ''}`}
+        >
+          🏬 நகைக்கடைகள்
+        </button>
+        <button
+          onClick={() => setFilterType('KARIGAR')}
+          className={`filter-tab-pill ${filterType === 'KARIGAR' ? 'active' : ''}`}
+        >
+          🔨 பட்டறை
         </button>
         <button
           onClick={() => setFilterType('DUE')}
@@ -189,6 +215,7 @@ export function KhatabookCustomerList({
             const approxRupees = Math.abs(summary.netBalanceGrams) * currentRate;
 
             const initial = cust.name ? cust.name.trim().charAt(0) : 'C';
+            const typeBadge = getTypeLabel(cust);
 
             return (
               <div
@@ -203,11 +230,22 @@ export function KhatabookCustomerList({
 
                 {/* Customer Details */}
                 <div className="customer-info-box">
-                  <div className="customer-name-text">
-                    {cust.name}
+                  <div className="customer-name-text" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+                    <span>{cust.name}</span>
+                    {cust.jewelleryShop && (
+                      <span style={{ fontSize: '0.78rem', color: '#ea580c', fontWeight: '800', background: '#fff7ed', padding: '0.1rem 0.4rem', borderRadius: '4px', border: '1px solid #ffedd5' }}>
+                        🏬 {cust.jewelleryShop}
+                      </span>
+                    )}
                   </div>
-                  <div className="customer-sub-text">
-                    {cust.phone ? `📞 ${cust.phone}` : ''} {cust.address ? `• 📍 ${cust.address.split(',')[0]}` : ''}
+                  <div className="customer-sub-text" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.15rem' }}>
+                    {cust.phone ? <span>📞 {cust.phone}</span> : null}
+                    {cust.address ? <span>• 📍 {cust.address.split(',')[0]}</span> : null}
+                    {typeBadge && !cust.jewelleryShop ? (
+                      <span style={{ fontSize: '0.7rem', color: '#0369a1', fontWeight: '700', background: '#f0f9ff', padding: '0.05rem 0.3rem', borderRadius: '3px' }}>
+                        {typeBadge}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
 

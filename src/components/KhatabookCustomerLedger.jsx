@@ -121,10 +121,15 @@ export function KhatabookCustomerLedger({
       <div className="customer-profile-card">
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#000000' }}>
-              {customer.name}
+            <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#000000', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+              <span>{customer.name}</span>
+              {customer.jewelleryShop && (
+                <span style={{ fontSize: '0.82rem', color: '#ea580c', fontWeight: '800', background: '#fff7ed', padding: '0.15rem 0.5rem', borderRadius: '6px', border: '1px solid #ffedd5' }}>
+                  🏬 {customer.jewelleryShop}
+                </span>
+              )}
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#475569', marginTop: '0.15rem', fontWeight: '700' }}>
+            <div style={{ fontSize: '0.8rem', color: '#475569', marginTop: '0.2rem', fontWeight: '700' }}>
               📍 {customer.address || '-'} • 📞 {customer.phone || '-'}
             </div>
           </div>

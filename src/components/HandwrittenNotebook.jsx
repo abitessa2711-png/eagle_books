@@ -195,9 +195,18 @@ export function HandwrittenNotebook({
               fontWeight: '900',
               color: '#0a2569', /* Royal Blue Ink */
               lineHeight: 1.2,
-              margin: 0
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              flexWrap: 'wrap'
             }}>
-              {customer.name}
+              <span>{customer.name}</span>
+              {customer.jewelleryShop && (
+                <span style={{ fontSize: '0.85rem', color: '#ea580c', fontWeight: '800', background: '#fff7ed', padding: '0.1rem 0.45rem', borderRadius: '4px', border: '1px solid #ffedd5' }}>
+                  🏬 {customer.jewelleryShop}
+                </span>
+              )}
             </h2>
 
             {customer.address && (

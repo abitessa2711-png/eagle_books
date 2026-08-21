@@ -36,13 +36,17 @@ export const translations = {
     
     // Customer Details & Badges
     customerName: 'வாடிக்கையாளர் பெயர்',
+    jewelleryShop: 'நகைக்கடை / நிறுவனம் (Jewellery Shop Name)',
     phone: 'தொலைபேசி எண்',
     address: 'ஊர் / முகவரி',
     customerType: 'வாடிக்கையாளர் வகை',
-    typeRetail: 'சில்லறை வாடிக்கையாளர்',
-    typeWholesale: 'மொத்த வியாபாரி',
-    typeKarigar: 'பட்டறை / ஆச்சாரி (Karigar)',
-    typeGeneral: 'வழக்கமான வாடிக்கையாளர்',
+    typeRetail: '🛒 சில்லறை வாடிக்கையாளர்',
+    typeJewelleryShop: '🏬 நகைக்கடை / ஜூவல்லரி ஷாப்',
+    typeWholesale: '📦 மொத்த வியாபாரி',
+    typeKarigar: '🔨 பட்டறை / ஆச்சாரி (Karigar)',
+    typeGeneral: '👤 வழக்கமான வாடிக்கையாளர்',
+    typeCustom: '✨ பிற / விருப்பமான வகை (Custom Type...)',
+    customTypePlaceholder: 'எ.கா: கடா கடை / ஏஜென்ட் / பத்தர்',
     
     statusDue: 'நீங்கள் பெற வேண்டியது (You will get)',
     statusAdvance: 'நீங்கள் தர வேண்டியது (You will give)',
@@ -155,13 +159,17 @@ export const translations = {
     
     // Customer Details & Badges
     customerName: 'Customer Name',
+    jewelleryShop: 'Jewellery Shop / Business Name',
     phone: 'Phone Number',
     address: 'City / Address',
     customerType: 'Customer Category',
-    typeRetail: 'Retail Customer',
-    typeWholesale: 'Wholesaler',
-    typeKarigar: 'Karigar / Goldsmith',
-    typeGeneral: 'Regular Customer',
+    typeRetail: '🛒 Retail Customer',
+    typeJewelleryShop: '🏬 Jewellery Shop',
+    typeWholesale: '📦 Wholesaler',
+    typeKarigar: '🔨 Karigar / Goldsmith',
+    typeGeneral: '👤 Regular Customer',
+    typeCustom: '✨ Custom Category...',
+    customTypePlaceholder: 'e.g. Agent / Dealer / Workshop',
     
     statusDue: 'You Will Get (Due)',
     statusAdvance: 'You Will Give (Advance)',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, UserPlus, Check, User, Phone, MapPin, Tag } from 'lucide-react';
+import { X, UserPlus, Check, Building2, Tag } from 'lucide-react';
 import { translations } from '../utils/translations';
 
 export function CustomerModal({
@@ -9,12 +9,14 @@ export function CustomerModal({
   onSaveCustomer,
   editingCustomer = null
 }) {
-  const t = translations[lang];
+  const t = translations[lang] || translations.ta;
 
   const [name, setName] = useState(editingCustomer ? editingCustomer.name : '');
+  const [jewelleryShop, setJewelleryShop] = useState(editingCustomer ? (editingCustomer.jewelleryShop || '') : '');
   const [phone, setPhone] = useState(editingCustomer ? editingCustomer.phone : '');
   const [address, setAddress] = useState(editingCustomer ? editingCustomer.address : '');
-  const [type, setType] = useState(editingCustomer ? editingCustomer.type : 'typeRetail');
+  const [type, setType] = useState(editingCustomer ? (editingCustomer.type || 'typeJewelleryShop') : 'typeJewelleryShop');
+  const [customType, setCustomType] = useState(editingCustomer ? (editingCustomer.customType || '') : '');
   const [notes, setNotes] = useState(editingCustomer ? editingCustomer.notes : '');
   const [openingBalance, setOpeningBalance] = useState('');
 
@@ -27,9 +29,11 @@ export function CustomerModal({
     const customerData = {
       id: editingCustomer ? editingCustomer.id : `cust-${Date.now()}`,
       name: name.trim(),
+      jewelleryShop: jewelleryShop.trim(),
       phone: phone.trim(),
       address: address.trim(),
-      type,
+      type: type === 'typeCustom' ? (customType.trim() || 'Custom') : type,
+      customType: type === 'typeCustom' ? customType.trim() : '',
       notes: notes.trim(),
       createdAt: editingCustomer ? editingCustomer.createdAt : new Date().toISOString()
     };
@@ -40,7 +44,7 @@ export function CustomerModal({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '580px', borderRadius: '16px' }}>
         
         {/* Header */}
         <div style={{
@@ -48,14 +52,17 @@ export function CustomerModal({
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '1.25rem 1.5rem',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+          borderBottom: '1px solid #e2e8f0',
+          background: 'linear-gradient(135deg, #090f24 0%, #1e293b 100%)',
+          borderRadius: '16px 16px 0 0',
+          color: '#ffffff'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <div style={{
               width: '36px',
               height: '36px',
               borderRadius: '10px',
-              background: 'rgba(2, 132, 199, 0.2)',
+              background: 'rgba(56, 189, 248, 0.2)',
               color: '#38bdf8',
               display: 'flex',
               alignItems: 'center',
@@ -63,32 +70,48 @@ export function CustomerModal({
             }}>
               <UserPlus size={18} />
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: 0, color: '#f8fafc' }}>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: 0, color: '#ffffff' }}>
               {editingCustomer 
-                ? (lang === 'ta' ? 'வாடிக்கையாளர் விவரங்களை திருத்துக' : 'Edit Customer') 
+                ? (lang === 'ta' ? 'வாடிக்கையாளர் / நகைக்கடை விவரங்களை திருத்துக' : 'Edit Customer / Jeweller') 
                 : t.newCustomer}
             </h3>
           </div>
 
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
-            <X size={20} />
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', cursor: 'pointer' }}>
+            <X size={18} />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSubmit} style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#ffffff' }}>
           
-          <div>
-            <label className="input-label">{t.customerName} *</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={lang === 'ta' ? 'எ.கா: சரவணன் / ராஜா ஜூவல்லர்ஸ்' : 'e.g. Saravanan / Raja Jewellers'}
-              className="input-field"
-              required
-              autoFocus
-            />
+          <div className="grid-2">
+            <div>
+              <label className="input-label">{t.customerName} *</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={lang === 'ta' ? 'எ.கா: சரவணன் / ராஜா' : 'e.g. Saravanan / Raja'}
+                className="input-field"
+                required
+                autoFocus
+              />
+            </div>
+
+            <div>
+              <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Building2 size={15} color="#ea580c" />
+                <span>{t.jewelleryShop}</span>
+              </label>
+              <input
+                type="text"
+                value={jewelleryShop}
+                onChange={(e) => setJewelleryShop(e.target.value)}
+                placeholder={lang === 'ta' ? 'எ.கா: ஸ்ரீராம் ஜூவல்லர்ஸ்' : 'e.g. Sriram Jewellers'}
+                className="input-field"
+              />
+            </div>
           </div>
 
           <div className="grid-2">
@@ -104,19 +127,42 @@ export function CustomerModal({
             </div>
 
             <div>
-              <label className="input-label">{t.customerType}</label>
+              <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Tag size={15} color="#0284c7" />
+                <span>{t.customerType}</span>
+              </label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
                 className="input-field"
+                style={{ fontWeight: '700' }}
               >
+                <option value="typeJewelleryShop">{t.typeJewelleryShop}</option>
                 <option value="typeRetail">{t.typeRetail}</option>
-                <option value="typeKarigar">{t.typeKarigar}</option>
                 <option value="typeWholesale">{t.typeWholesale}</option>
+                <option value="typeKarigar">{t.typeKarigar}</option>
                 <option value="typeGeneral">{t.typeGeneral}</option>
+                <option value="typeCustom">{t.typeCustom}</option>
               </select>
             </div>
           </div>
+
+          {/* Custom Category Input if Custom Selected */}
+          {type === 'typeCustom' && (
+            <div style={{ background: '#f0f9ff', padding: '0.85rem', borderRadius: '10px', border: '1.5px dashed #0284c7' }}>
+              <label className="input-label" style={{ color: '#0369a1' }}>
+                {lang === 'ta' ? '✨ விருப்பமான வகை பெயர் (Custom Type Name)' : 'Custom Category Name'}
+              </label>
+              <input
+                type="text"
+                value={customType}
+                onChange={(e) => setCustomType(e.target.value)}
+                placeholder={t.customTypePlaceholder}
+                className="input-field"
+                required
+              />
+            </div>
+          )}
 
           <div>
             <label className="input-label">{t.address}</label>
@@ -124,7 +170,7 @@ export function CustomerModal({
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder={lang === 'ta' ? 'ஊர், முகவரி (எ.கா: சிவகாசி / விருதுநகர்)' : 'City / Area (e.g. Sivakasi)'}
+              placeholder={lang === 'ta' ? 'ஊர், முகவரி (எ.கா: சிவகாசி / மதுரை)' : 'City / Area (e.g. Sivakasi)'}
               className="input-field"
             />
           </div>
@@ -143,7 +189,7 @@ export function CustomerModal({
                   placeholder="0.000"
                   className="input-field"
                 />
-                <span style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85rem' }}>
+                <span style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b', fontSize: '0.85rem', fontWeight: '800' }}>
                   g
                 </span>
               </div>
@@ -167,7 +213,7 @@ export function CustomerModal({
             <button type="button" onClick={onClose} className="btn btn-outline">
               {t.cancel}
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary" style={{ background: '#ea580c', borderColor: '#ea580c' }}>
               <Check size={16} />
               <span>{t.save}</span>
             </button>
