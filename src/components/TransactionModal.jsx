@@ -277,7 +277,8 @@ export function TransactionModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} style={{ padding: '1rem 1.5rem 1.5rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          <div className="modal-body-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
           {/* Date Picker */}
           <div>
@@ -652,8 +653,10 @@ export function TransactionModal({
             />
           </div>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+          </div>
+
+          {/* Action Buttons Fixed Footer Bar */}
+          <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid #e2e8f0', background: '#ffffff', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexShrink: 0 }}>
             <button
               type="button"
               onClick={onClose}
@@ -665,7 +668,7 @@ export function TransactionModal({
             <button
               type="submit"
               className="btn btn-primary"
-              style={{ minWidth: '130px' }}
+              style={{ minWidth: '130px', fontWeight: '900' }}
             >
               <Check size={16} />
               <span>{t.save}</span>

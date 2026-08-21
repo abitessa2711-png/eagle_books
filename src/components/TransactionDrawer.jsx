@@ -136,7 +136,9 @@ export function TransactionDrawer({
           background: '#ffffff',
           color: '#000000',
           border: initialMode === 'GIVE' ? '2.5px solid #dc2626' : '2.5px solid #059669',
-          overflow: 'hidden'
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: '92vh'
         }}
       >
         
@@ -149,7 +151,8 @@ export function TransactionDrawer({
           padding: '1rem 1.25rem',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          flexShrink: 0
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <div style={{
@@ -240,7 +243,9 @@ export function TransactionDrawer({
         )}
 
         {/* Drawer Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '1.25rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          
+          <div className="modal-body-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
           
           {/* Date */}
           <div>
@@ -302,6 +307,7 @@ export function TransactionDrawer({
                       type="number"
                       step="0.001"
                       min="0"
+                      inputMode="decimal"
                       value={grossWeight}
                       onChange={(e) => setGrossWeight(e.target.value)}
                       placeholder="0.000"
@@ -323,6 +329,7 @@ export function TransactionDrawer({
                     step="0.1"
                     min="1"
                     max="100"
+                    inputMode="decimal"
                     value={touchPercent}
                     onChange={(e) => setTouchPercent(e.target.value)}
                     className="input-field"
@@ -386,6 +393,7 @@ export function TransactionDrawer({
                       type="number"
                       step="1"
                       min="1"
+                      inputMode="numeric"
                       value={cashAmount}
                       onChange={(e) => setCashAmount(e.target.value)}
                       placeholder="25000"
@@ -406,6 +414,7 @@ export function TransactionDrawer({
                     <input
                       type="number"
                       step="0.01"
+                      inputMode="decimal"
                       value={ratePerGram}
                       onChange={(e) => setRatePerGram(e.target.value)}
                       className="input-field"
@@ -436,6 +445,7 @@ export function TransactionDrawer({
                       <input
                         type="number"
                         step="0.1"
+                        inputMode="decimal"
                         value={cashTouchPercent}
                         onChange={(e) => setCashTouchPercent(e.target.value)}
                         style={{
@@ -533,6 +543,7 @@ export function TransactionDrawer({
                       type="number"
                       step="0.001"
                       min="0"
+                      inputMode="decimal"
                       value={grossWeight}
                       onChange={(e) => setGrossWeight(e.target.value)}
                       placeholder="0.000"
@@ -554,6 +565,7 @@ export function TransactionDrawer({
                     step="0.1"
                     min="1"
                     max="100"
+                    inputMode="decimal"
                     value={touchPercent}
                     onChange={(e) => setTouchPercent(e.target.value)}
                     className="input-field"
@@ -617,27 +629,37 @@ export function TransactionDrawer({
             />
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="btn-mobile"
-            style={{
-              background: initialMode === 'GIVE' 
-                ? 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)' 
-                : 'linear-gradient(135deg, #059669 0%, #064e3b 100%)',
-              color: '#ffffff',
-              padding: '0.85rem',
-              fontSize: '1rem',
-              borderRadius: '12px',
-              marginTop: '0.5rem',
-              boxShadow: initialMode === 'GIVE' 
-                ? '0 4px 15px rgba(220, 38, 38, 0.3)' 
-                : '0 4px 15px rgba(5, 150, 105, 0.3)'
-            }}
-          >
-            <Check size={18} />
-            <span>{t.save}</span>
-          </button>
+          </div>
+
+          {/* Fixed Footer Submit Button Bar */}
+          <div style={{
+            padding: '0.75rem 1.25rem',
+            borderTop: '1.5px solid #e2e8f0',
+            background: '#ffffff',
+            flexShrink: 0
+          }}>
+            <button
+              type="submit"
+              className="btn-mobile"
+              style={{
+                width: '100%',
+                background: initialMode === 'GIVE' 
+                  ? 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)' 
+                  : 'linear-gradient(135deg, #059669 0%, #064e3b 100%)',
+                color: '#ffffff',
+                padding: '0.85rem',
+                fontSize: '1rem',
+                fontWeight: '900',
+                borderRadius: '12px',
+                boxShadow: initialMode === 'GIVE' 
+                  ? '0 4px 15px rgba(220, 38, 38, 0.3)' 
+                  : '0 4px 15px rgba(5, 150, 105, 0.3)'
+              }}
+            >
+              <Check size={18} />
+              <span>{t.save}</span>
+            </button>
+          </div>
 
         </form>
 

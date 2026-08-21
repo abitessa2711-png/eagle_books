@@ -83,7 +83,9 @@ export function CustomerModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#ffffff' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden', background: '#ffffff' }}>
+          
+          <div className="modal-body-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
           <div className="grid-2">
             <div>
@@ -208,12 +210,14 @@ export function CustomerModal({
             />
           </div>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+          </div>
+
+          {/* Action Buttons Fixed Footer Bar */}
+          <div style={{ padding: '0.75rem 1.5rem', borderTop: '1.5px solid #e2e8f0', background: '#ffffff', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexShrink: 0 }}>
             <button type="button" onClick={onClose} className="btn btn-outline">
               {t.cancel}
             </button>
-            <button type="submit" className="btn btn-primary" style={{ background: '#ea580c', borderColor: '#ea580c' }}>
+            <button type="submit" className="btn btn-primary" style={{ background: '#ea580c', borderColor: '#ea580c', fontWeight: '900', minWidth: '120px' }}>
               <Check size={16} />
               <span>{t.save}</span>
             </button>

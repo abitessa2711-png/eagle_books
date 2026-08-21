@@ -131,11 +131,11 @@ export function HandwrittenNotebook({
 
       {/* 2. REALISTIC JEWELLER NOTEBOOK PAGE */}
       <div style={{
-        margin: '0.85rem 1rem',
+        margin: '0.75rem 0.5rem',
         background: '#fbfbf7', /* Natural Pale Ivory Paper */
         border: '2px solid #090f24',
         borderRadius: '10px',
-        padding: '1.25rem',
+        padding: '0.9rem 0.75rem',
         boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)',
         position: 'relative',
         fontFamily: "'Noto Sans Tamil', 'Calibri', 'Plus Jakarta Sans', sans-serif"

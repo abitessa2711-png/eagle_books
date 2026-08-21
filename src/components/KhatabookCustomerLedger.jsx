@@ -186,7 +186,7 @@ export function KhatabookCustomerLedger({
       </div>
 
       {/* 3. TRANSACTION HISTORY TIMELINE */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.45rem', padding: '0.5rem 0 1rem 0' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.45rem', padding: '0.5rem 0 2.5rem 0' }}>
         {transactions.length === 0 ? (
           <div style={{ padding: '3.5rem 1.5rem', textAlign: 'center', color: '#475569' }}>
             <FileText size={36} color="#cbd5e1" style={{ margin: '0 auto 0.75rem auto' }} />

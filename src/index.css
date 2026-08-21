@@ -76,40 +76,66 @@ html, body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  background-color: var(--bg-app);
+  background: linear-gradient(135deg, #090f24 0%, #1e293b 50%, #090f24 100%);
+  padding: 1.5rem 1rem;
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 0;
+    background-color: var(--bg-surface);
+  }
 }
 
 /* =========================================================================
-   APP SHELL CONTAINER (Locked Height - Native App Feel - Bottom Nav Fixed!)
+   APP SHELL CONTAINER (Authentic Compact Mobile Device Frame View)
    ========================================================================= */
 .app-container {
   width: 100%;
-  max-width: 480px;
-  height: 100dvh;
-  max-height: 100dvh;
+  max-width: 390px;
   height: 100vh;
-  max-height: 100vh;
+  height: 100dvh;
+  max-height: 820px;
   background-color: var(--bg-surface);
   display: flex;
   flex-direction: column;
   position: relative;
   margin: 0 auto;
-  box-shadow: 0 0 35px rgba(0, 0, 0, 0.08);
-  border-left: 1px solid var(--border-light);
-  border-right: 1px solid var(--border-light);
+  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.6), 0 0 0 8px #0f172a, 0 0 0 10px rgba(255, 255, 255, 0.15);
+  border-radius: 28px;
   overflow: hidden;
 }
 
 @media (max-width: 480px) {
   .app-container {
-    border-left: none;
-    border-right: none;
+    border-radius: 0;
     box-shadow: none;
     max-width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+  }
+
+  /* Prevent auto-zoom on input focus on iOS/Android browsers */
+  input, select, textarea {
+    font-size: 16px !important;
   }
 }
 
-/* Scrollable Content Container (ONLY this element scrolls up and down!) */
+/* Hide all ugly desktop scrollbars globally for a sleek mobile phone look */
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Scrollable Content Container */
 .app-scroll-main {
   flex: 1;
   min-height: 0;
@@ -303,21 +329,30 @@ html, body {
 }
 
 .hero-balance-value {
-  font-size: 1.45rem;
+  font-size: 1.35rem;
   font-weight: 900;
   line-height: 1.15;
   margin: 0.2rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hero-balance-sub {
   font-size: 0.78rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 /* Search Bar */
 .search-wrapper {
   padding: 0.45rem 1rem;
   flex-shrink: 0;
+}
+
+.search-box-container {
+  position: relative;
+  width: 100%;
 }
 
 .search-input-box {
@@ -468,27 +503,34 @@ html, body {
 }
 
 .customer-profile-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.35rem;
   margin-top: 0.75rem;
 }
 
+@media (max-width: 440px) {
+  .customer-profile-actions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .profile-action-pill {
-  flex: 1;
-  padding: 0.45rem 0.5rem;
+  width: 100%;
+  padding: 0.45rem 0.3rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-medium);
   background: #f8fafc;
   color: var(--text-sub);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 /* Transaction Item Bubbles */
@@ -521,6 +563,8 @@ html, body {
 
 /* Sticky Bottom Action Buttons (YOU GAVE / YOU GOT) */
 .sticky-bottom-actions {
+  position: sticky;
+  bottom: 0;
   flex-shrink: 0;
   background: #ffffff;
   border-top: 1.5px solid var(--border-medium);
@@ -528,8 +572,8 @@ html, body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
-  z-index: 40;
-  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
+  z-index: 45;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.12);
 }
 
 .btn-khatabook-gave {
@@ -632,24 +676,26 @@ html, body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(9, 15, 36, 0.65);
+  background: rgba(9, 15, 36, 0.7);
   backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
-  padding: 1rem;
+  padding: 0.75rem;
 }
 
 @media (max-width: 480px) {
   .modal-overlay {
-    padding: 0.4rem;
-    align-items: flex-end;
+    padding: 0.5rem;
+    align-items: center;
+    justify-content: center;
   }
 
   .modal-content {
-    max-height: 94vh;
-    border-radius: 20px 20px 0 0 !important;
+    max-height: 86vh !important;
+    border-radius: 16px !important;
+    margin: auto !important;
   }
 }
 
@@ -659,9 +705,19 @@ html, body {
   border-radius: var(--radius-lg);
   width: 100%;
   max-width: 540px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-shadow: var(--shadow-floating);
+  margin: auto;
+}
+
+.modal-body-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 1.25rem;
 }
 
 .input-label {
