@@ -86,26 +86,47 @@ export function App() {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isConverterModalOpen, setIsConverterModalOpen] = useState(false);
 
-  // 1. 100% Automatic & Silent Cloud Sync
+  // 1. 100% Automatic & Silent Cloud Sync with Bi-Directional Merge
   const syncDataFromCloud = useCallback(async () => {
     try {
       const cloudRes = await fetchCloudData();
       if (cloudRes.hasCloudData) {
-        if (cloudRes.customers && Array.isArray(cloudRes.customers)) {
-          setCustomers(cloudRes.customers);
-        }
-        if (cloudRes.transactions && Array.isArray(cloudRes.transactions)) {
-          setTransactions(cloudRes.transactions);
-        }
+        setCustomers((prevCustomers) => {
+          const cloudCusts = cloudRes.customers || [];
+          const cloudMap = new Map(cloudCusts.map(c => [c.id, c]));
+          const unSyncedLocal = prevCustomers.filter(lc => !cloudMap.has(lc.id));
+          if (unSyncedLocal.length > 0) {
+            uploadLocalDataToCloud(unSyncedLocal, [], null);
+          }
+          return [...cloudCusts, ...unSyncedLocal];
+        });
+
+        setTransactions((prevTx) => {
+          const cloudTxs = cloudRes.transactions || [];
+          const cloudTxMap = new Map(cloudTxs.map(t => [t.id, t]));
+          const unSyncedLocalTx = prevTx.filter(lt => !cloudTxMap.has(lt.id));
+          if (unSyncedLocalTx.length > 0) {
+            uploadLocalDataToCloud([], unSyncedLocalTx, null);
+          }
+          return [...cloudTxs, ...unSyncedLocalTx];
+        });
+
         if (cloudRes.rates) {
           setRates(prev => ({ ...prev, ...cloudRes.rates }));
         }
         setCloudSynced(true);
+      } else {
+        setCustomers((prev) => {
+          if (prev && prev.length > 0) {
+            uploadLocalDataToCloud(prev, transactions, rates);
+          }
+          return prev;
+        });
       }
     } catch (err) {
       console.warn('Silent cloud sync warning:', err);
     }
-  }, []);
+  }, [transactions, rates]);
 
   useEffect(() => {
     let isMounted = true;
@@ -173,12 +194,17 @@ export function App() {
     saveLang(lang);
   }, [lang]);
 
-  // Auth Handlers
   const handleLoginSuccess = (user) => {
     const finalUser = user || DEFAULT_OWNER_USER;
     setAuthUser(finalUser);
     saveAuthUser(finalUser);
-    syncDataFromCloud(); // Immediately fetch latest cloud data upon login!
+    if (customers && customers.length > 0) {
+      uploadLocalDataToCloud(customers, transactions, rates).then(() => {
+        syncDataFromCloud();
+      });
+    } else {
+      syncDataFromCloud();
+    }
     try {
       confetti({
         particleCount: 50,
