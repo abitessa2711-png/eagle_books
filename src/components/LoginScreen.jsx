@@ -30,25 +30,18 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
     const cleanId = (loginId || '').trim().toLowerCase();
     const cleanPass = (password || '').trim();
 
-    // Accept eaglebooks.com, idhayam, admin, or phone number with eaglebooks@123 (or 1234)
-    const isValidId = 
-      cleanId.includes('eagle') || 
-      cleanId.includes('idhayam') || 
-      cleanId.includes('admin') || 
-      cleanId === '9842154321' ||
-      cleanId === 'eaglebooks.com' ||
-      cleanId === 'eaglebooks';
-
+    const isValidId = cleanId.length >= 2;
     const isValidPassword = 
       cleanPass === 'eaglebooks@123' || 
       cleanPass === '1234' || 
-      cleanPass === 'eaglebooks';
+      cleanPass === 'eaglebooks' ||
+      cleanPass === 'admin';
 
     if (isValidId && isValidPassword) {
       setLoading(true);
 
       const ownerUser = {
-        id: 'eaglebooks.com',
+        id: cleanId,
         phone: '8148003454',
         name: 'EagleBooks Admin',
         shopName: 'EAGLE SILVERS',
@@ -63,8 +56,8 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
     } else {
       setErrorMsg(
         lang === 'ta'
-          ? 'தவறான பயனர் ஐடி அல்லது கடவுச்சொல்!'
-          : 'Invalid Login ID or Password!'
+          ? 'தவறான கடவுச்சொல்! (கடவுச்சொல்: eaglebooks@123 அல்லது 1234)'
+          : 'Invalid Password! (Password: eaglebooks@123 or 1234)'
       );
     }
   };

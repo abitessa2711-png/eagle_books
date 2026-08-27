@@ -396,6 +396,7 @@ export function App() {
             onOpenTransactionModal={handleOpenGiveDrawer}
             onBack={() => setActiveTab('customers')}
             onOpenWhatsAppModal={handleOpenWhatsApp}
+            onDeleteTransaction={handleDeleteTransaction}
           />
         )}
 

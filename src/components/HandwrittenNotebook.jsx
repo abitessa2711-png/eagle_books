@@ -5,7 +5,8 @@ import {
   ArrowLeft, 
   Phone,
   MapPin,
-  MessageSquare
+  MessageSquare,
+  Trash2
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 import { formatGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
@@ -17,7 +18,8 @@ export function HandwrittenNotebook({
   rates,
   onOpenTransactionModal,
   onBack,
-  onOpenWhatsAppModal
+  onOpenWhatsAppModal,
+  onDeleteTransaction
 }) {
   const t = translations[lang] || translations.ta;
 
@@ -286,10 +288,32 @@ export function HandwrittenNotebook({
                       )}
                     </div>
                     
-                    <div style={{ textAlign: 'right', color: isCredit ? '#047857' : '#b91c1c', fontWeight: '800', fontSize: '1.05rem' }}>
-                      <div>{isCredit ? '–' : '+'}</div>
-                      <div>{formatGrams(isCredit ? tx.creditGrams : tx.debitGrams)}</div>
-                      <div style={{ fontSize: '0.78rem' }}>gm</div>
+                    <div style={{ textAlign: 'right', color: isCredit ? '#047857' : '#b91c1c', fontWeight: '800', fontSize: '1.05rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      <div>{isCredit ? '–' : '+'} {formatGrams(isCredit ? tx.creditGrams : tx.debitGrams)} gm</div>
+                      {onDeleteTransaction && (
+                        <button
+                          type="button"
+                          onClick={() => onDeleteTransaction(tx.id)}
+                          style={{
+                            background: '#fef2f2',
+                            border: '1px solid #fca5a5',
+                            borderRadius: '4px',
+                            color: '#dc2626',
+                            cursor: 'pointer',
+                            padding: '0.15rem 0.4rem',
+                            marginTop: '0.25rem',
+                            fontSize: '0.7rem',
+                            fontWeight: '800',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.2rem'
+                          }}
+                          title={lang === 'ta' ? 'பதிவை நீக்குக' : 'Delete Record'}
+                        >
+                          <Trash2 size={12} />
+                          <span>{lang === 'ta' ? 'நீக்கு' : 'Delete'}</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 
