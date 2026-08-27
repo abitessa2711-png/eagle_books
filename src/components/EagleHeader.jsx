@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   TrendingUp, 
-  LogOut
+  LogOut,
+  RefreshCw,
+  CloudCheck
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 
@@ -11,10 +13,23 @@ export function EagleHeader({
   rates,
   currentUser,
   onLogout,
-  onOpenRateModal
+  onOpenRateModal,
+  onManualSync
 }) {
   const t = translations[lang] || translations.ta;
   const currentRate = Number(rates?.ratePerGram) || 95;
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncClick = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    if (onManualSync) {
+      await onManualSync();
+    }
+    setTimeout(() => {
+      setSyncing(false);
+    }, 600);
+  };
 
   return (
     <header className="app-header">
@@ -38,6 +53,32 @@ export function EagleHeader({
       {/* Header Actions - Clean, Elegant & Client Delivery Ready */}
       <div className="header-actions">
         
+        {/* Manual Cloud Sync Button */}
+        {onManualSync && (
+          <button
+            onClick={handleSyncClick}
+            className="header-action-btn"
+            style={{
+              background: '#f0fdf4',
+              color: '#15803d',
+              border: '1.5px solid #86efac',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              fontWeight: '800',
+              padding: '0.35rem 0.65rem',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+            title={lang === 'ta' ? 'போன் மற்றும் லேப்டாப் டேட்டாவை புதுப்பி (Sync All Data)' : 'Sync Cloud Data'}
+          >
+            <RefreshCw size={14} className={syncing ? 'spin-icon' : ''} />
+            <span style={{ fontSize: '0.74rem' }}>
+              {syncing ? (lang === 'ta' ? 'புதுப்பிக்கிறது...' : 'Syncing...') : (lang === 'ta' ? 'சிங்க்' : 'Sync')}
+            </span>
+          </button>
+        )}
+
         {/* Live Silver Rate Pill */}
         <button
           onClick={onOpenRateModal}

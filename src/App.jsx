@@ -352,6 +352,13 @@ export function App() {
     }
   };
 
+  const handleManualSync = async () => {
+    if (customers && customers.length > 0) {
+      await uploadLocalDataToCloud(customers, transactions, rates);
+    }
+    await syncDataFromCloud();
+  };
+
   // IF NOT AUTHENTICATED -> SHOW LOGIN SCREEN
   if (!authUser) {
     return (
@@ -374,6 +381,7 @@ export function App() {
         currentUser={authUser}
         onLogout={handleLogout}
         onOpenRateModal={() => setIsRateModalOpen(true)}
+        onManualSync={handleManualSync}
       />
 
       {/* 2. Main Content Screens */}
