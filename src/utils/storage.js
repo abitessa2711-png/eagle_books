@@ -101,17 +101,26 @@ export async function fetchCloudData() {
     };
 
     if (custRes.data && Array.isArray(custRes.data) && custRes.data.length > 0) {
-      result.customers = custRes.data.map(c => ({
-        id: c.id,
-        name: c.name,
-        jewelleryShop: c.jewellery_shop || c.jewelleryShop || '',
-        phone: c.phone || '',
-        address: c.address || '',
-        type: c.type || 'typeJewelleryShop',
-        customType: c.custom_type || c.customType || '',
-        notes: c.notes || '',
-        createdAt: c.created_at
-      }));
+      result.customers = custRes.data.map(c => {
+        let addressStr = c.address || '';
+        let jewelleryShopStr = c.jewellery_shop || c.jewelleryShop || '';
+        if (addressStr.includes(' | ')) {
+          const parts = addressStr.split(' | ');
+          addressStr = parts[0];
+          if (!jewelleryShopStr) jewelleryShopStr = parts[1];
+        }
+        return {
+          id: c.id,
+          name: c.name,
+          jewelleryShop: jewelleryShopStr,
+          phone: c.phone || '',
+          address: addressStr,
+          type: c.type || 'typeJewelleryShop',
+          customType: c.custom_type || c.customType || '',
+          notes: c.notes || '',
+          createdAt: c.created_at
+        };
+      });
       result.hasCloudData = true;
     }
 
@@ -156,16 +165,17 @@ export async function fetchCloudData() {
 export async function uploadLocalDataToCloud(customers, transactions, rates) {
   try {
     if (customers && customers.length > 0) {
-      const dbCust = customers.map(c => ({
-        id: c.id,
-        name: c.name,
-        jewellery_shop: c.jewelleryShop || '',
-        phone: c.phone || '',
-        address: c.address || '',
-        type: c.type || 'typeJewelleryShop',
-        custom_type: c.customType || '',
-        notes: c.notes || ''
-      }));
+      const dbCust = customers.map(c => {
+        const addr = c.jewelleryShop ? `${c.address || ''} | ${c.jewelleryShop}` : (c.address || '');
+        return {
+          id: c.id,
+          name: c.name,
+          phone: c.phone || '',
+          address: addr,
+          type: c.type || 'typeJewelleryShop',
+          updated_at: new Date().toISOString()
+        };
+      });
       await supabase.from('customers').upsert(dbCust, { onConflict: 'id' });
     }
 
@@ -198,6 +208,7 @@ export async function uploadLocalDataToCloud(customers, transactions, rates) {
       }, { onConflict: 'id' });
     }
 
+    broadcastLiveChange();
     return { success: true };
   } catch (err) {
     console.error('Error uploading local data to cloud:', err);
@@ -205,7 +216,6 @@ export async function uploadLocalDataToCloud(customers, transactions, rates) {
   }
 }
 
-/**
 /**
  * Broadcast live event signal across all connected browser tabs & devices
  */
@@ -227,15 +237,13 @@ export const broadcastLiveChange = () => {
  */
 export async function syncCustomerToCloud(customer) {
   try {
+    const addr = customer.jewelleryShop ? `${customer.address || ''} | ${customer.jewelleryShop}` : (customer.address || '');
     const payload = {
       id: customer.id,
       name: customer.name,
-      jewellery_shop: customer.jewelleryShop || '',
       phone: customer.phone || '',
-      address: customer.address || '',
+      address: addr,
       type: customer.type || 'typeJewelleryShop',
-      custom_type: customer.customType || '',
-      notes: customer.notes || '',
       updated_at: new Date().toISOString()
     };
     await supabase.from('customers').upsert(payload, { onConflict: 'id' });
