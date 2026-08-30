@@ -130,12 +130,12 @@ export function App() {
     // Initial sync
     syncDataFromCloud();
 
-    // Fast periodic automatic silent sync every 3 seconds
+    // Fast periodic automatic silent sync every 1.5 seconds
     const interval = setInterval(() => {
       if (isMounted) {
         syncDataFromCloud();
       }
-    }, 3000);
+    }, 1500);
 
     // Auto-sync when user returns to app/window
     const handleFocus = () => {
@@ -153,13 +153,15 @@ export function App() {
         if (isMounted) syncDataFromCloud();
       },
       onRateEvent: (payload) => {
-        if (payload.new && isMounted) {
+        if (payload?.new && isMounted) {
           setRates(prev => ({
             ...prev,
             ratePerGram: Number(payload.new.rate_per_gram) || 95,
             ratePerKg: Number(payload.new.rate_per_kg) || 95000,
             lastUpdated: payload.new.last_updated
           }));
+        } else if (isMounted) {
+          syncDataFromCloud();
         }
       }
     });
@@ -256,9 +258,10 @@ export function App() {
     setIsDrawerOpen(true);
   };
 
-  const handleSaveTransaction = (newTx) => {
+  const handleSaveTransaction = async (newTx) => {
     setTransactions((prev) => [...prev, newTx]);
-    syncTransactionToCloud(newTx);
+    await syncTransactionToCloud(newTx);
+    syncDataFromCloud();
 
     if (newTx.type === 'CASH_PAYMENT' || newTx.type === 'OLD_SILVER') {
       try {
@@ -272,7 +275,7 @@ export function App() {
     }
   };
 
-  const handleSaveCustomer = (custData, openingBalanceGrams) => {
+  const handleSaveCustomer = async (custData, openingBalanceGrams) => {
     const exists = customers.some((c) => c.id === custData.id);
     if (exists) {
       setCustomers(customers.map((c) => (c.id === custData.id ? custData : c)));
@@ -292,13 +295,14 @@ export function App() {
           notes: 'தொடக்க இருப்பு பதிவு'
         };
         setTransactions((prev) => [...prev, openingTx]);
-        syncTransactionToCloud(openingTx);
+        await syncTransactionToCloud(openingTx);
       }
     }
-    syncCustomerToCloud(custData);
+    await syncCustomerToCloud(custData);
+    syncDataFromCloud();
   };
 
-  const handleDeleteCustomer = (id) => {
+  const handleDeleteCustomer = async (id) => {
     const customerToDelete = customers.find((c) => c.id === id);
     const custName = customerToDelete ? customerToDelete.name : '';
     const confirmMsg = lang === 'ta' 
@@ -308,24 +312,27 @@ export function App() {
     if (window.confirm(confirmMsg)) {
       setCustomers((prev) => prev.filter((c) => c.id !== id));
       setTransactions((prev) => prev.filter((tx) => tx.customerId !== id));
-      deleteCustomerFromCloud(id);
+      await deleteCustomerFromCloud(id);
       if (selectedCustomerId === id) {
         setSelectedCustomerId(null);
       }
+      syncDataFromCloud();
     }
   };
 
-  const handleDeleteTransaction = (txId) => {
+  const handleDeleteTransaction = async (txId) => {
     const t = translations[lang] || translations.ta;
     if (window.confirm(t.confirmDelete)) {
       setTransactions(transactions.filter((tx) => tx.id !== txId));
-      deleteTransactionFromCloud(txId);
+      await deleteTransactionFromCloud(txId);
+      syncDataFromCloud();
     }
   };
 
-  const handleSaveRates = (updatedRates) => {
+  const handleSaveRates = async (updatedRates) => {
     setRates(updatedRates);
-    syncRatesToCloud(updatedRates);
+    await syncRatesToCloud(updatedRates);
+    syncDataFromCloud();
   };
 
   const handleOpenReceipt = (custId) => {

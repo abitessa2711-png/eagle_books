@@ -206,6 +206,23 @@ export async function uploadLocalDataToCloud(customers, transactions, rates) {
 }
 
 /**
+/**
+ * Broadcast live event signal across all connected browser tabs & devices
+ */
+export const broadcastLiveChange = () => {
+  try {
+    const liveChannel = supabase.channel('eagle-books-live-sync');
+    liveChannel.send({
+      type: 'broadcast',
+      event: 'LIVE_DATA_CHANGED',
+      payload: { timestamp: Date.now() }
+    });
+  } catch (e) {
+    console.warn('Broadcast error:', e);
+  }
+};
+
+/**
  * Sync single customer to Supabase
  */
 export async function syncCustomerToCloud(customer) {
@@ -222,6 +239,7 @@ export async function syncCustomerToCloud(customer) {
       updated_at: new Date().toISOString()
     };
     await supabase.from('customers').upsert(payload, { onConflict: 'id' });
+    broadcastLiveChange();
   } catch (err) {
     console.warn('Error syncing customer to cloud:', err);
   }
@@ -233,6 +251,7 @@ export async function syncCustomerToCloud(customer) {
 export async function deleteCustomerFromCloud(customerId) {
   try {
     await supabase.from('customers').delete().eq('id', customerId);
+    broadcastLiveChange();
   } catch (err) {
     console.warn('Error deleting customer from cloud:', err);
   }
@@ -260,6 +279,7 @@ export async function syncTransactionToCloud(tx) {
       notes: tx.notes || null
     };
     await supabase.from('transactions').upsert(payload, { onConflict: 'id' });
+    broadcastLiveChange();
   } catch (err) {
     console.warn('Error syncing transaction to cloud:', err);
   }
@@ -271,6 +291,7 @@ export async function syncTransactionToCloud(tx) {
 export async function deleteTransactionFromCloud(txId) {
   try {
     await supabase.from('transactions').delete().eq('id', txId);
+    broadcastLiveChange();
   } catch (err) {
     console.warn('Error deleting transaction from cloud:', err);
   }
@@ -288,13 +309,14 @@ export async function syncRatesToCloud(rates) {
       last_updated: new Date().toISOString()
     };
     await supabase.from('silver_rates').upsert(payload, { onConflict: 'id' });
+    broadcastLiveChange();
   } catch (err) {
     console.warn('Error syncing rates to cloud:', err);
   }
 }
 
 /**
- * Subscribe to realtime PostgreSQL changes
+ * Subscribe to realtime PostgreSQL & Broadcast changes
  */
 export function subscribeToRealtime({ onCustomerEvent, onTransactionEvent, onRateEvent }) {
   const channel = supabase.channel('eagle-books-realtime')
@@ -317,6 +339,14 @@ export function subscribeToRealtime({ onCustomerEvent, onTransactionEvent, onRat
       { event: '*', schema: 'public', table: 'silver_rates' },
       (payload) => {
         if (onRateEvent) onRateEvent(payload);
+      }
+    )
+    .on(
+      'broadcast',
+      { event: 'LIVE_DATA_CHANGED' },
+      () => {
+        if (onCustomerEvent) onCustomerEvent();
+        if (onTransactionEvent) onTransactionEvent();
       }
     )
     .subscribe();
