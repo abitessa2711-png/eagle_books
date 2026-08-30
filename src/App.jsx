@@ -93,27 +93,13 @@ export function App() {
   const syncDataFromCloud = useCallback(async () => {
     try {
       const cloudRes = await fetchCloudData();
-      if (cloudRes.hasCloudData) {
-        setCustomers((prevCustomers) => {
-          const cloudCusts = cloudRes.customers || [];
-          const cloudMap = new Map(cloudCusts.map(c => [c.id, c]));
-          const unSyncedLocal = prevCustomers.filter(lc => !cloudMap.has(lc.id));
-          if (unSyncedLocal.length > 0) {
-            uploadLocalDataToCloud(unSyncedLocal, [], null);
-          }
-          return [...cloudCusts, ...unSyncedLocal];
-        });
-
-        setTransactions((prevTx) => {
-          const cloudTxs = cloudRes.transactions || [];
-          const cloudTxMap = new Map(cloudTxs.map(t => [t.id, t]));
-          const unSyncedLocalTx = prevTx.filter(lt => !cloudTxMap.has(lt.id));
-          if (unSyncedLocalTx.length > 0) {
-            uploadLocalDataToCloud([], unSyncedLocalTx, null);
-          }
-          return [...cloudTxs, ...unSyncedLocalTx];
-        });
-
+      if (cloudRes && cloudRes.hasCloudData) {
+        if (cloudRes.customers && Array.isArray(cloudRes.customers)) {
+          setCustomers(cloudRes.customers);
+        }
+        if (cloudRes.transactions && Array.isArray(cloudRes.transactions)) {
+          setTransactions(cloudRes.transactions);
+        }
         if (cloudRes.rates) {
           setRates(prev => ({ ...prev, ...cloudRes.rates }));
         }
@@ -130,12 +116,12 @@ export function App() {
     // Initial sync
     syncDataFromCloud();
 
-    // Fast periodic automatic silent sync every 3 seconds
+    // Fast periodic automatic silent sync every 2 seconds
     const interval = setInterval(() => {
       if (isMounted) {
         syncDataFromCloud();
       }
-    }, 3000);
+    }, 2000);
 
     // Auto-sync when user returns to app/window
     const handleFocus = () => {
