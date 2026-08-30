@@ -9,14 +9,15 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  KeyRound
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 
 export function LoginScreen({ lang, setLang, onLoginSuccess }) {
   const t = translations[lang] || translations.ta;
 
-  // Start with empty inputs
+  // Inputs
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -32,6 +33,7 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
 
     const isValidId = cleanId.length >= 2;
     const isValidPassword = 
+      cleanPass === 'admin@eaglebook123' ||
       cleanPass === 'eaglebooks@123' || 
       cleanPass === '1234' || 
       cleanPass === 'eaglebooks' ||
@@ -41,7 +43,7 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
       setLoading(true);
 
       const ownerUser = {
-        id: cleanId,
+        id: cleanId || 'admin@eaglebook.com',
         phone: '8148003454',
         name: 'EagleBooks Admin',
         shopName: 'EAGLE SILVERS',
@@ -56,10 +58,16 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
     } else {
       setErrorMsg(
         lang === 'ta'
-          ? 'தவறான கடவுச்சொல்! (கடவுச்சொல்: eaglebooks@123 அல்லது 1234)'
-          : 'Invalid Password! (Password: eaglebooks@123 or 1234)'
+          ? 'தவறான பயனர் ஐடி அல்லது கடவுச்சொல்! (ID: admin@eaglebook.com | Pass: admin@eaglebook123)'
+          : 'Invalid User ID or Password! (ID: admin@eaglebook.com | Pass: admin@eaglebook123)'
       );
     }
+  };
+
+  const handleQuickFillDemo = () => {
+    setLoginId('admin@eaglebook.com');
+    setPassword('admin@eaglebook123');
+    setErrorMsg('');
   };
 
   return (
@@ -114,6 +122,7 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
             </div>
 
             <button
+              type="button"
               onClick={() => setLang(lang === 'ta' ? 'en' : 'ta')}
               style={{
                 background: 'rgba(255, 255, 255, 0.15)',
@@ -146,7 +155,7 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
           }}>
             <img 
               src="/eagle-logo.png" 
-              alt="Eagle Silvers Whole Sale Logo" 
+              alt="Eagle Silvers Wholesale Logo" 
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>
@@ -167,7 +176,7 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
           }}>
             <Crown size={13} color="#fcd34d" />
             <span style={{ fontSize: '0.72rem', color: '#fcd34d', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              {lang === 'ta' ? 'உரிமையாளர் உள்நுழைவு (Owner Only)' : 'Owner Portal Only'}
+              {lang === 'ta' ? 'உரிமையாளர் உள்நுழைவு (Owner Portal)' : 'Owner Portal'}
             </span>
           </div>
 
@@ -213,13 +222,13 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
                   type="text"
                   value={loginId}
                   onChange={(e) => setLoginId(e.target.value)}
-                  placeholder={lang === 'ta' ? 'பயனர் ஐடி (எ.கா: eaglebooks.com)' : 'Enter Login ID (e.g. eaglebooks.com)'}
+                  placeholder="admin@eaglebook.com"
                   className="input-field"
                   autoComplete="username"
                   style={{
                     paddingLeft: '2.5rem',
                     fontWeight: '800',
-                    fontSize: '0.95rem',
+                    fontSize: '0.92rem',
                     background: '#ffffff',
                     color: '#000000'
                   }}
@@ -243,14 +252,14 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder="admin@eaglebook123"
                   className="input-field"
                   autoComplete="current-password"
                   style={{
                     paddingLeft: '2.5rem',
                     paddingRight: '2.5rem',
                     fontWeight: '800',
-                    fontSize: '0.95rem',
+                    fontSize: '0.92rem',
                     background: '#ffffff',
                     color: '#000000'
                   }}
@@ -264,13 +273,11 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
                     right: '0.75rem',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    background: 'transparent',
+                    background: 'none',
                     border: 'none',
                     color: '#64748b',
                     cursor: 'pointer',
-                    padding: '0.2rem',
-                    display: 'flex',
-                    alignItems: 'center'
+                    padding: '0.2rem'
                   }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -278,7 +285,7 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
               </div>
             </div>
 
-            {/* Submit Login Button */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -290,45 +297,56 @@ export function LoginScreen({ lang, setLang, onLoginSuccess }) {
                 padding: '0.85rem',
                 fontSize: '1rem',
                 fontWeight: '900',
-                cursor: 'pointer',
+                cursor: loading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.5rem',
-                boxShadow: '0 6px 20px rgba(234, 88, 12, 0.4)',
-                marginTop: '0.35rem',
-                transition: 'all 0.15s ease'
+                boxShadow: '0 6px 20px rgba(234, 88, 12, 0.35)',
+                marginTop: '0.5rem'
               }}
             >
-              <Crown size={18} />
-              <span>{loading ? 'உள்நுழைகிறது...' : (lang === 'ta' ? 'உரிமையாளராக உள்நுழைக' : 'Login as Owner')}</span>
-              <ArrowRight size={18} />
+              <span>{loading ? (lang === 'ta' ? 'சரிபார்க்கிறது...' : 'Logging in...') : (lang === 'ta' ? 'உள்நுழைக (LOGIN)' : 'LOGIN TO APP')}</span>
+              {!loading && <ArrowRight size={18} />}
             </button>
 
           </form>
 
-          {/* Security badge at bottom */}
-          <div style={{
-            marginTop: '1.25rem',
-            paddingTop: '0.85rem',
-            borderTop: '1px solid #f1f5f9',
-            textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.35rem',
-            color: '#64748b',
-            fontSize: '0.72rem',
-            fontWeight: '700'
-          }}>
-            <CheckCircle2 size={14} color="#059669" />
-            <span>EAGLE SILVERS WHOLESALE • தனிப்பட்ட உரிமையாளர் தளம்</span>
+          {/* Quick Credential Helper Pill */}
+          <div 
+            onClick={handleQuickFillDemo}
+            style={{
+              marginTop: '1.25rem',
+              padding: '0.65rem 0.85rem',
+              background: '#fff7ed',
+              border: '1.5px dashed #fed7aa',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              transition: 'background 0.15s ease'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <KeyRound size={16} color="#ea580c" />
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#c2410c' }}>
+                  உள்நுழைவு விவரங்கள் (Login Credentials)
+                </div>
+                <div style={{ fontSize: '0.7rem', color: '#7c2d12', fontWeight: '800' }}>
+                  ID: admin@eaglebook.com | Pass: admin@eaglebook123
+                </div>
+              </div>
+            </div>
+            <span style={{ fontSize: '0.68rem', fontWeight: '900', color: '#ea580c', textDecoration: 'underline' }}>
+              1-Click Fill
+            </span>
           </div>
 
         </div>
 
       </div>
-
     </div>
   );
 }
