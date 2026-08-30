@@ -94,12 +94,26 @@ export function App() {
     try {
       const cloudRes = await fetchCloudData();
       if (cloudRes && cloudRes.hasCloudData) {
-        if (cloudRes.customers && Array.isArray(cloudRes.customers)) {
-          setCustomers(cloudRes.customers);
-        }
-        if (cloudRes.transactions && Array.isArray(cloudRes.transactions)) {
-          setTransactions(cloudRes.transactions);
-        }
+        setCustomers((prevCustomers) => {
+          const cloudCusts = cloudRes.customers || [];
+          const cloudMap = new Map(cloudCusts.map(c => [c.id, c]));
+          const unSyncedLocal = prevCustomers.filter(lc => !cloudMap.has(lc.id));
+          if (unSyncedLocal.length > 0) {
+            uploadLocalDataToCloud(unSyncedLocal, [], null);
+          }
+          return [...unSyncedLocal, ...cloudCusts];
+        });
+
+        setTransactions((prevTx) => {
+          const cloudTxs = cloudRes.transactions || [];
+          const cloudTxMap = new Map(cloudTxs.map(t => [t.id, t]));
+          const unSyncedLocalTx = prevTx.filter(lt => !cloudTxMap.has(lt.id));
+          if (unSyncedLocalTx.length > 0) {
+            uploadLocalDataToCloud([], unSyncedLocalTx, null);
+          }
+          return [...unSyncedLocalTx, ...cloudTxs];
+        });
+
         if (cloudRes.rates) {
           setRates(prev => ({ ...prev, ...cloudRes.rates }));
         }
@@ -187,14 +201,6 @@ export function App() {
     } else {
       syncDataFromCloud();
     }
-    try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.8 },
-        colors: ['#ea580c', '#059669', '#f59e0b']
-      });
-    } catch (e) {}
   };
 
   const handleLogout = () => {
@@ -242,9 +248,10 @@ export function App() {
     setIsDrawerOpen(true);
   };
 
-  const handleSaveTransaction = (newTx) => {
-    setTransactions((prev) => [...prev, newTx]);
-    syncTransactionToCloud(newTx);
+  const handleSaveTransaction = async (newTx) => {
+    setTransactions((prev) => [newTx, ...prev]);
+    await syncTransactionToCloud(newTx);
+    syncDataFromCloud();
 
     if (newTx.type === 'CASH_PAYMENT' || newTx.type === 'OLD_SILVER') {
       try {
@@ -258,30 +265,38 @@ export function App() {
     }
   };
 
-  const handleSaveCustomer = (custData, openingBalanceGrams) => {
+  const handleSaveCustomer = async (custData, openingBalanceGrams) => {
     const exists = customers.some((c) => c.id === custData.id);
+    let updatedCusts;
     if (exists) {
-      setCustomers(customers.map((c) => (c.id === custData.id ? custData : c)));
+      updatedCusts = customers.map((c) => (c.id === custData.id ? custData : c));
     } else {
-      setCustomers([custData, ...customers]);
-      setSelectedCustomerId(custData.id);
-
-      if (openingBalanceGrams && openingBalanceGrams > 0) {
-        const openingTx = {
-          id: `tx-${Date.now()}`,
-          customerId: custData.id,
-          date: new Date().toISOString().slice(0, 10),
-          type: 'OPENING_BALANCE',
-          itemName: 'CB : தொடக்க இருப்பு (Carried Balance)',
-          weight: Number(openingBalanceGrams),
-          touchPercent: 100,
-          notes: 'தொடக்க இருப்பு பதிவு'
-        };
-        setTransactions((prev) => [...prev, openingTx]);
-        syncTransactionToCloud(openingTx);
-      }
+      updatedCusts = [custData, ...customers];
     }
-    syncCustomerToCloud(custData);
+    setCustomers(updatedCusts);
+    saveCustomers(updatedCusts);
+    setSelectedCustomerId(custData.id);
+
+    let openingTx = null;
+    if (!exists && openingBalanceGrams && openingBalanceGrams > 0) {
+      openingTx = {
+        id: `tx-${Date.now()}`,
+        customerId: custData.id,
+        date: new Date().toISOString().slice(0, 10),
+        type: 'OPENING_BALANCE',
+        itemName: 'CB : தொடக்க இருப்பு (Carried Balance)',
+        weight: Number(openingBalanceGrams),
+        touchPercent: 100,
+        notes: 'தொடக்க இருப்பு பதிவு'
+      };
+      setTransactions((prev) => [openingTx, ...prev]);
+    }
+
+    await syncCustomerToCloud(custData);
+    if (openingTx) {
+      await syncTransactionToCloud(openingTx);
+    }
+    syncDataFromCloud();
   };
 
   const handleDeleteCustomer = (id) => {
