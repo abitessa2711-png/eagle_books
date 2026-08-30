@@ -7,15 +7,6 @@ const RATES_KEY = 'eagle_book_rates_v1';
 const LANG_KEY = 'eagle_book_lang_v1';
 const AUTH_USER_KEY = 'eagle_book_auth_user_v1';
 
-const DEFAULT_OWNER_USER = {
-  id: 'eaglebooks',
-  phone: '8148003454',
-  name: 'EagleBooks Admin',
-  shopName: 'EAGLE SILVERS',
-  role: 'OWNER',
-  city: 'சிவகாசி (Sivakasi)'
-};
-
 export function loadStoredData() {
   try {
     const rawCust = localStorage.getItem(CUSTOMERS_KEY);
@@ -29,7 +20,7 @@ export function loadStoredData() {
       transactions: rawTx ? JSON.parse(rawTx) : [],
       rates: rawRates ? JSON.parse(rawRates) : initialSilverRates,
       lang: rawLang || 'ta',
-      authUser: rawAuth ? JSON.parse(rawAuth) : DEFAULT_OWNER_USER
+      authUser: rawAuth ? JSON.parse(rawAuth) : null
     };
   } catch (err) {
     console.error('Failed to load from localStorage:', err);
@@ -38,7 +29,7 @@ export function loadStoredData() {
       transactions: [],
       rates: initialSilverRates,
       lang: 'ta',
-      authUser: DEFAULT_OWNER_USER
+      authUser: null
     };
   }
 }

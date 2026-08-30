@@ -19,7 +19,7 @@ export function DashboardSummary({
   rates,
   allTransactions 
 }) {
-  const t = translations[lang];
+  const t = translations[lang] || translations.ta;
 
   // Calculate Aggregates
   let totalDueGrams = 0;
@@ -52,43 +52,44 @@ export function DashboardSummary({
   });
 
   return (
-    <div style={{ margin: '0 1rem 1rem 1rem' }}>
-      <div className="grid-4" style={{ gap: '0.75rem' }}>
+    <div style={{ margin: '0 0.75rem 0.75rem 0.75rem' }}>
+      <div className="grid-4" style={{ gap: '0.5rem' }}>
         
         {/* Card 1: Total Customer Silver Due (மொத்த நிலுவை கிராம்) */}
         <div 
           style={{
-            padding: '1rem',
+            padding: '0.65rem 0.75rem',
             background: '#ffffff',
             border: '1px solid #fecaca',
-            borderLeft: '4px solid #ef4444',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+            borderLeft: '3.5px solid #ef4444',
+            borderRadius: '10px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <span style={{ fontSize: '0.72rem', color: '#b91c1c', fontWeight: '800', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '0.66rem', color: '#b91c1c', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.01em' }}>
                 {t.totalDueGrams}
               </span>
-              <div style={{ fontSize: '1.45rem', fontWeight: '900', color: '#dc2626', marginTop: '0.2rem' }}>
-                {formatGrams(totalDueGrams)} <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>g</span>
+              <div style={{ fontSize: '1.15rem', fontWeight: '900', color: '#dc2626', marginTop: '0.15rem', lineHeight: '1.15' }}>
+                {formatGrams(totalDueGrams)} <span style={{ fontSize: '0.75rem', fontWeight: '700' }}>g</span>
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#b45309', marginTop: '0.15rem', fontWeight: '700' }}>
+              <div style={{ fontSize: '0.7rem', color: '#b45309', marginTop: '0.1rem', fontWeight: '700' }}>
                 ≈ {formatCurrency(approxDueRupees)}
               </div>
             </div>
             <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
+              width: '30px',
+              height: '30px',
+              borderRadius: '8px',
               background: '#fef2f2',
               color: '#ef4444',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}>
-              <TrendingDown size={18} />
+              <TrendingDown size={15} />
             </div>
           </div>
         </div>
@@ -96,113 +97,116 @@ export function DashboardSummary({
         {/* Card 2: Total New Silver Given (வழங்கிய புதிய நகை) */}
         <div 
           style={{
-            padding: '1rem',
+            padding: '0.65rem 0.75rem',
             background: '#ffffff',
-            border: '1px solid #bae6fd',
-            borderLeft: '4px solid #0284c7',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+            border: '1px solid #fed7aa',
+            borderLeft: '3.5px solid #f97316',
+            borderRadius: '10px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <span style={{ fontSize: '0.72rem', color: '#0369a1', fontWeight: '800', textTransform: 'uppercase' }}>
-                {t.todayNewGiven}
+              <span style={{ fontSize: '0.66rem', color: '#c2410c', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.01em' }}>
+                {t.totalNewSilverGiven}
               </span>
-              <div style={{ fontSize: '1.45rem', fontWeight: '900', color: '#0284c7', marginTop: '0.2rem' }}>
-                {formatGrams(todayNewGrams)} <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>g</span>
+              <div style={{ fontSize: '1.15rem', fontWeight: '900', color: '#ea580c', marginTop: '0.15rem', lineHeight: '1.15' }}>
+                {formatGrams(todayNewGrams)} <span style={{ fontSize: '0.75rem', fontWeight: '700' }}>g</span>
               </div>
-              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.15rem' }}>
-                {lang === 'ta' ? 'கொலுசு & நகைகள்' : 'Jewels issued'}
+              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.1rem', fontWeight: '700' }}>
+                மொத்த விற்பனை (Sales)
               </div>
             </div>
             <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: '#f0f9ff',
-              color: '#0284c7',
+              width: '30px',
+              height: '30px',
+              borderRadius: '8px',
+              background: '#fff7ed',
+              color: '#f97316',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}>
-              <ArrowUpRight size={18} />
+              <ArrowUpRight size={15} />
             </div>
           </div>
         </div>
 
-        {/* Card 3: Old Silver Inflow (பழைய வெள்ளி வரவு) */}
+        {/* Card 3: Total Old Silver Received (பெற்ற பழைய வெள்ளி) */}
         <div 
           style={{
-            padding: '1rem',
+            padding: '0.65rem 0.75rem',
             background: '#ffffff',
             border: '1px solid #a7f3d0',
-            borderLeft: '4px solid #10b981',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+            borderLeft: '3.5px solid #10b981',
+            borderRadius: '10px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <span style={{ fontSize: '0.72rem', color: '#047857', fontWeight: '800', textTransform: 'uppercase' }}>
-                {t.todayOldIn}
+              <span style={{ fontSize: '0.66rem', color: '#047857', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.01em' }}>
+                {t.totalOldSilverReceived}
               </span>
-              <div style={{ fontSize: '1.45rem', fontWeight: '900', color: '#059669', marginTop: '0.2rem' }}>
-                {formatGrams(todayOldGrams)} <span style={{ fontSize: '0.85rem', fontWeight: '700' }}>g</span>
+              <div style={{ fontSize: '1.15rem', fontWeight: '900', color: '#059669', marginTop: '0.15rem', lineHeight: '1.15' }}>
+                {formatGrams(todayOldGrams)} <span style={{ fontSize: '0.75rem', fontWeight: '700' }}>g</span>
               </div>
-              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.15rem' }}>
-                {lang === 'ta' ? 'பழைய மாற்று வரவு' : 'Old silver returns'}
+              <div style={{ fontSize: '0.7rem', color: '#047857', marginTop: '0.1rem', fontWeight: '700' }}>
+                வரவு பெற்ற பழைய நகை
               </div>
             </div>
             <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
+              width: '30px',
+              height: '30px',
+              borderRadius: '8px',
               background: '#ecfdf5',
               color: '#10b981',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}>
-              <ArrowDownLeft size={18} />
+              <ArrowDownLeft size={15} />
             </div>
           </div>
         </div>
 
-        {/* Card 4: Cash Payments Converted to Grams (ரொக்க வரவு -> கிராம் மாற்றம்) */}
+        {/* Card 4: Total Cash Received (பெற்ற ரொக்கப் பணம்) */}
         <div 
           style={{
-            padding: '1rem',
+            padding: '0.65rem 0.75rem',
             background: '#ffffff',
-            border: '1px solid #fde68a',
-            borderLeft: '4px solid #f59e0b',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+            border: '1px solid #bae6fd',
+            borderLeft: '3.5px solid #0284c7',
+            borderRadius: '10px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <span style={{ fontSize: '0.72rem', color: '#b45309', fontWeight: '800', textTransform: 'uppercase' }}>
-                {t.todayCashInflow}
+              <span style={{ fontSize: '0.66rem', color: '#0369a1', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.01em' }}>
+                {t.totalCashReceived}
               </span>
-              <div style={{ fontSize: '1.45rem', fontWeight: '900', color: '#d97706', marginTop: '0.2rem' }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: '900', color: '#0284c7', marginTop: '0.15rem', lineHeight: '1.15' }}>
                 {formatCurrency(todayCashAmount)}
               </div>
-              <div style={{ fontSize: '0.75rem', color: '#059669', marginTop: '0.15rem', fontWeight: '700' }}>
-                ↓ {formatGrams(todayCashGrams)} g {lang === 'ta' ? 'கழிவு' : 'Grams off'}
+              <div style={{ fontSize: '0.7rem', color: '#0369a1', marginTop: '0.1rem', fontWeight: '700' }}>
+                ≈ {formatGrams(todayCashGrams)} g வெள்ளி
               </div>
             </div>
             <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: '#fffbeb',
-              color: '#f59e0b',
+              width: '30px',
+              height: '30px',
+              borderRadius: '8px',
+              background: '#f0f9ff',
+              color: '#0284c7',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              flexShrink: 0
             }}>
-              <Banknote size={18} />
+              <Banknote size={15} />
             </div>
           </div>
         </div>

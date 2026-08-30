@@ -61,7 +61,7 @@ export function App() {
     }
   }, []);
 
-  const [authUser, setAuthUser] = useState(initialData.authUser || DEFAULT_OWNER_USER);
+  const [authUser, setAuthUser] = useState(initialData.authUser || null);
   const [customers, setCustomers] = useState(initialData.customers || []);
   const [transactions, setTransactions] = useState(initialData.transactions || []);
   const [rates, setRates] = useState(initialData.rates || { ratePerGram: 95 });
@@ -93,7 +93,7 @@ export function App() {
   const syncDataFromCloud = useCallback(async () => {
     try {
       const cloudRes = await fetchCloudData();
-      if (cloudRes && cloudRes.hasCloudData) {
+      if (cloudRes.hasCloudData) {
         setCustomers((prevCustomers) => {
           const cloudCusts = cloudRes.customers || [];
           const cloudMap = new Map(cloudCusts.map(c => [c.id, c]));
@@ -101,7 +101,7 @@ export function App() {
           if (unSyncedLocal.length > 0) {
             uploadLocalDataToCloud(unSyncedLocal, [], null);
           }
-          return [...unSyncedLocal, ...cloudCusts];
+          return [...cloudCusts, ...unSyncedLocal];
         });
 
         setTransactions((prevTx) => {
@@ -111,7 +111,7 @@ export function App() {
           if (unSyncedLocalTx.length > 0) {
             uploadLocalDataToCloud([], unSyncedLocalTx, null);
           }
-          return [...unSyncedLocalTx, ...cloudTxs];
+          return [...cloudTxs, ...unSyncedLocalTx];
         });
 
         if (cloudRes.rates) {
@@ -130,12 +130,12 @@ export function App() {
     // Initial sync
     syncDataFromCloud();
 
-    // Fast periodic automatic silent sync every 2 seconds
+    // Fast periodic automatic silent sync every 3 seconds
     const interval = setInterval(() => {
       if (isMounted) {
         syncDataFromCloud();
       }
-    }, 2000);
+    }, 3000);
 
     // Auto-sync when user returns to app/window
     const handleFocus = () => {
@@ -201,6 +201,14 @@ export function App() {
     } else {
       syncDataFromCloud();
     }
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.8 },
+        colors: ['#ea580c', '#059669', '#f59e0b']
+      });
+    } catch (e) {}
   };
 
   const handleLogout = () => {
@@ -248,10 +256,9 @@ export function App() {
     setIsDrawerOpen(true);
   };
 
-  const handleSaveTransaction = async (newTx) => {
-    setTransactions((prev) => [newTx, ...prev]);
-    await syncTransactionToCloud(newTx);
-    syncDataFromCloud();
+  const handleSaveTransaction = (newTx) => {
+    setTransactions((prev) => [...prev, newTx]);
+    syncTransactionToCloud(newTx);
 
     if (newTx.type === 'CASH_PAYMENT' || newTx.type === 'OLD_SILVER') {
       try {
@@ -265,38 +272,30 @@ export function App() {
     }
   };
 
-  const handleSaveCustomer = async (custData, openingBalanceGrams) => {
+  const handleSaveCustomer = (custData, openingBalanceGrams) => {
     const exists = customers.some((c) => c.id === custData.id);
-    let updatedCusts;
     if (exists) {
-      updatedCusts = customers.map((c) => (c.id === custData.id ? custData : c));
+      setCustomers(customers.map((c) => (c.id === custData.id ? custData : c)));
     } else {
-      updatedCusts = [custData, ...customers];
-    }
-    setCustomers(updatedCusts);
-    saveCustomers(updatedCusts);
-    setSelectedCustomerId(custData.id);
+      setCustomers([custData, ...customers]);
+      setSelectedCustomerId(custData.id);
 
-    let openingTx = null;
-    if (!exists && openingBalanceGrams && openingBalanceGrams > 0) {
-      openingTx = {
-        id: `tx-${Date.now()}`,
-        customerId: custData.id,
-        date: new Date().toISOString().slice(0, 10),
-        type: 'OPENING_BALANCE',
-        itemName: 'CB : தொடக்க இருப்பு (Carried Balance)',
-        weight: Number(openingBalanceGrams),
-        touchPercent: 100,
-        notes: 'தொடக்க இருப்பு பதிவு'
-      };
-      setTransactions((prev) => [openingTx, ...prev]);
+      if (openingBalanceGrams && openingBalanceGrams > 0) {
+        const openingTx = {
+          id: `tx-${Date.now()}`,
+          customerId: custData.id,
+          date: new Date().toISOString().slice(0, 10),
+          type: 'OPENING_BALANCE',
+          itemName: 'CB : தொடக்க இருப்பு (Carried Balance)',
+          weight: Number(openingBalanceGrams),
+          touchPercent: 100,
+          notes: 'தொடக்க இருப்பு பதிவு'
+        };
+        setTransactions((prev) => [...prev, openingTx]);
+        syncTransactionToCloud(openingTx);
+      }
     }
-
-    await syncCustomerToCloud(custData);
-    if (openingTx) {
-      await syncTransactionToCloud(openingTx);
-    }
-    syncDataFromCloud();
+    syncCustomerToCloud(custData);
   };
 
   const handleDeleteCustomer = (id) => {
