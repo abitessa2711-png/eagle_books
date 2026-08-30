@@ -179,426 +179,370 @@ html, body {
   font-family: inherit;
 }
 
-.fab-customer-btn:active {
-  transform: scale(0.95);
+.fab-customer-btn:hover, .fab-customer-btn:active {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 25px rgba(234, 88, 12, 0.55), 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* =========================================================================
-   AUTHENTIC JEWELRY KHATABOOK STYLING
+   1. TOP APP BAR (EAGLE BOOKS BRANDING - CLEAN & FIXED)
    ========================================================================= */
-
-/* App Header */
-.eagle-header {
-  background: var(--color-header-gradient);
-  color: var(--text-inverse);
-  padding: 0.75rem 1rem;
+.app-header {
+  flex-shrink: 0;
+  z-index: 50;
+  background: var(--color-primary-gradient);
+  color: #ffffff;
+  padding: 0.65rem 0.85rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: var(--shadow-card);
-  z-index: 40;
-  flex-shrink: 0;
-  border-bottom: 2px solid var(--color-primary-orange);
+  box-shadow: 0 2px 10px rgba(234, 88, 12, 0.25);
+  gap: 0.5rem;
 }
 
-.header-brand {
+.brand-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.55rem;
+  min-width: 0;
 }
 
 .brand-logo-img {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background: #090f24;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
-.brand-title {
-  font-size: 1.1rem;
+.brand-titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-main-title {
+  font-size: 1rem;
   font-weight: 900;
-  letter-spacing: -0.01em;
   color: #ffffff;
-  margin: 0;
-  line-height: 1.1;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
-.brand-subtitle {
-  font-size: 0.7rem;
-  color: var(--border-medium);
+.brand-sub-title {
+  font-size: 0.65rem;
+  color: #fed7aa;
   font-weight: 700;
+  opacity: 0.95;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
+  flex-shrink: 0;
 }
 
-/* Live Silver Rate Pill */
-.silver-rate-pill {
-  background: rgba(234, 88, 12, 0.2);
-  border: 1px solid rgba(249, 115, 22, 0.4);
-  color: #ffedd5;
-  padding: 0.3rem 0.65rem;
-  border-radius: var(--radius-full);
-  font-size: 0.78rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
+.header-rate-pill {
+  background: #ffffff;
+  color: #ea580c;
+  border: 1.5px solid #fed7aa;
+  border-radius: 9999px;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.76rem;
+  font-weight: 900;
   cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.silver-rate-pill:hover {
-  background: rgba(234, 88, 12, 0.35);
-}
-
-/* Aggregate Balance Dashboard Header Card */
-.summary-balance-card {
-  background: var(--color-header-gradient);
-  color: #ffffff;
-  padding: 1.1rem 1.25rem;
-  margin: 0.85rem 1rem 0.5rem 1rem;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 8px 24px rgba(9, 15, 36, 0.25);
-  display: flex;
-  justify-content: space-between;
+  display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 0.25rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  transition: transform 0.1s ease;
+  white-space: nowrap;
 }
 
-.balance-item {
-  display: flex;
-  flex-direction: column;
+.header-rate-pill:active {
+  transform: scale(0.96);
 }
 
-.balance-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
+.header-action-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.45rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.05em;
-  opacity: 0.85;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  transition: background 0.15s ease;
 }
 
-.balance-val-due {
-  color: #fca5a5;
-  font-size: 1.25rem;
-  font-weight: 900;
+.header-action-btn:active {
+  background: rgba(255, 255, 255, 0.35);
 }
 
-.balance-val-adv {
-  color: #6ee7b7;
-  font-size: 1.25rem;
-  font-weight: 900;
+.header-action-btn.logout-btn {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
-.balance-sub-rupees {
-  font-size: 0.75rem;
-  opacity: 0.9;
-  font-weight: 700;
+/* =========================================================================
+   2. KHATABOOK HERO BALANCE CARD
+   ========================================================================= */
+.hero-balance-container {
+  margin: 0.85rem 1rem 0.45rem 1rem;
+  background: #ffffff;
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
 }
 
-/* Customer Filter Tabs & Search Bar */
-.customer-search-filter-bar {
-  padding: 0.5rem 1rem;
-  background: var(--bg-surface);
+.hero-balance-col {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  border-bottom: 1px solid var(--border-light);
 }
 
-.search-input-wrapper {
+.hero-balance-col.due {
+  border-right: 1.5px solid var(--border-light);
+  padding-right: 0.75rem;
+}
+
+.hero-balance-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hero-balance-value {
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1.15;
+  margin: 0.2rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hero-balance-sub {
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Search Bar */
+.search-wrapper {
+  padding: 0.45rem 1rem;
+  flex-shrink: 0;
+}
+
+.search-box-container {
   position: relative;
   width: 100%;
 }
 
-.search-input-wrapper input {
+.search-input-box {
   width: 100%;
-  padding: 0.65rem 0.85rem 0.65rem 2.4rem;
+  padding: 0.65rem 1rem 0.65rem 2.4rem;
+  background: #ffffff;
   border: 1.5px solid var(--border-medium);
   border-radius: var(--radius-md);
-  font-size: 0.88rem;
+  color: #000000;
+  font-size: 0.92rem;
   font-weight: 700;
-  outline: none;
-  background: var(--bg-subtle);
-  transition: border-color 0.2s ease;
   font-family: inherit;
+  transition: border-color 0.15s ease;
 }
 
-.search-input-wrapper input:focus {
+.search-input-box:focus {
+  outline: none;
   border-color: var(--color-primary-orange);
-  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
 }
 
-.search-icon-inside {
-  position: absolute;
-  left: 0.8rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-}
-
-.filter-pills {
-  display: flex;
-  gap: 0.4rem;
-  overflow-x: auto;
-}
-
-.filter-pill-btn {
+/* Filter Tabs */
+.filter-tab-pill {
   padding: 0.35rem 0.75rem;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  border: 1px solid var(--border-medium);
-  background: var(--bg-subtle);
+  white-space: nowrap;
+  border: 1.5px solid var(--border-medium);
+  background: #ffffff;
   color: var(--text-sub);
   cursor: pointer;
-  white-space: nowrap;
-  font-family: inherit;
+  transition: all 0.15s ease;
 }
 
-.filter-pill-btn.active {
-  background: var(--color-header-navy);
+.filter-tab-pill.active {
+  background: var(--color-primary-orange);
   color: #ffffff;
-  border-color: var(--color-header-navy);
+  border-color: var(--color-primary-orange);
 }
 
-/* Customer List Rows */
-.customer-list-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.5rem 1rem 5rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.customer-row-card {
-  background: #ffffff;
-  border: 1.5px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 0.85rem 1rem;
+/* =========================================================================
+   3. CUSTOMER LIST ITEMS
+   ========================================================================= */
+.customer-card-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: background 0.12s ease;
 }
 
-.customer-row-card:hover {
-  border-color: var(--color-primary-orange);
-  box-shadow: var(--shadow-card);
+.customer-card-row:hover, .customer-card-row:active {
+  background: #f8fafc;
 }
 
-.cust-info-main {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.cust-avatar {
-  width: 42px;
-  height: 42px;
+.customer-avatar-box {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #090f24 0%, #1e293b 100%);
+  background: linear-gradient(135deg, #090f24 0%, #1e3a8a 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
   font-size: 1.05rem;
-  border: 2px solid var(--color-primary-orange);
   flex-shrink: 0;
+  border: 1.5px solid #f59e0b;
 }
 
-.cust-details {
-  display: flex;
-  flex-direction: column;
+.customer-info-box {
+  flex: 1;
+  min-width: 0;
+  padding: 0 0.75rem;
 }
 
-.cust-name {
+.customer-name-text {
   font-size: 0.98rem;
   font-weight: 900;
   color: #000000;
-  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.cust-shop-tag {
+.customer-sub-text {
   font-size: 0.75rem;
-  color: var(--color-primary-orange);
-  font-weight: 800;
-}
-
-.cust-phone {
-  font-size: 0.72rem;
   color: var(--text-muted);
-  font-weight: 700;
+  margin-top: 0.1rem;
+  font-weight: 600;
 }
 
-.cust-balance-side {
+.customer-balance-box {
   text-align: right;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-shrink: 0;
 }
 
-.balance-gram-text {
+.customer-balance-grams {
   font-size: 1.05rem;
   font-weight: 900;
 }
 
-.balance-gram-text.due {
-  color: var(--color-gave-red);
-}
-
-.balance-gram-text.advance {
-  color: var(--color-got-green);
-}
-
-.balance-gram-text.settled {
+.customer-balance-rupees {
+  font-size: 0.75rem;
+  font-weight: 700;
   color: var(--text-muted);
-}
-
-.balance-rupee-sub {
-  font-size: 0.73rem;
-  font-weight: 800;
-  color: var(--text-sub);
+  margin-top: 0.05rem;
 }
 
 /* =========================================================================
-   CUSTOMER INDIVIDUAL LEDGER VIEW (STATEMENT PAGE)
+   4. CUSTOMER LEDGER DETAIL
    ========================================================================= */
-.ledger-view-container {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  background: var(--bg-surface);
-  min-height: 100%;
-}
-
 .ledger-top-breadcrumb {
-  background: var(--color-header-navy);
+  background: #090f24;
   color: #ffffff;
-  padding: 0.65rem 1rem;
+  padding: 0.6rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
+  flex-shrink: 0;
 }
 
 .breadcrumb-back-btn {
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.15);
   border: none;
-  color: #ffffff;
-  padding: 0.3rem 0.65rem;
   border-radius: var(--radius-sm);
-  font-weight: 800;
+  color: #ffffff;
+  padding: 0.25rem 0.55rem;
   font-size: 0.78rem;
+  font-weight: 800;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
 }
 
-.customer-profile-header-card {
-  background: var(--bg-subtle);
+.customer-profile-card {
+  padding: 1rem;
+  background: #ffffff;
   border-bottom: 1.5px solid var(--border-medium);
-  padding: 1rem 1.15rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.profile-main-strip {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.profile-name-title {
-  font-size: 1.25rem;
-  font-weight: 900;
-  color: #000000;
-  margin: 0;
-  line-height: 1.2;
-}
-
-.profile-net-balance-box {
-  text-align: right;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
 }
 
 .customer-profile-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.45rem;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
 }
 
-.action-pill-btn {
-  padding: 0.45rem 0.6rem;
-  border-radius: var(--radius-md);
-  font-size: 0.75rem;
-  font-weight: 800;
-  border: 1.5px solid var(--border-medium);
-  background: #ffffff;
+.profile-action-pill {
+  width: 100%;
+  padding: 0.45rem 0.3rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  background: #f8fafc;
   color: var(--text-sub);
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  cursor: pointer;
-  font-family: inherit;
+  gap: 0.25rem;
+  text-decoration: none;
   white-space: nowrap;
 }
 
-.action-pill-btn.whatsapp {
-  border-color: #16a34a;
-  color: #15803d;
-  background: #f0fdf4;
-}
-
-.action-pill-btn.delete {
-  border-color: #fca5a5;
-  color: #dc2626;
-  background: #fef2f2;
-}
-
-.action-pill-btn.pdf {
-  border-color: #0284c7;
-  color: #0369a1;
-  background: #f0f9ff;
-}
-
-/* Ledger Transaction Cards List */
-.ledger-transactions-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.85rem 1rem 5.5rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  background: #f8fafc;
-}
-
+/* Transaction Item Bubbles */
 .tx-item-card {
+  margin: 0.55rem 1rem;
   background: #ffffff;
-  border: 1.5px solid var(--border-medium);
   border-radius: var(--radius-md);
   padding: 0.85rem 1rem;
+  border: 1.5px solid var(--border-light);
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  align-items: center;
+  justify-content: space-between;
   box-shadow: var(--shadow-sm);
-  position: relative;
 }
 
 .tx-item-card.gave {
   border-left: 5px solid var(--color-gave-red);
-  background: #fffcfc;
+  background: #fffafa;
 }
 
 .tx-item-card.got {
@@ -659,158 +603,177 @@ html, body {
 }
 
 /* =========================================================================
-   AUTHENTIC HANDWRITTEN JEWELRY NOTEBOOK VIEW (கைப்பட நோட்டு)
+   5. BOTTOM TAB NAVIGATION (ALWAYS PINNED TO SCREEN BOTTOM)
    ========================================================================= */
-.notebook-paper-view {
-  background: #fffef5;
-  background-image: linear-gradient(#e2e8f0 1px, transparent 1px);
-  background-size: 100% 28px;
-  padding: 1.25rem 1rem 5.5rem 1rem;
-  flex: 1;
-  overflow-y: auto;
-  font-family: var(--font-notebook);
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.03);
-  position: relative;
-}
-
-.notebook-paper-view::before {
-  content: '';
-  position: absolute;
-  left: 45px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #fca5a5;
-}
-
-/* =========================================================================
-   STICKY BOTTOM NAVIGATION BAR (EAGLE BOOKS FINTECH BOTTOM BAR)
-   ========================================================================= */
-.app-bottom-nav {
-  position: relative;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  background: var(--color-header-navy);
-  border-top: 1.5px solid #1e293b;
-  padding: 0.45rem 0.5rem;
+.bottom-tab-bar {
   flex-shrink: 0;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  height: 60px;
+  background: #ffffff;
+  border-top: 1.5px solid var(--border-medium);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0.25rem 0.25rem;
+  z-index: 50;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.app-bottom-nav .nav-item {
-  flex: 1;
+.tab-nav-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.2rem;
+  gap: 0.15rem;
   background: transparent;
   border: none;
-  color: #94a3b8;
-  padding: 0.4rem 0.5rem;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-family: inherit;
-  outline: none;
-}
-
-.app-bottom-nav .nav-item .nav-icon {
-  font-size: 1.2rem;
-  line-height: 1;
-  transition: transform 0.2s ease;
-}
-
-.app-bottom-nav .nav-item .nav-label {
+  color: var(--text-muted);
   font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.01em;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
+  font-family: inherit;
 }
 
-.app-bottom-nav .nav-item:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
+.tab-nav-btn.active {
+  color: var(--color-primary-orange);
 }
 
-.app-bottom-nav .nav-item.active {
-  color: #ffffff;
-  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
-  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);
+.tab-nav-btn.active .tab-icon-wrap {
+  background: #ffedd5;
+  color: var(--color-primary-orange);
 }
 
-.app-bottom-nav .nav-item.active .nav-icon {
-  transform: scale(1.12);
+.tab-icon-wrap {
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* =========================================================================
-   MODALS & DRAWERS
-   ========================================================================= */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+}
+
+/* Modal styles */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(9, 15, 36, 0.75);
-  backdrop-filter: blur(4px);
+  background: rgba(9, 15, 36, 0.7);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
-  padding: 1rem;
+  padding: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0.5rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-content {
+    max-height: 86vh !important;
+    border-radius: 16px !important;
+    margin: auto !important;
+  }
 }
 
 .modal-content {
   background: #ffffff;
-  width: 100%;
-  max-width: 500px;
+  border: 1.5px solid var(--border-medium);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-floating);
-  overflow: hidden;
-  animation: modalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes modalPop {
-  from {
-    opacity: 0;
-    transform: scale(0.94) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Slide-Over Drawer */
-.drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(9, 15, 36, 0.65);
-  backdrop-filter: blur(3px);
-  z-index: 900;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.drawer-content {
   width: 100%;
-  max-width: 440px;
-  height: 100%;
-  background: #ffffff;
+  max-width: 540px;
+  max-height: 88vh;
   display: flex;
   flex-direction: column;
-  animation: drawerSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  box-shadow: var(--shadow-floating);
+  margin: auto;
 }
 
-@keyframes drawerSlide {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+.modal-body-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 1.25rem;
 }
 
-/* PRINT MEDIA QUERIES FOR CLEAN PDF printing */
+.input-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #000000;
+  margin-bottom: 0.35rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  background: #ffffff;
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  color: #000000;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-primary-orange);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.2);
+}
+
+.btn-mobile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+/* Complete Print Isolation Rules */
 @media print {
-  body * {
-    visibility: hidden;
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
   }
+
+  /* Hide entire page elements by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Reveal only the printable receipt or notebook */
   #printable-receipt,
   #printable-receipt *,
   #printable-notebook,
@@ -837,7 +800,7 @@ html, body {
   /* Explicitly remove UI overlays, headers, and buttons */
   .no-print,
   .app-header,
-  .app-bottom-nav,
+  .bottom-tab-bar,
   .sticky-bottom-actions,
   .fab-customer-container,
   .modal-overlay,

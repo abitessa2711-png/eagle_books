@@ -303,7 +303,9 @@ export default function App() {
       <EagleHeader
         lang={lang}
         setLang={setLang}
+        rates={rates}
         silverRate={rates?.ratePerGram || 95}
+        currentUser={authUser}
         onOpenRateModal={() => setIsRateModalOpen(true)}
         onLogout={handleLogout}
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
@@ -311,7 +313,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="app-main-content">
+      <main className="app-scroll-main">
         {activeTab === 'customers' ? (
           selectedCustomerId && activeCustomer ? (
             <KhatabookCustomerLedger
@@ -373,37 +375,37 @@ export default function App() {
       </main>
 
       {/* Bottom Sticky Navigation Bar */}
-      <nav className="app-bottom-nav">
+      <nav className="bottom-tab-bar no-print">
         <button
-          className={`nav-item ${activeTab === 'customers' ? 'active' : ''}`}
+          className={`tab-nav-btn ${activeTab === 'customers' ? 'active' : ''}`}
           onClick={() => setActiveTab('customers')}
         >
-          <span className="nav-icon">📖</span>
-          <span className="nav-label">{lang === 'ta' ? 'கதாபுத்தகம்' : 'Khatabook'}</span>
+          <div className="tab-icon-wrap">📖</div>
+          <span>{lang === 'ta' ? 'கதாபுத்தகம்' : 'Khatabook'}</span>
         </button>
 
         <button
-          className={`nav-item ${activeTab === 'notebook' ? 'active' : ''}`}
+          className={`tab-nav-btn ${activeTab === 'notebook' ? 'active' : ''}`}
           onClick={() => setActiveTab('notebook')}
         >
-          <span className="nav-icon">📝</span>
-          <span className="nav-label">{lang === 'ta' ? 'நோட்டு' : 'Notebook'}</span>
+          <div className="tab-icon-wrap">📝</div>
+          <span>{lang === 'ta' ? 'கைப்பட நோட்டு' : 'Notebook'}</span>
         </button>
 
         <button
-          className="nav-item"
+          className="tab-nav-btn"
           onClick={() => setIsConverterModalOpen(true)}
         >
-          <span className="nav-icon">🧮</span>
-          <span className="nav-label">{lang === 'ta' ? 'கணிப்பான்' : 'Calculator'}</span>
+          <div className="tab-icon-wrap">🧮</div>
+          <span>{lang === 'ta' ? 'கணிப்பான்' : 'Calculator'}</span>
         </button>
 
         <button
-          className="nav-item"
+          className="tab-nav-btn"
           onClick={() => setIsBackupModalOpen(true)}
         >
-          <span className="nav-icon">💾</span>
-          <span className="nav-label">{lang === 'ta' ? 'பேக்கப்' : 'Backup'}</span>
+          <div className="tab-icon-wrap">💾</div>
+          <span>{lang === 'ta' ? 'பேக்கப்' : 'Backup'}</span>
         </button>
       </nav>
 
