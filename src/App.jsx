@@ -8,6 +8,7 @@ import { EagleHeader } from './components/EagleHeader';
 import { RateManagerModal } from './components/RateManagerModal';
 import { CustomerModal } from './components/CustomerModal';
 import { TransactionDrawer } from './components/TransactionDrawer';
+import { KhatabookCustomerList } from './components/KhatabookCustomerList';
 import { KhatabookCustomerLedger } from './components/KhatabookCustomerLedger';
 import { HandwrittenNotebook } from './components/HandwrittenNotebook';
 import { ReceiptModal } from './components/ReceiptModal';
@@ -191,7 +192,7 @@ export default function App() {
     return map;
   }, [customers, transactions, rates]);
 
-  const activeCustomer = (customers || []).find((c) => c.id === selectedCustomerId) || (customers || [])[0] || null;
+  const activeCustomer = (customers || []).find((c) => c.id === selectedCustomerId) || null;
   const activeSummary = activeCustomer ? customerSummaries[activeCustomer.id] || { transactions: [], netBalanceGrams: 0 } : null;
 
   // Navigation Handlers
@@ -312,32 +313,47 @@ export default function App() {
       {/* Main Content Area */}
       <main className="app-main-content">
         {activeTab === 'customers' ? (
-          <KhatabookCustomerLedger
-            lang={lang}
-            customers={customers}
-            customerSummaries={customerSummaries}
-            selectedCustomerId={selectedCustomerId}
-            onSelectCustomer={handleSelectCustomer}
-            onBackToList={handleBackToList}
-            onOpenAddCustomer={() => setIsAddCustomerOpen(true)}
-            onOpenGiveDrawer={handleOpenGiveDrawer}
-            onOpenGetDrawer={handleOpenGetDrawer}
-            onOpenReceiptModal={(cust) => {
-              setReceiptCustomerId(cust.id);
-              setIsReceiptModalOpen(true);
-            }}
-            onOpenWhatsAppModal={(cust) => {
-              setWhatsAppCustomerId(cust.id);
-              setIsWhatsAppModalOpen(true);
-            }}
-            onOpenPdfModal={(cust) => {
-              setPdfCustomerId(cust.id);
-              setIsPdfModalOpen(true);
-            }}
-            onDeleteTransaction={handleDeleteTransaction}
-            onDeleteCustomer={handleDeleteCustomer}
-            rates={rates}
-          />
+          selectedCustomerId && activeCustomer ? (
+            <KhatabookCustomerLedger
+              lang={lang}
+              customer={activeCustomer}
+              allCustomers={customers}
+              customerSummary={activeSummary}
+              rates={rates}
+              onBack={handleBackToList}
+              onSelectCustomer={handleSelectCustomer}
+              onOpenGiveModal={handleOpenGiveDrawer}
+              onOpenGetModal={handleOpenGetDrawer}
+              onOpenReceiptModal={(cust) => {
+                setReceiptCustomerId(cust.id);
+                setIsReceiptModalOpen(true);
+              }}
+              onOpenWhatsAppModal={(cust) => {
+                setWhatsAppCustomerId(cust.id);
+                setIsWhatsAppModalOpen(true);
+              }}
+              onOpenPdfModal={(cust) => {
+                setPdfCustomerId(cust.id);
+                setIsPdfModalOpen(true);
+              }}
+              onDeleteTransaction={handleDeleteTransaction}
+              onDeleteCustomer={handleDeleteCustomer}
+            />
+          ) : (
+            <KhatabookCustomerList
+              lang={lang}
+              customers={customers}
+              customerSummaries={customerSummaries}
+              onSelectCustomer={handleSelectCustomer}
+              onOpenNewCustomerModal={() => setIsAddCustomerOpen(true)}
+              onDeleteCustomer={handleDeleteCustomer}
+              onOpenWhatsAppModal={(cust) => {
+                setWhatsAppCustomerId(cust.id);
+                setIsWhatsAppModalOpen(true);
+              }}
+              rates={rates}
+            />
+          )
         ) : (
           <HandwrittenNotebook
             lang={lang}
