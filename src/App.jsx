@@ -387,7 +387,23 @@ export default function App() {
           onClick={() => setActiveTab('notebook')}
         >
           <span className="nav-icon">📝</span>
-          <span className="nav-label">{lang === 'ta' ? 'கைப்பட நோட்டு' : 'Notebook View'}</span>
+          <span className="nav-label">{lang === 'ta' ? 'நோட்டு' : 'Notebook'}</span>
+        </button>
+
+        <button
+          className="nav-item"
+          onClick={() => setIsConverterModalOpen(true)}
+        >
+          <span className="nav-icon">🧮</span>
+          <span className="nav-label">{lang === 'ta' ? 'கணிப்பான்' : 'Calculator'}</span>
+        </button>
+
+        <button
+          className="nav-item"
+          onClick={() => setIsBackupModalOpen(true)}
+        >
+          <span className="nav-icon">💾</span>
+          <span className="nav-label">{lang === 'ta' ? 'பேக்கப்' : 'Backup'}</span>
         </button>
       </nav>
 
