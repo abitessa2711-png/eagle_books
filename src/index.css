@@ -92,17 +92,17 @@ html, body {
    ========================================================================= */
 .app-container {
   width: 100%;
-  max-width: 390px;
+  max-width: 440px;
   height: 100vh;
   height: 100dvh;
-  max-height: 820px;
+  max-height: 880px;
   background-color: var(--bg-surface);
   display: flex;
   flex-direction: column;
   position: relative;
   margin: 0 auto;
-  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.6), 0 0 0 8px #0f172a, 0 0 0 10px rgba(255, 255, 255, 0.15);
-  border-radius: 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 6px #0f172a, 0 0 0 8px rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
   overflow: hidden;
 }
 
@@ -504,15 +504,9 @@ html, body {
 
 .customer-profile-actions {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.35rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
   margin-top: 0.75rem;
-}
-
-@media (max-width: 440px) {
-  .customer-profile-actions {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 .profile-action-pill {
