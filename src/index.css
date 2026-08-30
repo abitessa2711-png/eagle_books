@@ -88,35 +88,29 @@ html, body {
 }
 
 /* =========================================================================
-   APP SHELL CONTAINER (Authentic Compact Mobile Device Frame View)
+   APP SHELL CONTAINER (Responsive Full-Stack Web Application Shell)
    ========================================================================= */
 .app-container {
   width: 100%;
-  max-width: 440px;
-  height: 100vh;
-  height: 100dvh;
-  max-height: 880px;
+  min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--bg-surface);
   display: flex;
   flex-direction: column;
   position: relative;
-  margin: 0 auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 6px #0f172a, 0 0 0 8px rgba(255, 255, 255, 0.12);
-  border-radius: 24px;
-  overflow: hidden;
+  margin: 0;
+  box-shadow: none;
+  border-radius: 0;
+  overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .app-container {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
-  .app-container {
-    border-radius: 0;
-    box-shadow: none;
-    max-width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100vh;
-    max-height: 100dvh;
-  }
-
   /* Prevent auto-zoom on input focus on iOS/Android browsers */
   input, select, textarea {
     font-size: 16px !important;
