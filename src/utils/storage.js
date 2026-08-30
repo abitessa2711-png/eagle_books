@@ -79,7 +79,7 @@ export function saveAuthUser(user) {
 }
 
 // ============================================================================
-// SUPABASE CLOUD SYNC METHODS (Robust Cross-Device Realtime Sync)
+// SUPABASE CLOUD SYNC METHODS
 // ============================================================================
 
 /**
@@ -88,13 +88,10 @@ export function saveAuthUser(user) {
 export async function fetchCloudData() {
   try {
     const [custRes, txRes, ratesRes] = await Promise.all([
-      supabase.from('customers').select('*'),
-      supabase.from('transactions').select('*'),
-      supabase.from('silver_rates').select('*').eq('id', 'current_rate').maybeSingle()
+      supabase.from('customers').select('*').order('created_at', { ascending: true }),
+      supabase.from('transactions').select('*').order('date', { ascending: true }),
+      supabase.from('silver_rates').select('*').eq('id', 'current_rate').single()
     ]);
-
-    if (custRes.error) console.error('Supabase customer fetch error:', custRes.error);
-    if (txRes.error) console.error('Supabase transaction fetch error:', txRes.error);
 
     const result = {
       hasCloudData: false,
@@ -113,7 +110,7 @@ export async function fetchCloudData() {
         type: c.type || 'typeJewelleryShop',
         customType: c.custom_type || c.customType || '',
         notes: c.notes || '',
-        createdAt: c.created_at || c.createdAt || new Date().toISOString()
+        createdAt: c.created_at
       }));
       result.hasCloudData = true;
     }
@@ -121,17 +118,17 @@ export async function fetchCloudData() {
     if (txRes.data && Array.isArray(txRes.data) && txRes.data.length > 0) {
       result.transactions = txRes.data.map(t => ({
         id: t.id,
-        customerId: t.customer_id || t.customerId,
+        customerId: t.customer_id,
         date: t.date,
         type: t.type,
-        itemName: t.item_name || t.itemName,
+        itemName: t.item_name,
         weight: Number(t.weight) || 0,
-        touchPercent: Number(t.touch_percent ?? t.touchPercent ?? 100),
-        wastagePercent: Number(t.wastage_percent ?? t.wastagePercent ?? 0),
-        cashAmount: t.cash_amount !== undefined ? Number(t.cash_amount) : (t.cashAmount ? Number(t.cashAmount) : null),
-        ratePerGram: t.rate_per_gram !== undefined ? Number(t.rate_per_gram) : (t.ratePerGram ? Number(t.ratePerGram) : null),
-        convertedGrams: t.converted_grams !== undefined ? Number(t.converted_grams) : (t.convertedGrams ? Number(t.convertedGrams) : null),
-        isTouchAdjusted: Boolean(t.is_touch_adjusted || t.isTouchAdjusted),
+        touchPercent: Number(t.touch_percent) || 100,
+        wastagePercent: Number(t.wastage_percent) || 0,
+        cashAmount: t.cash_amount ? Number(t.cash_amount) : null,
+        ratePerGram: t.rate_per_gram ? Number(t.rate_per_gram) : null,
+        convertedGrams: t.converted_grams ? Number(t.converted_grams) : null,
+        isTouchAdjusted: Boolean(t.is_touch_adjusted),
         direction: t.direction,
         notes: t.notes
       }));
@@ -148,7 +145,7 @@ export async function fetchCloudData() {
 
     return result;
   } catch (err) {
-    console.warn('Supabase cloud fetch error:', err);
+    console.warn('Supabase cloud fetch failed (using local storage):', err);
     return { hasCloudData: false, error: err };
   }
 }
@@ -332,9 +329,10 @@ export function subscribeToRealtime({ onCustomerEvent, onTransactionEvent, onRat
 export function exportBackupJSON(customers, transactions, rates) {
   const data = {
     appName: 'Eagle Books',
-    exportDate: new Date().toISOString(),
-    customers,
-    transactions,
+    version: '1.0.0',
+    exportedAt: new Date().toISOString(),
+    customers: customers || [],
+    transactions: transactions || [],
     rates
   };
   const jsonStr = JSON.stringify(data, null, 2);
@@ -342,18 +340,17 @@ export function exportBackupJSON(customers, transactions, rates) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `EagleBooks_Backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.download = `Eagle_Books_Backup_${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-export async function clearAllRecords() {
+export function clearAllRecords() {
   localStorage.removeItem(CUSTOMERS_KEY);
   localStorage.removeItem(TRANSACTIONS_KEY);
-  try {
-    await supabase.from('transactions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from('customers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-  } catch (err) {
-    console.warn('Clear cloud error:', err);
-  }
+  return {
+    customers: [],
+    transactions: [],
+    rates: initialSilverRates
+  };
 }
