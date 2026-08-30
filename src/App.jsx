@@ -16,6 +16,7 @@ import { ReceiptModal } from './components/ReceiptModal';
 import { WhatsAppModal } from './components/WhatsAppModal';
 import { BackupModal } from './components/BackupModal';
 import { QuickConverterModal } from './components/QuickConverterModal';
+import { CustomerPdfModal } from './components/CustomerPdfModal';
 
 import { 
   loadStoredData, 
@@ -85,6 +86,8 @@ export function App() {
   const [whatsAppCustomerId, setWhatsAppCustomerId] = useState(null);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isConverterModalOpen, setIsConverterModalOpen] = useState(false);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [pdfCustomerId, setPdfCustomerId] = useState(null);
 
   // 1. 100% Automatic & Silent Cloud Sync with Bi-Directional Merge
   const syncDataFromCloud = useCallback(async () => {
@@ -115,18 +118,11 @@ export function App() {
           setRates(prev => ({ ...prev, ...cloudRes.rates }));
         }
         setCloudSynced(true);
-      } else {
-        setCustomers((prev) => {
-          if (prev && prev.length > 0) {
-            uploadLocalDataToCloud(prev, transactions, rates);
-          }
-          return prev;
-        });
       }
     } catch (err) {
       console.warn('Silent cloud sync warning:', err);
     }
-  }, [transactions, rates]);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -134,12 +130,12 @@ export function App() {
     // Initial sync
     syncDataFromCloud();
 
-    // Periodic automatic silent sync every 8 seconds
+    // Fast periodic automatic silent sync every 3 seconds
     const interval = setInterval(() => {
       if (isMounted) {
         syncDataFromCloud();
       }
-    }, 8000);
+    }, 3000);
 
     // Auto-sync when user returns to app/window
     const handleFocus = () => {
@@ -352,6 +348,11 @@ export function App() {
     }
   };
 
+  const handleOpenPdfModal = (custId) => {
+    setPdfCustomerId(custId || activeCustomer?.id);
+    setIsPdfModalOpen(true);
+  };
+
   const handleManualSync = async () => {
     if (customers && customers.length > 0) {
       await uploadLocalDataToCloud(customers, transactions, rates);
@@ -403,6 +404,7 @@ export function App() {
               onOpenNotebookView={() => setActiveTab('notebook')}
               onOpenReceiptModal={handleOpenReceipt}
               onOpenWhatsAppModal={handleOpenWhatsApp}
+              onOpenPdfModal={handleOpenPdfModal}
               onDeleteTransaction={handleDeleteTransaction}
               onDeleteCustomer={handleDeleteCustomer}
             />
@@ -430,6 +432,7 @@ export function App() {
             onOpenTransactionModal={handleOpenGiveDrawer}
             onBack={() => setActiveTab('customers')}
             onOpenWhatsAppModal={handleOpenWhatsApp}
+            onOpenPdfModal={handleOpenPdfModal}
             onDeleteTransaction={handleDeleteTransaction}
           />
         )}
@@ -557,6 +560,15 @@ export function App() {
         lang={lang}
         isOpen={isConverterModalOpen}
         onClose={() => setIsConverterModalOpen(false)}
+        rates={rates}
+      />
+
+      <CustomerPdfModal
+        lang={lang}
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        customer={customers.find((c) => c.id === pdfCustomerId) || activeCustomer}
+        customerSummary={pdfCustomerId ? customerSummaries[pdfCustomerId] : activeSummary}
         rates={rates}
       />
 

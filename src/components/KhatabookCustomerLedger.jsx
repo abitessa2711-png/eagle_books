@@ -30,6 +30,7 @@ export function KhatabookCustomerLedger({
   onOpenNotebookView,
   onOpenReceiptModal,
   onOpenWhatsAppModal,
+  onOpenPdfModal,
   onDeleteTransaction,
   onDeleteCustomer
 }) {
@@ -150,6 +151,13 @@ export function KhatabookCustomerLedger({
 
         {/* Action Quick Buttons */}
         <div className="customer-profile-actions">
+          {onOpenPdfModal && (
+            <button onClick={() => onOpenPdfModal(customer.id)} className="profile-action-pill" style={{ background: '#eff6ff', color: '#1d4ed8', borderColor: '#bfdbfe', fontWeight: '900' }}>
+              <FileText size={14} />
+              <span>{lang === 'ta' ? 'PDF அறிக்கை' : 'PDF Report'}</span>
+            </button>
+          )}
+
           <button onClick={onOpenNotebookView} className="profile-action-pill" style={{ background: '#fffbeb', color: '#b45309', borderColor: '#fde68a' }}>
             <BookOpen size={14} />
             <span>{lang === 'ta' ? 'நோட்புக்' : 'Notebook'}</span>

@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   Printer, 
   Share2, 
@@ -6,7 +5,8 @@ import {
   Phone,
   MapPin,
   MessageSquare,
-  Trash2
+  Trash2,
+  FileText
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 import { formatGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
@@ -19,6 +19,7 @@ export function HandwrittenNotebook({
   onOpenTransactionModal,
   onBack,
   onOpenWhatsAppModal,
+  onOpenPdfModal,
   onDeleteTransaction
 }) {
   const t = translations[lang] || translations.ta;
@@ -109,6 +110,18 @@ export function HandwrittenNotebook({
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+          {onOpenPdfModal && (
+            <button
+              onClick={() => onOpenPdfModal(customer.id)}
+              className="btn-mobile"
+              style={{ background: '#1d4ed8', color: '#ffffff', padding: '0.35rem 0.65rem', fontSize: '0.78rem', fontWeight: '800' }}
+              title="Download PDF Report"
+            >
+              <FileText size={14} />
+              <span>PDF</span>
+            </button>
+          )}
+
           <button
             onClick={handleWhatsAppShare}
             className="btn-mobile"
