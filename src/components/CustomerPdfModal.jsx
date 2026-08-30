@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   Printer, 
   Download, 
@@ -8,7 +8,8 @@ import {
   Phone, 
   MapPin,
   Calendar,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { formatGrams, formatCurrency, formatDate } from '../utils/calculations';
 import { translations } from '../utils/translations';
@@ -23,6 +24,7 @@ export function CustomerPdfModal({
 }) {
   const t = translations[lang] || translations.ta;
   const printRef = useRef(null);
+  const [downloading, setDownloading] = useState(false);
 
   if (!isOpen || !customer || !customerSummary) return null;
 
@@ -37,6 +39,44 @@ export function CustomerPdfModal({
     month: '2-digit',
     year: 'numeric'
   });
+
+  const loadHtml2Pdf = () => {
+    return new Promise((resolve, reject) => {
+      if (window.html2pdf) {
+        resolve(window.html2pdf);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = () => resolve(window.html2pdf);
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloading(true);
+      const html2pdfLib = await loadHtml2Pdf();
+      const element = document.getElementById('printable-receipt');
+      const cleanName = (customer.name || 'Customer').replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+      const opt = {
+        margin:       [8, 8, 8, 8],
+        filename:     `${cleanName}_EagleBooks_Ledger.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      await html2pdfLib().set(opt).from(element).save();
+    } catch (err) {
+      console.warn('HTML2PDF error, using native print fallback:', err);
+      window.print();
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const handlePrintPdf = () => {
     window.print();
@@ -62,7 +102,7 @@ export function CustomerPdfModal({
         <div className="no-print" style={{
           background: 'linear-gradient(135deg, #090f24 0%, #1e293b 100%)',
           color: '#ffffff',
-          padding: '1rem 1.25rem',
+          padding: '0.85rem 1.15rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -83,7 +123,7 @@ export function CustomerPdfModal({
               <FileText size={20} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '900', margin: 0, color: '#ffffff' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: '900', margin: 0, color: '#ffffff' }}>
                 {lang === 'ta' ? 'வாடிக்கையாளர் PDF அறிக்கை' : 'Customer PDF Ledger Report'}
               </h3>
               <span style={{ fontSize: '0.72rem', color: '#cbd5e1', fontWeight: '700' }}>
@@ -92,7 +132,31 @@ export function CustomerPdfModal({
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {/* Direct 1-Click PDF Download Button */}
+            <button
+              onClick={handleDownloadPdf}
+              disabled={downloading}
+              style={{
+                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '0.45rem 0.85rem',
+                fontSize: '0.82rem',
+                fontWeight: '800',
+                cursor: downloading ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)'
+              }}
+            >
+              <Download size={15} />
+              <span>{downloading ? (lang === 'ta' ? 'பதிவிறங்குகிறது...' : 'Downloading...') : (lang === 'ta' ? 'PDF டவுன்லோட்' : 'Download PDF')}</span>
+            </button>
+
+            {/* Print Fallback Button */}
             <button
               onClick={handlePrintPdf}
               style={{
@@ -100,18 +164,18 @@ export function CustomerPdfModal({
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '8px',
-                padding: '0.5rem 1rem',
-                fontSize: '0.85rem',
+                padding: '0.45rem 0.85rem',
+                fontSize: '0.82rem',
                 fontWeight: '800',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.4rem',
+                gap: '0.35rem',
                 boxShadow: '0 4px 12px rgba(234, 88, 12, 0.3)'
               }}
             >
-              <Printer size={16} />
-              <span>{lang === 'ta' ? 'PDF பதிவிறக்கம் / அச்சிடுக' : 'Download / Print PDF'}</span>
+              <Printer size={15} />
+              <span>{lang === 'ta' ? 'பிரிண்ட்' : 'Print'}</span>
             </button>
 
             <button
@@ -140,7 +204,7 @@ export function CustomerPdfModal({
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: '1.5rem',
+            padding: '1.25rem',
             background: '#f8fafc'
           }}
         >
