@@ -34,56 +34,57 @@ export function loadStoredData() {
   }
 }
 
-export function saveCustomers(customers) {
+export function saveStoredData({ customers, transactions, rates, lang, authUser }) {
   try {
-    localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers || []));
-  } catch (err) {
-    console.error('Error saving customers to local storage:', err);
-  }
-}
-
-export function saveTransactions(transactions) {
-  try {
-    localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions || []));
-  } catch (err) {
-    console.error('Error saving transactions to local storage:', err);
-  }
-}
-
-export function saveRates(rates) {
-  try {
-    localStorage.setItem(RATES_KEY, JSON.stringify(rates));
-  } catch (err) {
-    console.error('Error saving rates to local storage:', err);
-  }
-}
-
-export function saveLang(lang) {
-  try {
-    localStorage.setItem(LANG_KEY, lang);
-  } catch (err) {
-    console.error('Error saving lang:', err);
-  }
-}
-
-export function saveAuthUser(user) {
-  try {
-    if (user) {
-      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(AUTH_USER_KEY);
+    if (customers !== undefined) {
+      localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
+    }
+    if (transactions !== undefined) {
+      localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
+    }
+    if (rates !== undefined) {
+      localStorage.setItem(RATES_KEY, JSON.stringify(rates));
+    }
+    if (lang !== undefined) {
+      localStorage.setItem(LANG_KEY, lang);
+    }
+    if (authUser !== undefined) {
+      if (authUser) {
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authUser));
+      } else {
+        localStorage.removeItem(AUTH_USER_KEY);
+      }
     }
   } catch (err) {
-    console.error('Error saving auth user:', err);
+    console.error('Failed to save to localStorage:', err);
   }
 }
 
-// ============================================================================
-// SUPABASE CLOUD SYNC METHODS
-// ============================================================================
+export function exportBackupJSON(customers, transactions, rates) {
+  const data = {
+    version: '1.0',
+    exportDate: new Date().toISOString(),
+    customers,
+    transactions,
+    rates
+  };
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `EagleBooks_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+}
+
+export function clearAllRecords() {
+  localStorage.removeItem(CUSTOMERS_KEY);
+  localStorage.removeItem(TRANSACTIONS_KEY);
+  localStorage.removeItem(RATES_KEY);
+}
 
 /**
- * Fetch all data from Supabase cloud database
+ * Fetch complete state from Supabase Cloud
  */
 export async function fetchCloudData() {
   try {
@@ -95,12 +96,12 @@ export async function fetchCloudData() {
 
     const result = {
       hasCloudData: false,
-      customers: null,
-      transactions: null,
+      customers: [],
+      transactions: [],
       rates: null
     };
 
-    if (custRes.data && Array.isArray(custRes.data) && custRes.data.length > 0) {
+    if (custRes.data && Array.isArray(custRes.data)) {
       result.customers = custRes.data.map(c => ({
         id: c.id,
         name: c.name,
@@ -112,10 +113,10 @@ export async function fetchCloudData() {
         notes: c.notes || '',
         createdAt: c.created_at
       }));
-      result.hasCloudData = true;
+      if (custRes.data.length > 0) result.hasCloudData = true;
     }
 
-    if (txRes.data && Array.isArray(txRes.data) && txRes.data.length > 0) {
+    if (txRes.data && Array.isArray(txRes.data)) {
       result.transactions = txRes.data.map(t => ({
         id: t.id,
         customerId: t.customer_id,
@@ -132,7 +133,7 @@ export async function fetchCloudData() {
         direction: t.direction,
         notes: t.notes
       }));
-      result.hasCloudData = true;
+      if (txRes.data.length > 0) result.hasCloudData = true;
     }
 
     if (ratesRes.data) {
@@ -159,12 +160,10 @@ export async function uploadLocalDataToCloud(customers, transactions, rates) {
       const dbCust = customers.map(c => ({
         id: c.id,
         name: c.name,
-        jewellery_shop: c.jewelleryShop || '',
         phone: c.phone || '',
         address: c.address || '',
         type: c.type || 'typeJewelleryShop',
-        custom_type: c.customType || '',
-        notes: c.notes || ''
+        updated_at: new Date().toISOString()
       }));
       await supabase.from('customers').upsert(dbCust, { onConflict: 'id' });
     }
@@ -176,15 +175,15 @@ export async function uploadLocalDataToCloud(customers, transactions, rates) {
         date: t.date,
         type: t.type,
         item_name: t.itemName,
-        weight: t.weight || 0,
-        touch_percent: t.touchPercent || 100,
-        wastage_percent: t.wastagePercent || 0,
-        cash_amount: t.cashAmount,
-        rate_per_gram: t.ratePerGram,
-        converted_grams: t.convertedGrams,
-        is_touch_adjusted: t.isTouchAdjusted || false,
-        direction: t.direction,
-        notes: t.notes
+        weight: Number(t.weight) || 0,
+        touch_percent: Number(t.touchPercent) || 100,
+        wastage_percent: Number(t.wastagePercent) || 0,
+        cash_amount: t.cashAmount ? Number(t.cashAmount) : null,
+        rate_per_gram: t.ratePerGram ? Number(t.ratePerGram) : null,
+        converted_grams: t.convertedGrams ? Number(t.convertedGrams) : null,
+        is_touch_adjusted: Boolean(t.isTouchAdjusted),
+        direction: t.direction || null,
+        notes: t.notes || null
       }));
       await supabase.from('transactions').upsert(dbTx, { onConflict: 'id' });
     }
@@ -213,12 +212,9 @@ export async function syncCustomerToCloud(customer) {
     const payload = {
       id: customer.id,
       name: customer.name,
-      jewellery_shop: customer.jewelleryShop || '',
       phone: customer.phone || '',
       address: customer.address || '',
       type: customer.type || 'typeJewelleryShop',
-      custom_type: customer.customType || '',
-      notes: customer.notes || '',
       updated_at: new Date().toISOString()
     };
     await supabase.from('customers').upsert(payload, { onConflict: 'id' });
@@ -232,6 +228,7 @@ export async function syncCustomerToCloud(customer) {
  */
 export async function deleteCustomerFromCloud(customerId) {
   try {
+    await supabase.from('transactions').delete().eq('customer_id', customerId);
     await supabase.from('customers').delete().eq('id', customerId);
   } catch (err) {
     console.warn('Error deleting customer from cloud:', err);
@@ -323,34 +320,5 @@ export function subscribeToRealtime({ onCustomerEvent, onTransactionEvent, onRat
 
   return () => {
     supabase.removeChannel(channel);
-  };
-}
-
-export function exportBackupJSON(customers, transactions, rates) {
-  const data = {
-    appName: 'Eagle Books',
-    version: '1.0.0',
-    exportedAt: new Date().toISOString(),
-    customers: customers || [],
-    transactions: transactions || [],
-    rates
-  };
-  const jsonStr = JSON.stringify(data, null, 2);
-  const blob = new Blob([jsonStr], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `Eagle_Books_Backup_${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-export function clearAllRecords() {
-  localStorage.removeItem(CUSTOMERS_KEY);
-  localStorage.removeItem(TRANSACTIONS_KEY);
-  return {
-    customers: [],
-    transactions: [],
-    rates: initialSilverRates
   };
 }

@@ -1,81 +1,45 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import confetti from 'canvas-confetti';
-import { UserPlus } from 'lucide-react';
+import { loadStoredData, saveStoredData, fetchCloudData, uploadLocalDataToCloud, syncCustomerToCloud, deleteCustomerFromCloud, syncTransactionToCloud, deleteTransactionFromCloud, syncRatesToCloud, subscribeToRealtime } from './utils/storage';
+import { computeCustomerTransactions } from './utils/calculations';
+import { initialSilverRates, initialCustomers, initialTransactions } from './utils/demoData';
+
 import { EagleHeader } from './components/EagleHeader';
-import { MobileBottomNav } from './components/MobileBottomNav';
-import { KhatabookCustomerList } from './components/KhatabookCustomerList';
+import { RateManagerModal } from './components/RateManagerModal';
+import { CustomerModal } from './components/CustomerModal';
+import { TransactionDrawer } from './components/TransactionDrawer';
 import { KhatabookCustomerLedger } from './components/KhatabookCustomerLedger';
 import { HandwrittenNotebook } from './components/HandwrittenNotebook';
-import { MobileQuickCalculator } from './components/MobileQuickCalculator';
-import { DashboardSummary } from './components/DashboardSummary';
-import { LoginScreen } from './components/LoginScreen';
-import { TransactionDrawer } from './components/TransactionDrawer';
-import { CustomerModal } from './components/CustomerModal';
-import { RateManagerModal } from './components/RateManagerModal';
 import { ReceiptModal } from './components/ReceiptModal';
 import { WhatsAppModal } from './components/WhatsAppModal';
 import { BackupModal } from './components/BackupModal';
 import { QuickConverterModal } from './components/QuickConverterModal';
 import { CustomerPdfModal } from './components/CustomerPdfModal';
-
-import { 
-  loadStoredData, 
-  saveCustomers, 
-  saveTransactions, 
-  saveRates, 
-  saveLang,
-  saveAuthUser,
-  fetchCloudData,
-  uploadLocalDataToCloud,
-  syncCustomerToCloud,
-  deleteCustomerFromCloud,
-  syncTransactionToCloud,
-  deleteTransactionFromCloud,
-  syncRatesToCloud,
-  subscribeToRealtime
-} from './utils/storage';
-import { computeCustomerTransactions } from './utils/calculations';
-import { translations } from './utils/translations';
+import { LoginScreen } from './components/LoginScreen';
 
 const DEFAULT_OWNER_USER = {
-  phone: '8148003454',
-  name: 'EagleBooks Admin',
-  shopName: 'EAGLE SILVERS',
-  role: 'OWNER',
-  city: 'சிவகாசி'
+  id: 'owner',
+  username: 'eaglebooks.com',
+  name: 'EAGLE SILVERS (உரிமையாளர்)'
 };
 
-export function App() {
-  const initialData = useMemo(() => {
-    try {
-      return loadStoredData();
-    } catch (e) {
-      console.error('Error loading data:', e);
-      return {
-        customers: [],
-        transactions: [],
-        rates: { ratePerGram: 95, ratePerKg: 95000 },
-        lang: 'ta',
-        authUser: null
-      };
-    }
-  }, []);
+export default function App() {
+  // Load initial local state
+  const initial = useMemo(() => loadStoredData(), []);
 
-  const [authUser, setAuthUser] = useState(initialData.authUser || null);
-  const [customers, setCustomers] = useState(initialData.customers || []);
-  const [transactions, setTransactions] = useState(initialData.transactions || []);
-  const [rates, setRates] = useState(initialData.rates || { ratePerGram: 95 });
-  const [lang, setLang] = useState(initialData.lang || 'ta');
+  const [customers, setCustomers] = useState(initial.customers && initial.customers.length > 0 ? initial.customers : initialCustomers);
+  const [transactions, setTransactions] = useState(initial.transactions && initial.transactions.length > 0 ? initial.transactions : initialTransactions);
+  const [rates, setRates] = useState(initial.rates || initialSilverRates);
+  const [lang, setLang] = useState(initial.lang || 'ta');
+  const [authUser, setAuthUser] = useState(initial.authUser || DEFAULT_OWNER_USER);
   const [cloudSynced, setCloudSynced] = useState(false);
 
-  // Active Bottom Tab: 'customers' | 'notebook' | 'converter' | 'reports'
+  // Active View Tab: 'customers' | 'notebook'
   const [activeTab, setActiveTab] = useState('customers');
-
-  // Selected customer for Ledger detail view
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
 
   // Modals & Drawers
-  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState('GIVE'); // 'GIVE' | 'GET'
   
@@ -94,50 +58,58 @@ export function App() {
     try {
       const cloudRes = await fetchCloudData();
       if (cloudRes.hasCloudData) {
-        setCustomers((prevCustomers) => {
-          const cloudCusts = cloudRes.customers || [];
-          const cloudMap = new Map(cloudCusts.map(c => [c.id, c]));
-          const unSyncedLocal = prevCustomers.filter(lc => !cloudMap.has(lc.id));
-          if (unSyncedLocal.length > 0) {
-            uploadLocalDataToCloud(unSyncedLocal, [], null);
-          }
-          return [...cloudCusts, ...unSyncedLocal];
-        });
+        if (cloudRes.customers && cloudRes.customers.length > 0) {
+          setCustomers((prevCustomers) => {
+            const cloudCusts = cloudRes.customers;
+            const cloudMap = new Map(cloudCusts.map(c => [c.id, c]));
+            const unSyncedLocal = prevCustomers.filter(lc => !cloudMap.has(lc.id));
+            if (unSyncedLocal.length > 0) {
+              uploadLocalDataToCloud(unSyncedLocal, [], null);
+            }
+            return [...cloudCusts, ...unSyncedLocal];
+          });
+        }
 
-        setTransactions((prevTx) => {
-          const cloudTxs = cloudRes.transactions || [];
-          const cloudTxMap = new Map(cloudTxs.map(t => [t.id, t]));
-          const unSyncedLocalTx = prevTx.filter(lt => !cloudTxMap.has(lt.id));
-          if (unSyncedLocalTx.length > 0) {
-            uploadLocalDataToCloud([], unSyncedLocalTx, null);
-          }
-          return [...cloudTxs, ...unSyncedLocalTx];
-        });
+        if (cloudRes.transactions && cloudRes.transactions.length > 0) {
+          setTransactions((prevTx) => {
+            const cloudTxs = cloudRes.transactions;
+            const cloudTxMap = new Map(cloudTxs.map(t => [t.id, t]));
+            const unSyncedLocalTx = prevTx.filter(lt => !cloudTxMap.has(lt.id));
+            if (unSyncedLocalTx.length > 0) {
+              uploadLocalDataToCloud([], unSyncedLocalTx, null);
+            }
+            return [...cloudTxs, ...unSyncedLocalTx];
+          });
+        }
 
         if (cloudRes.rates) {
           setRates(prev => ({ ...prev, ...cloudRes.rates }));
         }
         setCloudSynced(true);
+      } else {
+        if (customers.length > 0 || transactions.length > 0) {
+          uploadLocalDataToCloud(customers, transactions, rates);
+        }
       }
     } catch (err) {
       console.warn('Silent cloud sync warning:', err);
     }
-  }, []);
+  }, [customers, transactions, rates]);
 
   useEffect(() => {
     let isMounted = true;
     
-    // Initial sync
+    // Initial sync on mount
     syncDataFromCloud();
 
-    // Fast periodic automatic silent sync every 3 seconds
+    // Fast periodic silent cloud sync every 3 seconds
     const interval = setInterval(() => {
       if (isMounted) {
         syncDataFromCloud();
       }
     }, 3000);
 
-    // Auto-sync when user returns to app/window
+    // Auto-sync when user returns to app window
     const handleFocus = () => {
       if (isMounted) syncDataFromCloud();
     };
@@ -175,58 +147,44 @@ export function App() {
 
   // Persistence to local storage (Offline Cache)
   useEffect(() => {
-    saveCustomers(customers);
+    saveStoredData({ customers });
   }, [customers]);
 
   useEffect(() => {
-    saveTransactions(transactions);
+    saveStoredData({ transactions });
   }, [transactions]);
 
   useEffect(() => {
-    saveRates(rates);
+    saveStoredData({ rates });
   }, [rates]);
 
   useEffect(() => {
-    saveLang(lang);
+    saveStoredData({ lang });
   }, [lang]);
 
   const handleLoginSuccess = (user) => {
     const finalUser = user || DEFAULT_OWNER_USER;
     setAuthUser(finalUser);
-    saveAuthUser(finalUser);
+    saveStoredData({ authUser: finalUser });
     if (customers && customers.length > 0) {
       uploadLocalDataToCloud(customers, transactions, rates).then(() => {
         syncDataFromCloud();
       });
-    } else {
-      syncDataFromCloud();
     }
-    try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.8 },
-        colors: ['#ea580c', '#059669', '#f59e0b']
-      });
-    } catch (e) {}
   };
 
   const handleLogout = () => {
-    const confirmLogout = window.confirm(lang === 'ta' ? 'நிச்சயமாக கணக்கிலிருந்து வெளியேற வேண்டுமா?' : 'Are you sure you want to log out?');
-    if (confirmLogout) {
-      setAuthUser(null);
-      saveAuthUser(null);
-      setSelectedCustomerId(null);
-    }
+    setAuthUser(null);
+    saveStoredData({ authUser: null });
   };
 
-  // Compute all customer balances
+  // Compute Running Balances for All Customers
   const customerSummaries = useMemo(() => {
     const map = {};
-    const rate = Number(rates.ratePerGram) || 95;
+    const rate = Number(rates?.ratePerGram) || 95;
 
     (customers || []).forEach((cust) => {
-      const custTxs = (transactions || []).filter((tx) => tx.customerId === cust.id);
+      const custTxs = (transactions || []).filter((t) => t.customerId === cust.id);
       map[cust.id] = computeCustomerTransactions(custTxs, rate);
     });
 
@@ -298,226 +256,141 @@ export function App() {
     syncCustomerToCloud(custData);
   };
 
-  const handleDeleteCustomer = (id) => {
-    const customerToDelete = customers.find((c) => c.id === id);
-    const custName = customerToDelete ? customerToDelete.name : '';
-    const confirmMsg = lang === 'ta' 
-      ? `"${custName}" இந்த வாடிக்கையாளர் மற்றும் அனைத்து பரிவர்த்தனைகளையும் நிச்சயமாக நீக்க வேண்டுமா?`
-      : `Are you sure you want to delete "${custName}" and all their records?`;
-
-    if (window.confirm(confirmMsg)) {
-      setCustomers((prev) => prev.filter((c) => c.id !== id));
-      setTransactions((prev) => prev.filter((tx) => tx.customerId !== id));
-      deleteCustomerFromCloud(id);
-      if (selectedCustomerId === id) {
-        setSelectedCustomerId(null);
-      }
-    }
-  };
-
   const handleDeleteTransaction = (txId) => {
-    const t = translations[lang] || translations.ta;
-    if (window.confirm(t.confirmDelete)) {
-      setTransactions(transactions.filter((tx) => tx.id !== txId));
-      deleteTransactionFromCloud(txId);
+    if (!txId) return;
+    setTransactions((prev) => prev.filter((t) => t.id !== txId));
+    deleteTransactionFromCloud(txId);
+  };
+
+  const handleDeleteCustomer = (customerId) => {
+    if (!customerId) return;
+    setCustomers((prev) => prev.filter((c) => c.id !== customerId));
+    setTransactions((prev) => prev.filter((t) => t.customerId !== customerId));
+    deleteCustomerFromCloud(customerId);
+
+    if (selectedCustomerId === customerId) {
+      setSelectedCustomerId(null);
     }
   };
 
-  const handleSaveRates = (updatedRates) => {
-    setRates(updatedRates);
-    syncRatesToCloud(updatedRates);
-  };
-
-  const handleOpenReceipt = (custId) => {
-    setReceiptCustomerId(custId || activeCustomer?.id);
-    setIsReceiptModalOpen(true);
-  };
-
-  const handleOpenWhatsApp = (custId) => {
-    setWhatsAppCustomerId(custId || activeCustomer?.id);
-    setIsWhatsAppModalOpen(true);
-  };
-
-  const handleRestoreData = (newCust, newTx, newRates) => {
-    setCustomers(newCust);
-    setTransactions(newTx);
+  const handleSaveSilverRates = (newRates) => {
     setRates(newRates);
-    uploadLocalDataToCloud(newCust, newTx, newRates);
-    if (newCust.length > 0) {
-      setSelectedCustomerId(newCust[0].id);
+    syncRatesToCloud(newRates);
+  };
+
+  const handleRestoreData = (newCustomers, newTransactions, newRates) => {
+    if (newCustomers && Array.isArray(newCustomers)) {
+      setCustomers(newCustomers);
     }
-  };
-
-  const handleOpenPdfModal = (custId) => {
-    setPdfCustomerId(custId || activeCustomer?.id);
-    setIsPdfModalOpen(true);
-  };
-
-  const handleManualSync = async () => {
-    if (customers && customers.length > 0) {
-      await uploadLocalDataToCloud(customers, transactions, rates);
+    if (newTransactions && Array.isArray(newTransactions)) {
+      setTransactions(newTransactions);
     }
-    await syncDataFromCloud();
+    if (newRates) {
+      setRates(newRates);
+    }
+    uploadLocalDataToCloud(newCustomers, newTransactions, newRates);
   };
 
-  // IF NOT AUTHENTICATED -> SHOW LOGIN SCREEN
+  // If not logged in, show Login Screen
   if (!authUser) {
-    return (
-      <LoginScreen
-        lang={lang}
-        setLang={setLang}
-        onLoginSuccess={handleLoginSuccess}
-      />
-    );
+    return <LoginScreen lang={lang} onLoginSuccess={handleLoginSuccess} />;
   }
 
   return (
     <div className="app-container">
-      
-      {/* 1. Brand Header */}
+      {/* Eagle Silvers Header */}
       <EagleHeader
         lang={lang}
         setLang={setLang}
-        rates={rates}
-        currentUser={authUser}
-        onLogout={handleLogout}
+        silverRate={rates?.ratePerGram || 95}
         onOpenRateModal={() => setIsRateModalOpen(true)}
-        onManualSync={handleManualSync}
+        onLogout={handleLogout}
+        onOpenBackupModal={() => setIsBackupModalOpen(true)}
+        onOpenConverterModal={() => setIsConverterModalOpen(true)}
       />
 
-      {/* 2. Main Content Screens */}
-      <main className="app-scroll-main">
-        
-        {/* TAB 1: CUSTOMERS DIRECTORY OR SINGLE CUSTOMER LEDGER */}
-        {activeTab === 'customers' && (
-          selectedCustomerId ? (
-            <KhatabookCustomerLedger
-              lang={lang}
-              customer={activeCustomer}
-              allCustomers={customers}
-              customerSummary={activeSummary}
-              rates={rates}
-              onBack={handleBackToList}
-              onSelectCustomer={handleSelectCustomer}
-              onOpenGiveModal={handleOpenGiveDrawer}
-              onOpenGetModal={handleOpenGetDrawer}
-              onOpenNotebookView={() => setActiveTab('notebook')}
-              onOpenReceiptModal={handleOpenReceipt}
-              onOpenWhatsAppModal={handleOpenWhatsApp}
-              onOpenPdfModal={handleOpenPdfModal}
-              onDeleteTransaction={handleDeleteTransaction}
-              onDeleteCustomer={handleDeleteCustomer}
-            />
-          ) : (
-            <KhatabookCustomerList
-              lang={lang}
-              customers={customers}
-              customerSummaries={customerSummaries}
-              onSelectCustomer={handleSelectCustomer}
-              onOpenNewCustomerModal={() => setIsCustomerModalOpen(true)}
-              onDeleteCustomer={handleDeleteCustomer}
-              onOpenWhatsAppModal={handleOpenWhatsApp}
-              rates={rates}
-            />
-          )
-        )}
-
-        {/* TAB 2: AUTHENTIC JEWELLER NOTEBOOK (From Photo!) */}
-        {activeTab === 'notebook' && (
+      {/* Main Content Area */}
+      <main className="app-main-content">
+        {activeTab === 'customers' ? (
+          <KhatabookCustomerLedger
+            lang={lang}
+            customers={customers}
+            customerSummaries={customerSummaries}
+            selectedCustomerId={selectedCustomerId}
+            onSelectCustomer={handleSelectCustomer}
+            onBackToList={handleBackToList}
+            onOpenAddCustomer={() => setIsAddCustomerOpen(true)}
+            onOpenGiveDrawer={handleOpenGiveDrawer}
+            onOpenGetDrawer={handleOpenGetDrawer}
+            onOpenReceiptModal={(cust) => {
+              setReceiptCustomerId(cust.id);
+              setIsReceiptModalOpen(true);
+            }}
+            onOpenWhatsAppModal={(cust) => {
+              setWhatsAppCustomerId(cust.id);
+              setIsWhatsAppModalOpen(true);
+            }}
+            onOpenPdfModal={(cust) => {
+              setPdfCustomerId(cust.id);
+              setIsPdfModalOpen(true);
+            }}
+            onDeleteTransaction={handleDeleteTransaction}
+            onDeleteCustomer={handleDeleteCustomer}
+            rates={rates}
+          />
+        ) : (
           <HandwrittenNotebook
             lang={lang}
-            customer={activeCustomer}
-            customerSummary={activeSummary}
-            rates={rates}
-            onOpenTransactionModal={handleOpenGiveDrawer}
-            onBack={() => setActiveTab('customers')}
-            onOpenWhatsAppModal={handleOpenWhatsApp}
-            onOpenPdfModal={handleOpenPdfModal}
-            onDeleteTransaction={handleDeleteTransaction}
-          />
-        )}
-
-        {/* TAB 3: QUICK CONVERTER */}
-        {activeTab === 'converter' && (
-          <MobileQuickCalculator
-            lang={lang}
+            customers={customers}
+            customerSummaries={customerSummaries}
+            selectedCustomerId={selectedCustomerId}
+            onSelectCustomer={handleSelectCustomer}
+            onOpenGiveDrawer={handleOpenGiveDrawer}
+            onOpenGetDrawer={handleOpenGetDrawer}
+            onOpenPdfModal={(cust) => {
+              setPdfCustomerId(cust.id);
+              setIsPdfModalOpen(true);
+            }}
             rates={rates}
           />
         )}
-
-        {/* TAB 4: REPORTS & SUMMARY */}
-        {activeTab === 'reports' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem 0 80px 0' }}>
-            <DashboardSummary
-              lang={lang}
-              customers={customers}
-              customerSummaries={customerSummaries}
-              rates={rates}
-              allTransactions={transactions}
-            />
-
-            {/* Quick Actions */}
-            <div style={{ padding: '0 1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-              <button
-                onClick={() => setIsRateModalOpen(true)}
-                className="btn-mobile"
-                style={{ background: '#fffbeb', color: '#92400e', border: '1.5px solid #fcd34d', padding: '0.85rem' }}
-              >
-                ⚡ {(translations[lang] || translations.ta).todayRate} ({(translations[lang] || translations.ta).updateRate})
-              </button>
-
-              <button
-                onClick={() => setIsBackupModalOpen(true)}
-                className="btn-mobile"
-                style={{ background: '#f0f9ff', color: '#0369a1', border: '1.5px solid #7dd3fc', padding: '0.85rem' }}
-              >
-                💾 {(translations[lang] || translations.ta).backupRestore}
-              </button>
-            </div>
-          </div>
-        )}
-
       </main>
 
-      {/* Floating Action Button (FAB) for Customer List */}
-      {activeTab === 'customers' && !selectedCustomerId && (
-        <div className="fab-customer-container">
-          <button
-            onClick={() => setIsCustomerModalOpen(true)}
-            className="fab-customer-btn"
-            title={lang === 'ta' ? 'புதிய வாடிக்கையாளர் சேர்க்க' : 'Add New Customer'}
-          >
-            <UserPlus size={18} strokeWidth={2.5} />
-            <span>{lang === 'ta' ? '+ புதிய வாடிக்கையாளர்' : '+ Add Customer'}</span>
-          </button>
-        </div>
-      )}
+      {/* Bottom Sticky Navigation Bar */}
+      <nav className="app-bottom-nav">
+        <button
+          className={`nav-item ${activeTab === 'customers' ? 'active' : ''}`}
+          onClick={() => setActiveTab('customers')}
+        >
+          <span className="nav-icon">📖</span>
+          <span className="nav-label">{lang === 'ta' ? 'கதாபுத்தகம்' : 'Khatabook'}</span>
+        </button>
 
-      {/* 3. Bottom Navigation Bar */}
-      <MobileBottomNav
+        <button
+          className={`nav-item ${activeTab === 'notebook' ? 'active' : ''}`}
+          onClick={() => setActiveTab('notebook')}
+        >
+          <span className="nav-icon">📝</span>
+          <span className="nav-label">{lang === 'ta' ? 'கைப்பட நோட்டு' : 'Notebook View'}</span>
+        </button>
+      </nav>
+
+      {/* Modals & Slide-Over Drawers */}
+      <CustomerModal
         lang={lang}
-        currentTab={activeTab}
-        onSelectTab={(tab) => {
-          setActiveTab(tab);
-        }}
+        isOpen={isAddCustomerOpen}
+        onClose={() => setIsAddCustomerOpen(false)}
+        onSaveCustomer={handleSaveCustomer}
       />
 
-      {/* 4. Drawers & Modals */}
       <TransactionDrawer
         lang={lang}
         isOpen={isDrawerOpen}
+        mode={drawerMode}
         onClose={() => setIsDrawerOpen(false)}
-        initialMode={drawerMode}
-        customerId={activeCustomer?.id}
+        customer={activeCustomer}
         rates={rates}
         onSaveTransaction={handleSaveTransaction}
-      />
-
-      <CustomerModal
-        lang={lang}
-        isOpen={isCustomerModalOpen}
-        onClose={() => setIsCustomerModalOpen(false)}
-        onSaveCustomer={handleSaveCustomer}
       />
 
       <RateManagerModal
@@ -525,15 +398,15 @@ export function App() {
         isOpen={isRateModalOpen}
         onClose={() => setIsRateModalOpen(false)}
         rates={rates}
-        onSaveRates={handleSaveRates}
+        onSave={handleSaveSilverRates}
       />
 
       <ReceiptModal
         lang={lang}
         isOpen={isReceiptModalOpen}
         onClose={() => setIsReceiptModalOpen(false)}
-        customer={customers.find((c) => c.id === receiptCustomerId) || activeCustomer}
-        customerSummary={receiptCustomerId ? customerSummaries[receiptCustomerId] : activeSummary}
+        customer={(customers || []).find((c) => c.id === receiptCustomerId)}
+        customerSummary={receiptCustomerId ? customerSummaries[receiptCustomerId] : null}
         rates={rates}
       />
 
@@ -541,8 +414,8 @@ export function App() {
         lang={lang}
         isOpen={isWhatsAppModalOpen}
         onClose={() => setIsWhatsAppModalOpen(false)}
-        customer={customers.find((c) => c.id === whatsAppCustomerId) || activeCustomer}
-        customerSummary={whatsAppCustomerId ? customerSummaries[whatsAppCustomerId] : activeSummary}
+        customer={(customers || []).find((c) => c.id === whatsAppCustomerId)}
+        customerSummary={whatsAppCustomerId ? customerSummaries[whatsAppCustomerId] : null}
         rates={rates}
       />
 
@@ -553,7 +426,7 @@ export function App() {
         customers={customers}
         transactions={transactions}
         rates={rates}
-        onRestoreData={handleRestoreData}
+        onRestore={handleRestoreData}
       />
 
       <QuickConverterModal
@@ -567,13 +440,10 @@ export function App() {
         lang={lang}
         isOpen={isPdfModalOpen}
         onClose={() => setIsPdfModalOpen(false)}
-        customer={customers.find((c) => c.id === pdfCustomerId) || activeCustomer}
-        customerSummary={pdfCustomerId ? customerSummaries[pdfCustomerId] : activeSummary}
+        customer={(customers || []).find((c) => c.id === pdfCustomerId)}
+        customerSummary={pdfCustomerId ? customerSummaries[pdfCustomerId] : null}
         rates={rates}
       />
-
     </div>
   );
 }
-
-export default App;
