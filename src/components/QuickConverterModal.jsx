@@ -24,7 +24,8 @@ export function QuickConverterModal({
   const [grossInput, setGrossInput] = useState('150');
   const [touchInput, setTouchInput] = useState('80');
 
-  const [copied, setCopied] = useState(false);
+  const [copiedSection1, setCopiedSection1] = useState(false);
+  const [copiedSection2, setCopiedSection2] = useState(false);
 
   if (!isOpen) return null;
 
@@ -41,25 +42,46 @@ export function QuickConverterModal({
     0
   );
 
-  const handleCopy = (text) => {
+  const handleCopySec1 = (text) => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    setCopiedSection1(true);
+    setTimeout(() => setCopiedSection1(false), 1500);
+  };
+
+  const handleCopySec2 = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSection2(true);
+    setTimeout(() => setCopiedSection2(false), 1500);
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '540px', background: '#ffffff', color: '#000000' }}>
+    <div className="modal-overlay" onClick={onClose} style={{ padding: '0.75rem' }}>
+      <div 
+        className="modal-content" 
+        onClick={(e) => e.stopPropagation()} 
+        style={{ 
+          maxWidth: '560px', 
+          maxHeight: '92vh',
+          background: '#ffffff', 
+          color: '#000000',
+          borderRadius: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.4)'
+        }}
+      >
         
         {/* Header (Vibrant Orange Jeweller Theme) */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '1rem 1.25rem',
+          padding: '0.9rem 1.15rem',
           background: 'linear-gradient(135deg, #090f24 0%, #1e293b 100%)',
           color: '#ffffff',
-          borderRadius: '14px 14px 0 0'
+          flexShrink: 0,
+          borderBottom: '2px solid #f97316'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <div style={{
@@ -92,8 +114,8 @@ export function QuickConverterModal({
           </button>
         </div>
 
-        {/* Content Body */}
-        <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {/* Content Body (Scrollable Container) */}
+        <div className="modal-body-scroll" style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', gap: '1.15rem', flex: 1, overflowY: 'auto' }}>
           
           {/* =========================================================================
               SECTION 1: CASH TO GRAMS CONVERTER
@@ -113,7 +135,7 @@ export function QuickConverterModal({
             </div>
 
             {/* Inputs Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.65rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
               <div>
                 <label className="input-label" style={{ fontSize: '0.78rem' }}>
                   {lang === 'ta' ? 'செலுத்திய ரொக்கம் (₹)' : 'Cash (₹)'}
@@ -124,7 +146,7 @@ export function QuickConverterModal({
                   onChange={(e) => setCalcCash(e.target.value)}
                   className="input-field"
                   placeholder="25000"
-                  style={{ fontSize: '1.1rem', fontWeight: '900', color: '#ea580c' }}
+                  style={{ fontSize: '1.05rem', fontWeight: '900', color: '#ea580c' }}
                 />
               </div>
 
@@ -139,7 +161,7 @@ export function QuickConverterModal({
                   onChange={(e) => setCalcRate(e.target.value)}
                   className="input-field"
                   placeholder="95"
-                  style={{ fontSize: '1.1rem', fontWeight: '900' }}
+                  style={{ fontSize: '1.05rem', fontWeight: '900' }}
                 />
               </div>
             </div>
@@ -170,7 +192,7 @@ export function QuickConverterModal({
                         border: '1.5px solid #f97316',
                         borderRadius: '6px',
                         padding: '0.15rem 0.3rem',
-                        fontSize: '0.9rem',
+                        fontSize: '0.88rem',
                         fontWeight: '900',
                         textAlign: 'center',
                         color: '#ea580c'
@@ -181,9 +203,9 @@ export function QuickConverterModal({
                 )}
               </div>
 
-              {/* Quick Touch Pills: 70%, 75%, 78%, 80%, 84%, 90%, 92.5%, 100% */}
+              {/* Quick Touch Pills Side-by-Side Horizontal Grid */}
               {useTouchAdjust && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.35rem', marginTop: '0.35rem' }}>
                   {touchPresets.map((tVal) => (
                     <button
                       key={tVal}
@@ -194,9 +216,10 @@ export function QuickConverterModal({
                         color: calcTouch === tVal ? '#ffffff' : '#1e293b',
                         border: calcTouch === tVal ? '1px solid #ea580c' : '1px solid #cbd5e1',
                         borderRadius: '6px',
-                        padding: '0.2rem 0.45rem',
-                        fontSize: '0.72rem',
+                        padding: '0.3rem 0.2rem',
+                        fontSize: '0.75rem',
                         fontWeight: '800',
+                        textAlign: 'center',
                         cursor: 'pointer'
                       }}
                     >
@@ -219,21 +242,19 @@ export function QuickConverterModal({
               justifyContent: 'space-between'
             }}>
               <div>
-                <div style={{ fontSize: '0.74rem', color: '#9a3412', fontWeight: '800', lineHeight: 1.3 }}>
-                  {useTouchAdjust 
-                    ? `டச் ரேட்: ₹${calcRate} × ${calcTouch}% = ₹${(Number(calcRate) * Number(calcTouch) / 100).toFixed(2)}/g ➔ ₹${Number(calcCash || 0).toLocaleString()} ÷ ₹${(Number(calcRate) * Number(calcTouch) / 100).toFixed(2)} =` 
-                    : `₹${Number(calcCash || 0).toLocaleString()} ÷ ₹${calcRate}/g =`}
+                <div style={{ fontSize: '0.75rem', color: '#c2410c', fontWeight: '800' }}>
+                  டச் ரேட்: ₹{calcRate} × {calcTouch}% = ₹{(Number(calcRate) * (Number(calcTouch) / 100)).toFixed(2)}/g
                 </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#dc2626', lineHeight: 1.1, marginTop: '0.2rem' }}>
-                  -{formatGrams(resultGrams)} <span style={{ fontSize: '1rem' }}>g கழிவு</span>
+                <div style={{ fontSize: '1.45rem', fontWeight: '900', color: '#dc2626', lineHeight: 1.1, marginTop: '0.2rem' }}>
+                  -{formatGrams(resultGrams)} <span style={{ fontSize: '0.95rem' }}>g கழிவு</span>
                 </div>
               </div>
 
               <button
                 type="button"
-                onClick={() => handleCopy(`${formatGrams(resultGrams)} g`)}
+                onClick={() => handleCopySec1(`${formatGrams(resultGrams)} g`)}
                 style={{
-                  background: copied ? '#059669' : '#090f24',
+                  background: copiedSection1 ? '#059669' : '#ea580c',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '8px',
@@ -246,8 +267,8 @@ export function QuickConverterModal({
                   gap: '0.3rem'
                 }}
               >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                <span>{copied ? 'Copied' : 'Copy'}</span>
+                {copiedSection1 ? <Check size={14} /> : <Copy size={14} />}
+                <span>{copiedSection1 ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
           </div>
@@ -270,10 +291,10 @@ export function QuickConverterModal({
             </div>
 
             {/* Inputs Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.65rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
               <div>
                 <label className="input-label" style={{ fontSize: '0.78rem' }}>
-                  {lang === 'ta' ? 'மொத்த எடை (Gross Weight g)' : 'Gross Wt (g)'}
+                  {lang === 'ta' ? 'மொத்த எடை (Gross Wt g)' : 'Gross Wt (g)'}
                 </label>
                 <input
                   type="number"
@@ -282,7 +303,7 @@ export function QuickConverterModal({
                   onChange={(e) => setGrossInput(e.target.value)}
                   className="input-field"
                   placeholder="150"
-                  style={{ fontSize: '1.1rem', fontWeight: '900' }}
+                  style={{ fontSize: '1.05rem', fontWeight: '900' }}
                 />
               </div>
 
@@ -297,13 +318,13 @@ export function QuickConverterModal({
                   onChange={(e) => setTouchInput(e.target.value)}
                   className="input-field"
                   placeholder="80"
-                  style={{ fontSize: '1.1rem', fontWeight: '900', color: '#059669' }}
+                  style={{ fontSize: '1.05rem', fontWeight: '900', color: '#059669' }}
                 />
               </div>
             </div>
 
-            {/* Quick Touch Pills for Pure Weight */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.65rem' }}>
+            {/* Quick Touch Pills Side-by-Side Horizontal Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.35rem', marginTop: '0.65rem' }}>
               {touchPresets.map((tVal) => (
                 <button
                   key={tVal}
@@ -314,9 +335,10 @@ export function QuickConverterModal({
                     color: touchInput === tVal ? '#ffffff' : '#1e293b',
                     border: touchInput === tVal ? '1px solid #059669' : '1px solid #cbd5e1',
                     borderRadius: '6px',
-                    padding: '0.2rem 0.45rem',
-                    fontSize: '0.72rem',
+                    padding: '0.3rem 0.2rem',
+                    fontSize: '0.75rem',
                     fontWeight: '800',
+                    textAlign: 'center',
                     cursor: 'pointer'
                   }}
                 >
@@ -340,16 +362,16 @@ export function QuickConverterModal({
                 <div style={{ fontSize: '0.75rem', color: '#166534', fontWeight: '800' }}>
                   {grossInput || 0} g × {touchInput}% Touch =
                 </div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '900', color: '#059669', lineHeight: 1.1, marginTop: '0.2rem' }}>
-                  {formatGrams(resultPureGrams)} <span style={{ fontSize: '1rem' }}>g நய எடை (Pure)</span>
+                <div style={{ fontSize: '1.45rem', fontWeight: '900', color: '#059669', lineHeight: 1.1, marginTop: '0.2rem' }}>
+                  {formatGrams(resultPureGrams)} <span style={{ fontSize: '0.95rem' }}>g நய எடை (Pure)</span>
                 </div>
               </div>
 
               <button
                 type="button"
-                onClick={() => handleCopy(`${formatGrams(resultPureGrams)} g`)}
+                onClick={() => handleCopySec2(`${formatGrams(resultPureGrams)} g`)}
                 style={{
-                  background: copied ? '#059669' : '#059669',
+                  background: copiedSection2 ? '#059669' : '#059669',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '8px',
@@ -362,8 +384,8 @@ export function QuickConverterModal({
                   gap: '0.3rem'
                 }}
               >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                <span>{copied ? 'Copied' : 'Copy'}</span>
+                {copiedSection2 ? <Check size={14} /> : <Copy size={14} />}
+                <span>{copiedSection2 ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
           </div>

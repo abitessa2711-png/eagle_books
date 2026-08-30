@@ -8,7 +8,6 @@ import { EagleHeader } from './components/EagleHeader';
 import { RateManagerModal } from './components/RateManagerModal';
 import { CustomerModal } from './components/CustomerModal';
 import { TransactionDrawer } from './components/TransactionDrawer';
-import { KhatabookCustomerList } from './components/KhatabookCustomerList';
 import { KhatabookCustomerLedger } from './components/KhatabookCustomerLedger';
 import { HandwrittenNotebook } from './components/HandwrittenNotebook';
 import { ReceiptModal } from './components/ReceiptModal';
@@ -54,40 +53,23 @@ export default function App() {
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [pdfCustomerId, setPdfCustomerId] = useState(null);
 
-  // 1. 100% Automatic & Silent Cloud Sync with Bi-Directional Merge
+  // 1. 100% Automatic & Silent Cloud Sync (Cloud as Source of Truth)
   const syncDataFromCloud = useCallback(async () => {
     try {
       const cloudRes = await fetchCloudData();
       if (cloudRes.hasCloudData) {
-        if (cloudRes.customers && cloudRes.customers.length > 0) {
-          setCustomers((prevCustomers) => {
-            const cloudCusts = cloudRes.customers;
-            const cloudMap = new Map(cloudCusts.map(c => [c.id, c]));
-            const unSyncedLocal = prevCustomers.filter(lc => !cloudMap.has(lc.id));
-            if (unSyncedLocal.length > 0) {
-              uploadLocalDataToCloud(unSyncedLocal, [], null);
-            }
-            return [...cloudCusts, ...unSyncedLocal];
-          });
+        if (cloudRes.customers && Array.isArray(cloudRes.customers)) {
+          setCustomers(cloudRes.customers);
         }
-
-        if (cloudRes.transactions && cloudRes.transactions.length > 0) {
-          setTransactions((prevTx) => {
-            const cloudTxs = cloudRes.transactions;
-            const cloudTxMap = new Map(cloudTxs.map(t => [t.id, t]));
-            const unSyncedLocalTx = prevTx.filter(lt => !cloudTxMap.has(lt.id));
-            if (unSyncedLocalTx.length > 0) {
-              uploadLocalDataToCloud([], unSyncedLocalTx, null);
-            }
-            return [...cloudTxs, ...unSyncedLocalTx];
-          });
+        if (cloudRes.transactions && Array.isArray(cloudRes.transactions)) {
+          setTransactions(cloudRes.transactions);
         }
-
         if (cloudRes.rates) {
           setRates(prev => ({ ...prev, ...cloudRes.rates }));
         }
         setCloudSynced(true);
       } else {
+        // If cloud database is empty, seed it with current local state
         if (customers.length > 0 || transactions.length > 0) {
           uploadLocalDataToCloud(customers, transactions, rates);
         }
@@ -192,7 +174,7 @@ export default function App() {
     return map;
   }, [customers, transactions, rates]);
 
-  const activeCustomer = (customers || []).find((c) => c.id === selectedCustomerId) || null;
+  const activeCustomer = (customers || []).find((c) => c.id === selectedCustomerId) || (customers || [])[0] || null;
   const activeSummary = activeCustomer ? customerSummaries[activeCustomer.id] || { transactions: [], netBalanceGrams: 0 } : null;
 
   // Navigation Handlers
@@ -215,9 +197,9 @@ export default function App() {
     setIsDrawerOpen(true);
   };
 
-  const handleSaveTransaction = (newTx) => {
+  const handleSaveTransaction = async (newTx) => {
     setTransactions((prev) => [...prev, newTx]);
-    syncTransactionToCloud(newTx);
+    await syncTransactionToCloud(newTx);
 
     if (newTx.type === 'CASH_PAYMENT' || newTx.type === 'OLD_SILVER') {
       try {
@@ -231,7 +213,7 @@ export default function App() {
     }
   };
 
-  const handleSaveCustomer = (custData, openingBalanceGrams) => {
+  const handleSaveCustomer = async (custData, openingBalanceGrams) => {
     const exists = customers.some((c) => c.id === custData.id);
     if (exists) {
       setCustomers(customers.map((c) => (c.id === custData.id ? custData : c)));
@@ -251,35 +233,35 @@ export default function App() {
           notes: 'தொடக்க இருப்பு பதிவு'
         };
         setTransactions((prev) => [...prev, openingTx]);
-        syncTransactionToCloud(openingTx);
+        await syncTransactionToCloud(openingTx);
       }
     }
-    syncCustomerToCloud(custData);
+    await syncCustomerToCloud(custData);
   };
 
-  const handleDeleteTransaction = (txId) => {
+  const handleDeleteTransaction = async (txId) => {
     if (!txId) return;
     setTransactions((prev) => prev.filter((t) => t.id !== txId));
-    deleteTransactionFromCloud(txId);
+    await deleteTransactionFromCloud(txId);
   };
 
-  const handleDeleteCustomer = (customerId) => {
+  const handleDeleteCustomer = async (customerId) => {
     if (!customerId) return;
     setCustomers((prev) => prev.filter((c) => c.id !== customerId));
     setTransactions((prev) => prev.filter((t) => t.customerId !== customerId));
-    deleteCustomerFromCloud(customerId);
+    await deleteCustomerFromCloud(customerId);
 
     if (selectedCustomerId === customerId) {
       setSelectedCustomerId(null);
     }
   };
 
-  const handleSaveSilverRates = (newRates) => {
+  const handleSaveSilverRates = async (newRates) => {
     setRates(newRates);
-    syncRatesToCloud(newRates);
+    await syncRatesToCloud(newRates);
   };
 
-  const handleRestoreData = (newCustomers, newTransactions, newRates) => {
+  const handleRestoreData = async (newCustomers, newTransactions, newRates) => {
     if (newCustomers && Array.isArray(newCustomers)) {
       setCustomers(newCustomers);
     }
@@ -289,7 +271,7 @@ export default function App() {
     if (newRates) {
       setRates(newRates);
     }
-    uploadLocalDataToCloud(newCustomers, newTransactions, newRates);
+    await uploadLocalDataToCloud(newCustomers, newTransactions, newRates);
   };
 
   // If not logged in, show Login Screen
@@ -303,9 +285,7 @@ export default function App() {
       <EagleHeader
         lang={lang}
         setLang={setLang}
-        rates={rates}
         silverRate={rates?.ratePerGram || 95}
-        currentUser={authUser}
         onOpenRateModal={() => setIsRateModalOpen(true)}
         onLogout={handleLogout}
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
@@ -313,49 +293,34 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="app-scroll-main">
+      <main className="app-main-content">
         {activeTab === 'customers' ? (
-          selectedCustomerId && activeCustomer ? (
-            <KhatabookCustomerLedger
-              lang={lang}
-              customer={activeCustomer}
-              allCustomers={customers}
-              customerSummary={activeSummary}
-              rates={rates}
-              onBack={handleBackToList}
-              onSelectCustomer={handleSelectCustomer}
-              onOpenGiveModal={handleOpenGiveDrawer}
-              onOpenGetModal={handleOpenGetDrawer}
-              onOpenReceiptModal={(cust) => {
-                setReceiptCustomerId(cust.id);
-                setIsReceiptModalOpen(true);
-              }}
-              onOpenWhatsAppModal={(cust) => {
-                setWhatsAppCustomerId(cust.id);
-                setIsWhatsAppModalOpen(true);
-              }}
-              onOpenPdfModal={(cust) => {
-                setPdfCustomerId(cust.id);
-                setIsPdfModalOpen(true);
-              }}
-              onDeleteTransaction={handleDeleteTransaction}
-              onDeleteCustomer={handleDeleteCustomer}
-            />
-          ) : (
-            <KhatabookCustomerList
-              lang={lang}
-              customers={customers}
-              customerSummaries={customerSummaries}
-              onSelectCustomer={handleSelectCustomer}
-              onOpenNewCustomerModal={() => setIsAddCustomerOpen(true)}
-              onDeleteCustomer={handleDeleteCustomer}
-              onOpenWhatsAppModal={(cust) => {
-                setWhatsAppCustomerId(cust.id);
-                setIsWhatsAppModalOpen(true);
-              }}
-              rates={rates}
-            />
-          )
+          <KhatabookCustomerLedger
+            lang={lang}
+            customers={customers}
+            customerSummaries={customerSummaries}
+            selectedCustomerId={selectedCustomerId}
+            onSelectCustomer={handleSelectCustomer}
+            onBackToList={handleBackToList}
+            onOpenAddCustomer={() => setIsAddCustomerOpen(true)}
+            onOpenGiveDrawer={handleOpenGiveDrawer}
+            onOpenGetDrawer={handleOpenGetDrawer}
+            onOpenReceiptModal={(cust) => {
+              setReceiptCustomerId(cust.id);
+              setIsReceiptModalOpen(true);
+            }}
+            onOpenWhatsAppModal={(cust) => {
+              setWhatsAppCustomerId(cust.id);
+              setIsWhatsAppModalOpen(true);
+            }}
+            onOpenPdfModal={(cust) => {
+              setPdfCustomerId(cust.id);
+              setIsPdfModalOpen(true);
+            }}
+            onDeleteTransaction={handleDeleteTransaction}
+            onDeleteCustomer={handleDeleteCustomer}
+            rates={rates}
+          />
         ) : (
           <HandwrittenNotebook
             lang={lang}
@@ -375,37 +340,21 @@ export default function App() {
       </main>
 
       {/* Bottom Sticky Navigation Bar */}
-      <nav className="bottom-tab-bar no-print">
+      <nav className="app-bottom-nav">
         <button
-          className={`tab-nav-btn ${activeTab === 'customers' ? 'active' : ''}`}
+          className={`nav-item ${activeTab === 'customers' ? 'active' : ''}`}
           onClick={() => setActiveTab('customers')}
         >
-          <div className="tab-icon-wrap">📖</div>
-          <span>{lang === 'ta' ? 'கதாபுத்தகம்' : 'Khatabook'}</span>
+          <span className="nav-icon">📖</span>
+          <span className="nav-label">{lang === 'ta' ? 'கதாபுத்தகம்' : 'Khatabook'}</span>
         </button>
 
         <button
-          className={`tab-nav-btn ${activeTab === 'notebook' ? 'active' : ''}`}
+          className={`nav-item ${activeTab === 'notebook' ? 'active' : ''}`}
           onClick={() => setActiveTab('notebook')}
         >
-          <div className="tab-icon-wrap">📝</div>
-          <span>{lang === 'ta' ? 'கைப்பட நோட்டு' : 'Notebook'}</span>
-        </button>
-
-        <button
-          className="tab-nav-btn"
-          onClick={() => setIsConverterModalOpen(true)}
-        >
-          <div className="tab-icon-wrap">🧮</div>
-          <span>{lang === 'ta' ? 'கணிப்பான்' : 'Calculator'}</span>
-        </button>
-
-        <button
-          className="tab-nav-btn"
-          onClick={() => setIsBackupModalOpen(true)}
-        >
-          <div className="tab-icon-wrap">💾</div>
-          <span>{lang === 'ta' ? 'பேக்கப்' : 'Backup'}</span>
+          <span className="nav-icon">📝</span>
+          <span className="nav-label">{lang === 'ta' ? 'கைப்பட நோட்டு' : 'Notebook View'}</span>
         </button>
       </nav>
 

@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { translations } from '../utils/translations';
 import { formatGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
-import { downloadFileUniversal } from '../utils/fileDownloader';
 
 export function WhatsAppModal({
   lang,
@@ -81,10 +80,9 @@ export function WhatsAppModal({
         if (!blob) return;
 
         const cleanName = (customer.name || 'Customer').replace(/[^a-zA-Z0-9_\-]/g, '_');
-        const filename = `${cleanName}_EagleSilvers_Bill.png`;
-        const file = new File([blob], filename, { type: 'image/png' });
+        const file = new File([blob], `${cleanName}_EagleSilvers_Bill.png`, { type: 'image/png' });
 
-        // 1. Try Native Web Share API with image file (Works on Mobile Web + Android App)
+        // 1. Try Native Web Share API with image file
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           try {
             await navigator.share({
@@ -98,8 +96,11 @@ export function WhatsAppModal({
           }
         }
 
-        // 2. Universal File Saver + open WhatsApp
-        await downloadFileUniversal(blob, filename, 'image/png');
+        // 2. Fallback: Automatically download the Bill Image file + open WhatsApp
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${cleanName}_EagleSilvers_Bill.png`;
+        link.click();
 
         const greeting = `வணக்கம் ${customer.name}, ஈகிள் சில்வர்ஸ் வெள்ளி கணக்கு பில் படம் பதிவிறக்கப்பட்டது.`;
         const whatsappUrl = formattedPhone 
@@ -129,13 +130,11 @@ export function WhatsAppModal({
         backgroundColor: '#ffffff'
       });
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const cleanName = (customer.name || 'Customer').replace(/[^a-zA-Z0-9_\-]/g, '_');
-        const filename = `${cleanName}_EagleSilvers_Bill.png`;
-        await downloadFileUniversal(blob, filename, 'image/png');
-      }, 'image/png');
-
+      const cleanName = (customer.name || 'Customer').replace(/[^a-zA-Z0-9_\-]/g, '_');
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `${cleanName}_EagleSilvers_Bill.png`;
+      link.click();
     } catch (err) {
       console.error('Error downloading bill image:', err);
     } finally {

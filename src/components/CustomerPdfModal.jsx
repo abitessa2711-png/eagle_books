@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import { formatGrams, formatCurrency, formatDate } from '../utils/calculations';
 import { translations } from '../utils/translations';
-import { downloadFileUniversal } from '../utils/fileDownloader';
 
 export function CustomerPdfModal({
   lang,
@@ -69,20 +68,16 @@ export function CustomerPdfModal({
       const html2pdfLib = await loadHtml2Pdf();
       const element = document.getElementById('printable-receipt');
       const cleanName = (customer.name || 'Customer').replace(/[^a-zA-Z0-9_\-]/g, '_');
-      const filename = `${cleanName}_EagleBooks_Ledger.pdf`;
 
       const opt = {
         margin:       [6, 6, 6, 6],
-        filename:     filename,
+        filename:     `${cleanName}_EagleBooks_Ledger.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true, logging: false },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      const pdfWorker = html2pdfLib().set(opt).from(element);
-      const pdfBlob = await pdfWorker.outputPdf('blob');
-
-      await downloadFileUniversal(pdfBlob, filename, 'application/pdf');
+      await html2pdfLib().set(opt).from(element).save();
     } catch (err) {
       console.warn('HTML2PDF error, using native print fallback:', err);
       window.print();
