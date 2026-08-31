@@ -125,17 +125,17 @@ export function computeCustomerTransactions(transactions = [], currentSilverRate
 
       case 'CASH_PAYMENT':
         // Cash payment converted to grams (- Credit)
-        if (t.creditGrams !== undefined && t.creditGrams !== null && Number(t.creditGrams) > 0) {
-          creditGrams = Number(t.creditGrams);
-        } else if (t.convertedGrams && Number(t.convertedGrams) > 0) {
-          creditGrams = Number(t.convertedGrams);
-        } else {
+        if (t.cashAmount && (t.ratePerGram || currentSilverRate)) {
           creditGrams = convertCashToGrams(
             t.cashAmount,
             t.ratePerGram || currentSilverRate,
             t.touchPercent || 100,
             t.isTouchAdjusted !== false
           );
+        } else if (t.creditGrams !== undefined && t.creditGrams !== null && Number(t.creditGrams) > 0) {
+          creditGrams = Number(t.creditGrams);
+        } else if (t.convertedGrams && Number(t.convertedGrams) > 0) {
+          creditGrams = Number(t.convertedGrams);
         }
         break;
 
