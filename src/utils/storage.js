@@ -253,11 +253,53 @@ export async function syncCustomerToCloud(customer) {
   }
 }
 
+const DELETED_CUST_KEY = 'eagle_book_deleted_customers_v1';
+const DELETED_TX_KEY = 'eagle_book_deleted_transactions_v1';
+
+export function getDeletedCustomerIds() {
+  try {
+    const raw = localStorage.getItem(DELETED_CUST_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export function addDeletedCustomerId(id) {
+  try {
+    const list = getDeletedCustomerIds();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem(DELETED_CUST_KEY, JSON.stringify(list));
+    }
+  } catch (e) {}
+}
+
+export function getDeletedTransactionIds() {
+  try {
+    const raw = localStorage.getItem(DELETED_TX_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export function addDeletedTransactionId(id) {
+  try {
+    const list = getDeletedTransactionIds();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem(DELETED_TX_KEY, JSON.stringify(list));
+    }
+  } catch (e) {}
+}
+
 /**
  * Delete customer from Supabase
  */
 export async function deleteCustomerFromCloud(customerId) {
   try {
+    addDeletedCustomerId(customerId);
     await supabase.from('transactions').delete().eq('customer_id', customerId);
     await supabase.from('customers').delete().eq('id', customerId);
     broadcastLiveChange();
@@ -299,6 +341,7 @@ export async function syncTransactionToCloud(tx) {
  */
 export async function deleteTransactionFromCloud(txId) {
   try {
+    addDeletedTransactionId(txId);
     await supabase.from('transactions').delete().eq('id', txId);
     broadcastLiveChange();
   } catch (err) {

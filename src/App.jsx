@@ -32,7 +32,9 @@ import {
   syncTransactionToCloud,
   deleteTransactionFromCloud,
   syncRatesToCloud,
-  subscribeToRealtime
+  subscribeToRealtime,
+  getDeletedCustomerIds,
+  getDeletedTransactionIds
 } from './utils/storage';
 import { computeCustomerTransactions } from './utils/calculations';
 import { translations } from './utils/translations';
@@ -93,25 +95,18 @@ export function App() {
   const syncDataFromCloud = useCallback(async () => {
     try {
       const cloudRes = await fetchCloudData();
+      const deletedCustIds = new Set(getDeletedCustomerIds());
+      const deletedTxIds = new Set(getDeletedTransactionIds());
+
       if (cloudRes.hasCloudData) {
-        setCustomers((prevCustomers) => {
-          const cloudCusts = cloudRes.customers || [];
-          const cloudMap = new Map(cloudCusts.map(c => [c.id, c]));
-          const unSyncedLocal = prevCustomers.filter(lc => !cloudMap.has(lc.id));
-          if (unSyncedLocal.length > 0) {
-            uploadLocalDataToCloud(unSyncedLocal, [], null);
-          }
-          return [...cloudCusts, ...unSyncedLocal];
+        setCustomers(() => {
+          const cloudCusts = (cloudRes.customers || []).filter(c => !deletedCustIds.has(c.id));
+          return cloudCusts;
         });
 
-        setTransactions((prevTx) => {
-          const cloudTxs = cloudRes.transactions || [];
-          const cloudTxMap = new Map(cloudTxs.map(t => [t.id, t]));
-          const unSyncedLocalTx = prevTx.filter(lt => !cloudTxMap.has(lt.id));
-          if (unSyncedLocalTx.length > 0) {
-            uploadLocalDataToCloud([], unSyncedLocalTx, null);
-          }
-          return [...cloudTxs, ...unSyncedLocalTx];
+        setTransactions(() => {
+          const cloudTxs = (cloudRes.transactions || []).filter(t => !deletedTxIds.has(t.id));
+          return cloudTxs;
         });
 
         if (cloudRes.rates) {
