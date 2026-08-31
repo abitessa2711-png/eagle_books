@@ -24,7 +24,10 @@ export function WhatsAppModal({
   const t = translations[lang] || translations.ta;
   const [copied, setCopied] = useState(false);
   const [sharingImage, setSharingImage] = useState(false);
+  const [sharingPdf, setSharingPdf] = useState(false);
   const [downloadingImage, setDownloadingImage] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [statusNotice, setStatusNotice] = useState('');
   const billCanvasRef = useRef(null);
 
   if (!isOpen || !customer || !customerSummary) return null;
@@ -63,9 +66,83 @@ export function WhatsAppModal({
     });
   };
 
+  const loadHtml2Pdf = () => {
+    return new Promise((resolve, reject) => {
+      if (window.html2pdf) {
+        resolve(window.html2pdf);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = () => resolve(window.html2pdf);
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  };
+
+  const handleSendBillPdf = async () => {
+    try {
+      setSharingPdf(true);
+      setStatusNotice('');
+      const html2pdfLib = await loadHtml2Pdf();
+      const element = document.getElementById('whatsapp-bill-canvas');
+      if (!element) return;
+
+      const cleanName = (customer.name || 'Customer').replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+      const opt = {
+        margin:       [4, 4, 4, 4],
+        filename:     `${cleanName}_EagleSilvers_Bill.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      const pdfWorker = html2pdfLib().set(opt).from(element);
+      const pdfBlob = await pdfWorker.output('blob');
+
+      const pdfFile = new File([pdfBlob], `${cleanName}_EagleSilvers_Bill.pdf`, { type: 'application/pdf' });
+
+      // 1. Try Native Web Share API (Mobile Phone / Android / iOS)
+      if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        try {
+          await navigator.share({
+            files: [pdfFile],
+            title: `Eagle Silvers Bill PDF - ${customer.name}`,
+            text: `வணக்கம் ${customer.name}, ஈகிள் சில்வர்ஸ் வெள்ளி கணக்கு PDF அறிக்கை பில் இணைக்கப்பட்டுள்ளது.`
+          });
+          return;
+        } catch (shareErr) {
+          console.warn('Native PDF share cancelled:', shareErr);
+        }
+      }
+
+      // 2. Fallback for Desktop: Auto-download PDF & open WhatsApp Chat
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(pdfBlob);
+      link.download = `${cleanName}_EagleSilvers_Bill.pdf`;
+      link.click();
+
+      setStatusNotice('📄 பில் PDF பதிவிறக்கப்பட்டது! வாட்ஸ்அப்பில் Attachment அட்டாச் செய்து அனுப்பவும்.');
+
+      const greeting = `வணக்கம் ${customer.name}, ஈகிள் சில்வர்ஸ் வெள்ளி கணக்கு PDF பில் அறிக்கை பதிவிறக்கப்பட்டது.`;
+      const whatsappUrl = formattedPhone 
+        ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(greeting)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(greeting)}`;
+        
+      window.open(whatsappUrl, '_blank');
+
+    } catch (err) {
+      console.error('Error generating PDF bill:', err);
+    } finally {
+      setSharingPdf(false);
+    }
+  };
+
   const handleSendBillImage = async () => {
     try {
       setSharingImage(true);
+      setStatusNotice('');
       const html2canvasLib = await loadHtml2Canvas();
       const billElement = document.getElementById('whatsapp-bill-canvas');
       if (!billElement) return;
@@ -82,13 +159,21 @@ export function WhatsAppModal({
         const cleanName = (customer.name || 'Customer').replace(/[^a-zA-Z0-9_\-]/g, '_');
         const file = new File([blob], `${cleanName}_EagleSilvers_Bill.png`, { type: 'image/png' });
 
+        // Try writing image directly to clipboard on supported browsers
+        try {
+          if (navigator.clipboard && window.ClipboardItem) {
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            setStatusNotice('📸 பில் படம் நகலெடுக்கப்பட்டது (Copied)! வாட்ஸ்அப்பில் Ctrl + V செய்து பேஸ்ட் செய்து அனுப்பலாம்.');
+          }
+        } catch (e) {}
+
         // 1. Try Native Web Share API with image file
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           try {
             await navigator.share({
               files: [file],
               title: `Eagle Silvers Bill - ${customer.name}`,
-              text: `வணக்கம் ${customer.name}, ஈகிள் சில்வர்ஸ் வெள்ளி கணக்கு பில் இணைக்கப்பட்டுள்ளது.`
+              text: `வணக்கம் ${customer.name}, ஈகிள் சில்வர்ஸ் வெள்ளி கணக்கு பில் படம் இணைக்கப்பட்டுள்ளது.`
             });
             return;
           } catch (shareErr) {
@@ -190,7 +275,7 @@ export function WhatsAppModal({
             </div>
             <div>
               <h3 style={{ fontSize: '1.05rem', fontWeight: '900', margin: 0, color: '#ffffff' }}>
-                {lang === 'ta' ? 'வாட்ஸ்அப் பில் பகிர்வு (Bill Image Share)' : 'WhatsApp Bill Image Share'}
+                {lang === 'ta' ? 'வாட்ஸ்அப் பில் பகிர்வு (Bill Share)' : 'WhatsApp Bill Share'}
               </h3>
               <span style={{ fontSize: '0.72rem', color: '#86efac', fontWeight: '700' }}>
                 {customer.name} ({customer.phone || 'No Phone'})
@@ -206,12 +291,27 @@ export function WhatsAppModal({
         {/* Scrollable Body Container */}
         <div className="modal-body-scroll" style={{ padding: '1rem', flex: 1, overflowY: 'auto', background: '#f8fafc' }}>
           
+          {statusNotice && (
+            <div style={{
+              background: '#ecfdf5',
+              border: '1.5px solid #059669',
+              borderRadius: '8px',
+              padding: '0.6rem 0.85rem',
+              color: '#047857',
+              fontSize: '0.78rem',
+              fontWeight: '800',
+              marginBottom: '0.75rem'
+            }}>
+              {statusNotice}
+            </div>
+          )}
+
           <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#16a34a', marginBottom: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <Image size={16} />
-            <span>{lang === 'ta' ? 'வாடிக்கையாளருக்கு அனுப்பப்படும் அதிகாரப்பூர்வ பில் படம்:' : 'Official Bill Image Preview for WhatsApp:'}</span>
+            <span>{lang === 'ta' ? 'வாடிக்கையாளருக்கு அனுப்பப்படும் அதிகாரப்பூர்வ பில் படம் / PDF:' : 'Official Bill Preview for WhatsApp:'}</span>
           </div>
 
-          {/* VISUAL BILL RECEIPT IMAGE CONTAINER (FOR HTML2CANVAS CONVERSION) */}
+          {/* VISUAL BILL RECEIPT IMAGE CONTAINER */}
           <div 
             id="whatsapp-bill-canvas"
             ref={billCanvasRef}
@@ -396,9 +496,35 @@ export function WhatsAppModal({
           </div>
 
           {/* ACTION BUTTON BAR */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '0.5rem' }}>
             
-            {/* Primary Button: Send Bill Image via WhatsApp */}
+            {/* Primary Button 1: Send Bill PDF Document via WhatsApp */}
+            <button
+              type="button"
+              onClick={handleSendBillPdf}
+              disabled={sharingPdf}
+              style={{
+                background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '0.8rem 1.25rem',
+                fontSize: '0.9rem',
+                fontWeight: '900',
+                cursor: sharingPdf ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+                width: '100%'
+              }}
+            >
+              <FileText size={18} />
+              <span>{sharingPdf ? (lang === 'ta' ? 'பில் PDF உருவாகிறது...' : 'Generating PDF...') : (lang === 'ta' ? '📄 WhatsApp-ல் பில் PDF அறிக்கையாக அனுப்பவும்' : 'Send Bill PDF to WhatsApp')}</span>
+            </button>
+
+            {/* Primary Button 2: Send Bill Image Photo via WhatsApp */}
             <button
               type="button"
               onClick={handleSendBillImage}
@@ -408,7 +534,7 @@ export function WhatsAppModal({
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '10px',
-                padding: '0.75rem 1.25rem',
+                padding: '0.8rem 1.25rem',
                 fontSize: '0.9rem',
                 fontWeight: '900',
                 cursor: sharingImage ? 'not-allowed' : 'pointer',
@@ -421,10 +547,10 @@ export function WhatsAppModal({
               }}
             >
               <Send size={18} />
-              <span>{sharingImage ? (lang === 'ta' ? 'பில் படம் உருவாக்கப்படுகிறது...' : 'Generating Bill Image...') : (lang === 'ta' ? '📲 WhatsApp-ல் பில் படம் அனுப்பவும்' : 'Send Bill Image to WhatsApp')}</span>
+              <span>{sharingImage ? (lang === 'ta' ? 'பில் படம் உருவாக்கப்படுகிறது...' : 'Generating Image...') : (lang === 'ta' ? '📸 WhatsApp-ல் பில் படமாக அனுப்பவும்' : 'Send Bill Image to WhatsApp')}</span>
             </button>
 
-            {/* Secondary Buttons */}
+            {/* Secondary Buttons: Direct Downloads */}
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 type="button"
@@ -448,7 +574,32 @@ export function WhatsAppModal({
                 }}
               >
                 <Download size={15} />
-                <span>{downloadingImage ? 'பதிவிறங்குகிறது...' : (lang === 'ta' ? '📸 பில் படம் பதிவிறக்கு' : 'Download Bill Photo')}</span>
+                <span>{downloadingImage ? 'பதிவிறங்குகிறது...' : (lang === 'ta' ? '📸 படம் பதிவிறக்கு' : 'Download Image')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSendBillPdf}
+                disabled={sharingPdf}
+                className="btn btn-outline"
+                style={{
+                  flex: 1,
+                  background: '#ffffff',
+                  border: '1.5px solid #0284c7',
+                  color: '#0284c7',
+                  fontWeight: '800',
+                  padding: '0.6rem',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer'
+                }}
+              >
+                <Download size={15} />
+                <span>{lang === 'ta' ? '📄 PDF பதிவிறக்கு' : 'Download PDF'}</span>
               </button>
 
               <button
@@ -472,7 +623,7 @@ export function WhatsAppModal({
                 }}
               >
                 {copied ? <Check size={15} color="#16a34a" /> : <Copy size={15} />}
-                <span>{copied ? (lang === 'ta' ? 'நகலெடுக்கப்பட்டது!' : 'Copied!') : (lang === 'ta' ? 'உரை செய்தி நகலெடு' : 'Copy Text')}</span>
+                <span>{copied ? (lang === 'ta' ? 'நகலெடுக்கப்பட்டது!' : 'Copied!') : (lang === 'ta' ? 'உரை நகலெடு' : 'Copy Text')}</span>
               </button>
             </div>
 

@@ -302,7 +302,7 @@ export function App() {
     syncDataFromCloud();
   };
 
-  const handleDeleteCustomer = async (id) => {
+  const handleDeleteCustomer = (id) => {
     const customerToDelete = customers.find((c) => c.id === id);
     const custName = customerToDelete ? customerToDelete.name : '';
     const confirmMsg = lang === 'ta' 
@@ -310,22 +310,28 @@ export function App() {
       : `Are you sure you want to delete "${custName}" and all their records?`;
 
     if (window.confirm(confirmMsg)) {
+      // Instant local UI removal
       setCustomers((prev) => prev.filter((c) => c.id !== id));
       setTransactions((prev) => prev.filter((tx) => tx.customerId !== id));
-      await deleteCustomerFromCloud(id);
       if (selectedCustomerId === id) {
         setSelectedCustomerId(null);
       }
-      syncDataFromCloud();
+      // Non-blocking cloud deletion
+      deleteCustomerFromCloud(id).then(() => {
+        syncDataFromCloud();
+      });
     }
   };
 
-  const handleDeleteTransaction = async (txId) => {
+  const handleDeleteTransaction = (txId) => {
     const t = translations[lang] || translations.ta;
     if (window.confirm(t.confirmDelete)) {
-      setTransactions(transactions.filter((tx) => tx.id !== txId));
-      await deleteTransactionFromCloud(txId);
-      syncDataFromCloud();
+      // Instant local UI removal
+      setTransactions((prev) => prev.filter((tx) => tx.id !== txId));
+      // Non-blocking cloud deletion
+      deleteTransactionFromCloud(txId).then(() => {
+        syncDataFromCloud();
+      });
     }
   };
 

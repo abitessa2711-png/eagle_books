@@ -258,6 +258,7 @@ export async function syncCustomerToCloud(customer) {
  */
 export async function deleteCustomerFromCloud(customerId) {
   try {
+    await supabase.from('transactions').delete().eq('customer_id', customerId);
     await supabase.from('customers').delete().eq('id', customerId);
     broadcastLiveChange();
   } catch (err) {
