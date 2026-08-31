@@ -216,13 +216,23 @@ export async function uploadLocalDataToCloud(customers, transactions, rates) {
   }
 }
 
+// Single shared Supabase Realtime Channel for instant cross-device broadcast & DB changes
+let sharedRealtimeChannel = null;
+
+function getSharedRealtimeChannel() {
+  if (!sharedRealtimeChannel) {
+    sharedRealtimeChannel = supabase.channel('eagle-books-realtime-v1');
+  }
+  return sharedRealtimeChannel;
+}
+
 /**
  * Broadcast live event signal across all connected browser tabs & devices
  */
 export const broadcastLiveChange = () => {
   try {
-    const liveChannel = supabase.channel('eagle-books-live-sync');
-    liveChannel.send({
+    const channel = getSharedRealtimeChannel();
+    channel.send({
       type: 'broadcast',
       event: 'LIVE_DATA_CHANGED',
       payload: { timestamp: Date.now() }
@@ -371,7 +381,7 @@ export async function syncRatesToCloud(rates) {
  * Subscribe to realtime PostgreSQL & Broadcast changes
  */
 export function subscribeToRealtime({ onCustomerEvent, onTransactionEvent, onRateEvent }) {
-  const channel = supabase.channel('eagle-books-realtime')
+  const channel = getSharedRealtimeChannel()
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'customers' },
