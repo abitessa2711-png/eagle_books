@@ -50,7 +50,9 @@ export function convertCashToGrams(amount, ratePerGram, touchPercent = 100, isTo
 
   if (amt <= 0 || pureRate <= 0) return 0;
 
-  if (isTouchAdjusted && touch > 0 && touch <= 100) {
+  const shouldAdjustTouch = isTouchAdjusted !== false && touch > 0 && touch <= 100;
+
+  if (shouldAdjustTouch) {
     const effectiveRate = pureRate * (touch / 100);
     if (effectiveRate <= 0) return 0;
     return amt / effectiveRate;
@@ -123,14 +125,16 @@ export function computeCustomerTransactions(transactions = [], currentSilverRate
 
       case 'CASH_PAYMENT':
         // Cash payment converted to grams (- Credit)
-        if (t.convertedGrams && Number(t.convertedGrams) > 0) {
+        if (t.creditGrams !== undefined && t.creditGrams !== null && Number(t.creditGrams) > 0) {
+          creditGrams = Number(t.creditGrams);
+        } else if (t.convertedGrams && Number(t.convertedGrams) > 0) {
           creditGrams = Number(t.convertedGrams);
         } else {
           creditGrams = convertCashToGrams(
             t.cashAmount,
             t.ratePerGram || currentSilverRate,
             t.touchPercent || 100,
-            t.isTouchAdjusted
+            t.isTouchAdjusted !== false
           );
         }
         break;

@@ -109,6 +109,8 @@ export function TransactionDrawer({
         newTx.cashAmount = Number(cashAmount) || 0;
         newTx.ratePerGram = Number(ratePerGram) || rates?.ratePerGram || 95;
         newTx.touchPercent = isTouchAdjusted ? Number(cashTouchPercent) : 100;
+        newTx.isTouchAdjusted = isTouchAdjusted;
+        newTx.convertedGrams = calculatedCashGrams;
         newTx.creditGrams = calculatedCashGrams;
         newTx.debitGrams = 0;
       } else {

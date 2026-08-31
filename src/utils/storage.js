@@ -125,22 +125,36 @@ export async function fetchCloudData() {
     }
 
     if (txRes.data && Array.isArray(txRes.data) && txRes.data.length > 0) {
-      result.transactions = txRes.data.map(t => ({
-        id: t.id,
-        customerId: t.customer_id,
-        date: t.date,
-        type: t.type,
-        itemName: t.item_name,
-        weight: Number(t.weight) || 0,
-        touchPercent: Number(t.touch_percent) || 100,
-        wastagePercent: Number(t.wastage_percent) || 0,
-        cashAmount: t.cash_amount ? Number(t.cash_amount) : null,
-        ratePerGram: t.rate_per_gram ? Number(t.rate_per_gram) : null,
-        convertedGrams: t.converted_grams ? Number(t.converted_grams) : null,
-        isTouchAdjusted: Boolean(t.is_touch_adjusted),
-        direction: t.direction,
-        notes: t.notes
-      }));
+      result.transactions = txRes.data.map(t => {
+        const cashAmt = t.cash_amount ? Number(t.cash_amount) : null;
+        const rateG = t.rate_per_gram ? Number(t.rate_per_gram) : null;
+        const touchP = Number(t.touch_percent) || 100;
+        const isTouchAdj = t.is_touch_adjusted !== false;
+
+        let convGrams = t.converted_grams ? Number(t.converted_grams) : null;
+        if (!convGrams && t.type === 'CASH_PAYMENT' && cashAmt && rateG) {
+          const effRate = isTouchAdj && touchP > 0 && touchP <= 100 ? (rateG * (touchP / 100)) : rateG;
+          convGrams = effRate > 0 ? (cashAmt / effRate) : 0;
+        }
+
+        return {
+          id: t.id,
+          customerId: t.customer_id,
+          date: t.date,
+          type: t.type,
+          itemName: t.item_name,
+          weight: Number(t.weight) || 0,
+          touchPercent: touchP,
+          wastagePercent: Number(t.wastage_percent) || 0,
+          cashAmount: cashAmt,
+          ratePerGram: rateG,
+          convertedGrams: convGrams,
+          creditGrams: t.type === 'CASH_PAYMENT' ? (convGrams || 0) : 0,
+          isTouchAdjusted: isTouchAdj,
+          direction: t.direction,
+          notes: t.notes
+        };
+      });
       result.hasCloudData = true;
     }
 
