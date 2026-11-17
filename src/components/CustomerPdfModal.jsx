@@ -5,7 +5,7 @@ import {
   X, 
   FileText
 } from 'lucide-react';
-import { formatGrams, formatCurrency, formatDate } from '../utils/calculations';
+import { formatGrams, formatCashGrams, formatCurrency, formatDate } from '../utils/calculations';
 import { translations } from '../utils/translations';
 
 export function CustomerPdfModal({
@@ -360,7 +360,7 @@ export function CustomerPdfModal({
                             <div>{tx.itemName || tx.type}</div>
                             {isCash && tx.cashAmount && (
                               <div style={{ fontSize: '0.7rem', color: '#b45309', fontWeight: '700' }}>
-                                💵 {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g
+                                💵 {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}%)` : ''} = -{formatCashGrams(tx.creditGrams)}g (Round Off)
                               </div>
                             )}
                             {tx.notes && <div style={{ fontSize: '0.68rem', color: '#64748b' }}>{tx.notes}</div>}
@@ -375,7 +375,7 @@ export function CustomerPdfModal({
                             {tx.debitGrams > 0 ? `+${formatGrams(tx.debitGrams)}` : '-'}
                           </td>
                           <td style={{ padding: '0.5rem 0.4rem', textAlign: 'right', fontWeight: '900', color: '#059669' }}>
-                            {tx.creditGrams > 0 ? `-${formatGrams(tx.creditGrams)}` : '-'}
+                            {tx.creditGrams > 0 ? (isCash ? `-${formatCashGrams(tx.creditGrams)}` : `-${formatGrams(tx.creditGrams)}`) : '-'}
                           </td>
                           <td style={{ padding: '0.5rem 0.4rem', textAlign: 'right', fontWeight: '900', color: '#090f24' }}>
                             {formatGrams(Math.abs(tx.balanceAfterGrams))}

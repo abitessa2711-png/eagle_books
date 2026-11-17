@@ -9,7 +9,7 @@ import {
   FileText
 } from 'lucide-react';
 import { translations } from '../utils/translations';
-import { formatGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
+import { formatGrams, formatCashGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
 
 export function HandwrittenNotebook({
   lang,
@@ -285,7 +285,7 @@ export function HandwrittenNotebook({
                       </div>
                       {tx.cashAmount ? (
                         <div style={{ fontSize: '0.78rem', color: '#059669', fontWeight: '800', marginTop: '0.1rem' }}>
-                          ரொக்கம்: {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}% Touch)` : ''}
+                          ரொக்கம்: {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}% Touch)` : ''} = -{formatCashGrams(tx.creditGrams)}g (Round Off)
                         </div>
                       ) : (
                         tx.touchPercent && Number(tx.touchPercent) < 100 && Number(tx.weight) > 0 ? (
@@ -302,7 +302,7 @@ export function HandwrittenNotebook({
                     </div>
                     
                     <div style={{ textAlign: 'right', color: isCredit ? '#047857' : '#b91c1c', fontWeight: '800', fontSize: '1.05rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                      <div>{isCredit ? '–' : '+'} {formatGrams(isCredit ? tx.creditGrams : tx.debitGrams)} gm</div>
+                      <div>{isCredit ? '–' : '+'} {isCredit && tx.type === 'CASH_PAYMENT' ? formatCashGrams(tx.creditGrams) : formatGrams(isCredit ? tx.creditGrams : tx.debitGrams)} gm</div>
                       {onDeleteTransaction && (
                         <button
                           type="button"

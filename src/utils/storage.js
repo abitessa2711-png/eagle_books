@@ -132,9 +132,12 @@ export async function fetchCloudData() {
         const isTouchAdj = t.is_touch_adjusted !== false;
 
         let convGrams = t.converted_grams ? Number(t.converted_grams) : null;
-        if (!convGrams && t.type === 'CASH_PAYMENT' && cashAmt && rateG) {
+        if (t.type === 'CASH_PAYMENT' && cashAmt && rateG) {
           const effRate = isTouchAdj && touchP > 0 && touchP <= 100 ? (rateG * (touchP / 100)) : rateG;
-          convGrams = effRate > 0 ? (cashAmt / effRate) : 0;
+          const rawConv = effRate > 0 ? (cashAmt / effRate) : 0;
+          convGrams = Number(rawConv.toFixed(2));
+        } else if (convGrams) {
+          convGrams = Number(convGrams.toFixed(2));
         }
 
         return {

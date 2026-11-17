@@ -10,6 +10,15 @@ export function formatGrams(val) {
 }
 
 /**
+ * Format cash converted weight in grams with 2 decimal places (Round Off)
+ */
+export function formatCashGrams(val) {
+  if (val === null || val === undefined || isNaN(val)) return '0.00';
+  const num = Number(val);
+  return num.toFixed(2);
+}
+
+/**
  * Format Indian Currency in Rupees (e.g. ₹23,000)
  */
 export function formatCurrency(val) {
@@ -52,13 +61,17 @@ export function convertCashToGrams(amount, ratePerGram, touchPercent = 100, isTo
 
   const shouldAdjustTouch = isTouchAdjusted !== false && touch > 0 && touch <= 100;
 
+  let rawGrams = 0;
   if (shouldAdjustTouch) {
     const effectiveRate = pureRate * (touch / 100);
     if (effectiveRate <= 0) return 0;
-    return amt / effectiveRate;
+    rawGrams = amt / effectiveRate;
+  } else {
+    rawGrams = amt / pureRate;
   }
 
-  return amt / pureRate;
+  // Round off to 2 decimal places as requested by client (e.g. 145.936 -> 145.94)
+  return Number(rawGrams.toFixed(2));
 }
 
 /**
@@ -133,9 +146,9 @@ export function computeCustomerTransactions(transactions = [], currentSilverRate
             t.isTouchAdjusted !== false
           );
         } else if (t.creditGrams !== undefined && t.creditGrams !== null && Number(t.creditGrams) > 0) {
-          creditGrams = Number(t.creditGrams);
+          creditGrams = Number(Number(t.creditGrams).toFixed(2));
         } else if (t.convertedGrams && Number(t.convertedGrams) > 0) {
-          creditGrams = Number(t.convertedGrams);
+          creditGrams = Number(Number(t.convertedGrams).toFixed(2));
         }
         break;
 
@@ -232,7 +245,11 @@ export function generateWhatsAppMessage(customer, summary, currentRate = 95, lan
         msg += `   - பற்று (+): +${formatGrams(tx.debitGrams)} g நயம்\n`;
       }
       if (tx.creditGrams > 0) {
-        msg += `   - வரவு (-): -${formatGrams(tx.creditGrams)} g நயம்\n`;
+        if (tx.type === 'CASH_PAYMENT') {
+          msg += `   - வரவு (-): -${formatCashGrams(tx.creditGrams)} g (Round Off)\n`;
+        } else {
+          msg += `   - வரவு (-): -${formatGrams(tx.creditGrams)} g நயம்\n`;
+        }
       }
       msg += `   - இருப்பு: ${formatGrams(Math.abs(tx.balanceAfterGrams))} g\n\n`;
     });

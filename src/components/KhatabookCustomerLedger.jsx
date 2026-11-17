@@ -15,7 +15,7 @@ import {
   UserX
 } from 'lucide-react';
 import { translations } from '../utils/translations';
-import { formatGrams, formatCurrency, formatDate } from '../utils/calculations';
+import { formatGrams, formatCashGrams, formatCurrency, formatDate } from '../utils/calculations';
 
 export function KhatabookCustomerLedger({
   lang,
@@ -233,7 +233,7 @@ export function KhatabookCustomerLedger({
                       fontWeight: '800',
                       display: 'inline-block'
                     }}>
-                      💵 {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}%)` : ''} = -{formatGrams(tx.creditGrams)}g
+                      💵 {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}%)` : ''} = -{formatCashGrams(tx.creditGrams)}g ({lang === 'ta' ? 'ரவுண்ட் ஆஃப்' : 'Round Off'})
                     </div>
                   )}
 
@@ -264,7 +264,7 @@ export function KhatabookCustomerLedger({
                     fontWeight: '900',
                     color: isNew ? '#dc2626' : '#059669'
                   }}>
-                    {isNew ? `+${formatGrams(tx.debitGrams)} g` : `-${formatGrams(tx.creditGrams)} g`}
+                    {isNew ? `+${formatGrams(tx.debitGrams)} g` : isCash ? `-${formatCashGrams(tx.creditGrams)} g` : `-${formatGrams(tx.creditGrams)} g`}
                   </div>
 
                   {tx.cashAmount && (

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Printer, FileText, Share2, MessageSquare } from 'lucide-react';
 import { translations } from '../utils/translations';
-import { formatGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
+import { formatGrams, formatCashGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
 
 export function ReceiptModal({
   lang,
@@ -174,7 +174,7 @@ export function ReceiptModal({
                       <div style={{ fontWeight: '700' }}>{tx.itemName || '-'}</div>
                       {tx.cashAmount ? (
                         <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: '800' }}>
-                          ரொக்கம்: {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}% Touch)` : ''}
+                          ரொக்கம்: {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || currentRate}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}% Touch)` : ''} = -{formatCashGrams(tx.creditGrams)}g (Round Off)
                         </div>
                       ) : null}
                     </td>
@@ -182,7 +182,7 @@ export function ReceiptModal({
                       {tx.debitGrams > 0 ? `+${formatGrams(tx.debitGrams)}` : '-'}
                     </td>
                     <td style={{ padding: '0.45rem 0.65rem', border: '1px solid #cbd5e1', textAlign: 'right', fontWeight: '800', color: tx.creditGrams > 0 ? '#059669' : '#94a3b8' }}>
-                      {tx.creditGrams > 0 ? `-${formatGrams(tx.creditGrams)}` : '-'}
+                      {tx.creditGrams > 0 ? (tx.type === 'CASH_PAYMENT' ? `-${formatCashGrams(tx.creditGrams)}` : `-${formatGrams(tx.creditGrams)}`) : '-'}
                     </td>
                     <td style={{ padding: '0.45rem 0.65rem', border: '1px solid #cbd5e1', textAlign: 'right', fontWeight: '900' }}>
                       {formatGrams(Math.abs(tx.balanceAfterGrams))}

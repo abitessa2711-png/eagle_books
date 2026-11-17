@@ -11,7 +11,7 @@ import {
   Loader2 
 } from 'lucide-react';
 import { translations } from '../utils/translations';
-import { formatGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
+import { formatGrams, formatCashGrams, formatCurrency, formatDate, generateWhatsAppMessage } from '../utils/calculations';
 
 export function WhatsAppModal({
   lang,
@@ -421,11 +421,18 @@ export function WhatsAppModal({
                   <tr key={tx.id || idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                     <td style={{ padding: '0.4rem 0.3rem', textAlign: 'center', fontWeight: '700', color: '#64748b' }}>{idx + 1}</td>
                     <td style={{ padding: '0.4rem 0.3rem', fontWeight: '700', whiteSpace: 'nowrap' }}>{formatDate(tx.date)}</td>
-                    <td style={{ padding: '0.4rem 0.3rem', fontWeight: '800' }}>{tx.itemName || tx.type}</td>
+                    <td style={{ padding: '0.4rem 0.3rem', fontWeight: '800' }}>
+                      <div>{tx.itemName || tx.type}</div>
+                      {tx.type === 'CASH_PAYMENT' && tx.cashAmount ? (
+                        <div style={{ fontSize: '0.68rem', color: '#b45309', fontWeight: '700' }}>
+                          💵 {formatCurrency(tx.cashAmount)} @ ₹{tx.ratePerGram || rates?.ratePerGram || 95}/g {tx.touchPercent && tx.touchPercent < 100 ? `(${tx.touchPercent}%)` : ''}
+                        </div>
+                      ) : null}
+                    </td>
                     <td style={{ padding: '0.4rem 0.3rem', textAlign: 'right', fontWeight: '700' }}>{tx.weight ? formatGrams(tx.weight) : '-'}</td>
                     <td style={{ padding: '0.4rem 0.3rem', textAlign: 'center', fontWeight: '700' }}>{tx.touchPercent ? `${tx.touchPercent}%` : '-'}</td>
                     <td style={{ padding: '0.4rem 0.3rem', textAlign: 'right', fontWeight: '900', color: '#dc2626' }}>{tx.debitGrams > 0 ? `+${formatGrams(tx.debitGrams)}` : '-'}</td>
-                    <td style={{ padding: '0.4rem 0.3rem', textAlign: 'right', fontWeight: '900', color: '#059669' }}>{tx.creditGrams > 0 ? `-${formatGrams(tx.creditGrams)}` : '-'}</td>
+                    <td style={{ padding: '0.4rem 0.3rem', textAlign: 'right', fontWeight: '900', color: '#059669' }}>{tx.creditGrams > 0 ? (tx.type === 'CASH_PAYMENT' ? `-${formatCashGrams(tx.creditGrams)}` : `-${formatGrams(tx.creditGrams)}`) : '-'}</td>
                     <td style={{ padding: '0.4rem 0.3rem', textAlign: 'right', fontWeight: '900', color: '#090f24' }}>{formatGrams(Math.abs(tx.balanceAfterGrams))}</td>
                   </tr>
                 ))}

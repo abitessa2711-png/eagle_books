@@ -9,7 +9,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { translations } from '../utils/translations';
-import { convertCashToGrams, calculateNetSilver, formatGrams, formatCurrency } from '../utils/calculations';
+import { convertCashToGrams, calculateNetSilver, formatGrams, formatCashGrams, formatCurrency } from '../utils/calculations';
 
 export function TransactionDrawer({
   lang,
@@ -506,17 +506,20 @@ export function TransactionDrawer({
                 </div>
 
                 <div style={{ fontSize: '1.85rem', fontWeight: '900', color: '#059669', margin: '0.15rem 0' }}>
-                  -{formatGrams(calculatedCashGrams)} <span style={{ fontSize: '0.95rem' }}>g</span>
+                  -{formatCashGrams(calculatedCashGrams)} <span style={{ fontSize: '0.95rem' }}>g</span>
+                  <span style={{ fontSize: '0.82rem', color: '#047857', fontWeight: '800', marginLeft: '0.4rem' }}>
+                    ({lang === 'ta' ? 'ரவுண்ட் ஆஃப்' : 'Round Off'})
+                  </span>
                 </div>
 
                 <div style={{ fontSize: '0.78rem', color: '#334155', fontWeight: '700', lineHeight: 1.4 }}>
                   {isTouchAdjusted ? (
                     <div>
                       <div>டச் ரேட்: ₹{ratePerGram} × {cashTouchPercent}% = <strong>₹{(Number(ratePerGram) * (Number(cashTouchPercent) / 100)).toFixed(2)}/g</strong></div>
-                      <div>{formatCurrency(cashAmount || 0)} ÷ ₹{(Number(ratePerGram) * (Number(cashTouchPercent) / 100)).toFixed(2)} = <strong>{formatGrams(calculatedCashGrams)} g கழிவு!</strong></div>
+                      <div>{formatCurrency(cashAmount || 0)} ÷ ₹{(Number(ratePerGram) * (Number(cashTouchPercent) / 100)).toFixed(2)} = <strong>{formatCashGrams(calculatedCashGrams)} g ({lang === 'ta' ? 'ரவுண்ட் ஆஃப்' : 'Round Off'}) கழிவு!</strong></div>
                     </div>
                   ) : (
-                    <span>{formatCurrency(cashAmount || 0)} ÷ ₹{ratePerGram}/g = {formatGrams(calculatedCashGrams)} g கழிவு!</span>
+                    <span>{formatCurrency(cashAmount || 0)} ÷ ₹{ratePerGram}/g = {formatCashGrams(calculatedCashGrams)} g ({lang === 'ta' ? 'ரவுண்ட் ஆஃப்' : 'Round Off'}) கழிவு!</span>
                   )}
                 </div>
               </div>

@@ -11,7 +11,7 @@ import {
   Calculator
 } from 'lucide-react';
 import { translations } from '../utils/translations';
-import { formatGrams, formatCurrency, formatDate } from '../utils/calculations';
+import { formatGrams, formatCashGrams, formatCurrency, formatDate } from '../utils/calculations';
 
 export function NotebookView({
   lang,
@@ -216,7 +216,7 @@ export function NotebookView({
                             {formatDate(tx.date)} : {formatCurrency(tx.cashAmount)} 
                             {tx.ratePerGram && ` (${tx.ratePerGram})`} 
                             {tx.touchPercent ? ` × ${tx.touchPercent}%` : ''} 
-                            {tx.isTouchAdjusted ? ` : = ${formatGrams(tx.creditGrams)} (P)` : ` = -${formatGrams(tx.creditGrams)}g`}
+                            {tx.isTouchAdjusted ? ` : = ${formatCashGrams(tx.creditGrams)} (Round Off)` : ` = -${formatCashGrams(tx.creditGrams)}g (Round Off)`}
                           </div>
                         )}
 

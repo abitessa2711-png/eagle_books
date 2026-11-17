@@ -13,7 +13,7 @@ import {
   Scale
 } from 'lucide-react';
 import { translations } from '../utils/translations';
-import { convertCashToGrams, calculateNetSilver, formatGrams, formatCurrency } from '../utils/calculations';
+import { convertCashToGrams, calculateNetSilver, formatGrams, formatCashGrams, formatCurrency } from '../utils/calculations';
 
 export function TransactionModal({
   lang,
@@ -567,11 +567,14 @@ export function TransactionModal({
                 </div>
 
                 <div style={{ fontSize: '2rem', fontWeight: '900', color: '#fbbf24', margin: '0.25rem 0' }}>
-                  -{formatGrams(calculatedCashGrams)} <span style={{ fontSize: '1.1rem' }}>g</span>
+                  -{formatCashGrams(calculatedCashGrams)} <span style={{ fontSize: '1.1rem' }}>g</span>
+                  <span style={{ fontSize: '0.9rem', color: '#fde68a', fontWeight: '800', marginLeft: '0.4rem' }}>
+                    ({lang === 'ta' ? 'ரவுண்ட் ஆஃப்' : 'Round Off'})
+                  </span>
                 </div>
 
                 <div style={{ fontSize: '0.78rem', color: '#cbd5e1' }}>
-                  {formatCurrency(cashAmount || 0)} ÷ ₹{ratePerGram}/g {isTouchAdjusted ? `× ${cashTouchPercent}%` : ''} = {formatGrams(calculatedCashGrams)} கிராம் கழிவு!
+                  {formatCurrency(cashAmount || 0)} ÷ ₹{ratePerGram}/g {isTouchAdjusted ? `× ${cashTouchPercent}%` : ''} = {formatCashGrams(calculatedCashGrams)} கிராம் ({lang === 'ta' ? 'ரவுண்ட் ஆஃப்' : 'Round Off'}) கழிவு!
                 </div>
               </div>
             </>
